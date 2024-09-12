@@ -1,0 +1,75 @@
+﻿@page
+@model ProductsModel
+
+<table class="table table-sm table-striped table-bordered">
+	<thead>
+	<tr>
+		<th>ID</th>
+		<th>Name</th>
+		<th>Category</th>
+		<th>Price</th>
+		<td />
+	</tr>
+	</thead>
+	<tbody>
+		@if (Model.Prods.Count() > 0) 
+		{
+			@foreach (Product p in Model.Prods) 
+			{
+				<tr>
+					<td>@p.ProductId</td>
+					<td>@p.Name</td>
+					<td>@p.Category.Name</td>
+					<td>@p.Price.ToString("c")</td>
+					<td>
+						<form method="post">
+							<input type="hidden" name="ProductId" value="@p.ProductId"/>
+							<button class="btn btn-danger" type="submit">
+								Delete
+							</button>
+						</form>
+					</td>
+				</tr>
+			}
+		} 
+		else 
+		{
+			<tr>
+				<td colspan="5" class="text-center">No Products</td>
+			</tr>
+		}
+	</tbody>
+</table>
+
+@functions{
+	public class ProductsModel : AdminPageModel
+	{
+		private IProductRepository productRepository;
+
+		public ProductsModel(IProductRepository repository)
+		{
+			productRepository = repository;	
+		}
+
+		public IEnumerable<Product> Prods =
+			Enumerable.Empty<Product>();
+
+		public void OnGet()
+		{
+			Prods = productRepository.Products
+				.Include(p => p.Category);
+		}
+
+		public IActionResult OnPost(long productId)
+		{
+			Product? product = Prods
+				.FirstOrDefault(p => p.ProductId == productId);
+
+			if (product != null)
+			{
+				productRepository.DeleteProduct(product);
+			}
+			return RedirectToPage();
+		}
+	}
+}

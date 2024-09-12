@@ -1,0 +1,82 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="/lib/bootstrap/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="/lib/bootstrap-icons/bootstrap-icons.css" rel="stylesheet"/>
+    <link href="/lib/font-awesome/css/all.min.css" rel="stylesheet"/>
+    <title>Store Admin</title>
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .sidebar {
+            background-color: #343a40;
+            min-height: 100vh;
+            color: #ffffff;
+        }
+
+        .sidebar .nav-link {
+            color: #ffffff;
+        }
+
+        .sidebar .nav-link.active {
+            background-color: #495057;
+        }
+
+        .sidebar .nav-link:hover {
+            background-color: #495057;
+        }
+
+        .sidebar .fs-4 {
+            font-size: 1.5rem;
+        }
+
+        .sidebar .nav-item {
+            margin-bottom: 1rem;
+        }
+
+        .main-content {
+            padding: 2rem;
+        }
+
+        .header {
+            background-color: #ffffff;
+            padding: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .header .container {
+            max-width: 1140px;
+        }
+    </style>
+</head>
+
+<body>
+<div class="header">
+    <div class="container-fluid">
+        <div class="row">
+            <div>
+                <a href="/" class="d-flex align-items-center text-decoration-none">
+                    <span class="fs-4 text-dark">STORE</span>
+                </a>
+            </div>
+            <div class="align-content-xl-">
+                <vc:cart-summary/>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="container-fluid">
+    <div class="row flex-nowrap">
+        <main class="col">
+                @RenderBody()
+        </main>
+    </div>
+</div>
+</body>
+
+</html>

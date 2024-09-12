@@ -1,0 +1,177 @@
+@model Order
+
+<h2>Check out now</h2>
+<p>Please enter your details, and we'll ship your goods right away!</p>
+
+@{
+    Layout = "_Layout";
+}
+
+<partial name="_Validation" />
+
+<form id="checkout-form" asp-controller="Order" asp-action="Checkout" method="post">
+     <div asp-validation-summary="All" class="alert-danger">
+    </div>
+
+    <h3>Ship to</h3>
+
+    <div class="form-group">
+        <label>Name:</label>
+        <input asp-for="Name" id="Name" class="form-control" />
+        <span asp-validation-for="Name" class="text-danger">
+        </span>
+    </div>
+    <h3>Address</h3>
+    <div class="form-group">
+        <label>Line 1:</label>
+        <input asp-for="Line1" id="Line1" class="form-control" />
+        <span asp-validation-for="Line1" class="text-danger">
+        </span>
+    </div>
+    <div class="form-group">
+        <label>Line 2:</label>
+          <input asp-for="Line2" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label>Line 3:</label>
+         <input asp-for="Line2" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label>City:</label>
+        <input asp-for="City" id="City" class="form-control" />
+        <span asp-validation-for="City" class="text-danger">
+        </span>
+    </div>
+    <div class="form-group">
+        <label>State:</label>
+        <input asp-for="State" id="State" class="form-control" />
+        <span asp-validation-for="State" class="text-danger">
+        </span>
+    </div>
+    <div class="form-group">
+        <label>Zip:</label>
+        <input asp-for="Zip" id="Zip" class="form-control" />
+        <span asp-validation-for="Zip" class="text-danger">
+        </span>
+    </div>
+    <div class="form-group">
+        <label>Country:</label>
+        <input asp-for="Country" id="Country" class="form-control" />
+        <span asp-validation-for="Country" class="text-danger">
+        </span>
+    </div>
+    <h3>Options</h3>
+    <div class="checkbox">
+        <label>
+            <input asp-for="GiftWrap" /> Gift wrap these items
+        </label>
+    </div>
+    
+     <h3>Payment Method</h3>
+    <div>
+        <label>
+            <input type="radio" name="PaymentMethod" value="Braintree" checked> Braintree
+        </label>
+        <label>
+            <input type="radio" name="PaymentMethod" value="YooKassa"> YooKassa
+        </label>
+    </div>
+
+
+   @*  <div class="form-group">
+        <div class="bt-drop-in-wrapper" id="braintree-container" style="display:none;">
+            <div id="bt-dropin"></div>
+        </div>
+    </div>
+
+    <div class="form-group" style="display:none;">
+        <div id="payment-form"></div>
+    </div> *@
+
+    <div class="text-center">
+        <span>Confirm Order - @Model.Lines.Sum(e => e.Product.Price * e.Quantity).ToString("C")</span>
+        <input class="btn btn-primary" id="complete-order" type="submit"
+               value="Complete Order"/>
+    </div>
+</form>
+@* 
+<script src="https://js.braintreegateway.com/web/dropin/1.22.0/js/dropin.min.js"></script>
+<script src="https://static.yoomoney.ru/checkout-js/v1/checkout.js"></script>
+
+<script>
+    var client_token = "@ViewBag.ClientToken";
+    var form = document.querySelector('#checkout-form');
+
+    const payButton = document.getElementById('pay-button');
+    const ord = document.getElementById('complete-order');
+
+    function validateForm() {
+        const name = document.getElementById("Name").value.trim();
+        const addressLine = document.getElementById("Line1").value.trim();
+        const state = document.getElementById("State").value.trim();
+        const zip = document.getElementById("Zip").value.trim();
+        const city = document.getElementById("City").value.trim();
+        const country = document.getElementById("Country").value.trim();
+
+        // Check if any required field is empty
+        const isValid = name && addressLine && state && zip && city && country;
+
+        // Enable or disable the button based on form validity
+        payButton.disabled = !isValid;
+        ord.disabled = !isValid;
+    }
+    document.querySelectorAll('#checkout-form input').forEach(input => {
+        input.addEventListener('input', validateForm);
+    });
+    validateForm();
+    braintree.dropin.create({
+        authorization: client_token,
+        container: '#bt-dropin'
+    }, function (createErr, instance) {
+        form.addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            instance.requestPaymentMethod(function (err, payload) {
+                if (err) 
+                {
+                    return;
+                }
+                document.querySelector('#nonce').value = payload.nonce;
+                form.submit();
+            });
+        });
+    });
+
+    document.getElementById('pay-button').addEventListener('click', function () {
+        var selectedPaymentMethod = document.querySelector('input[name="PaymentMethod"]:checked').value;
+        if (selectedPaymentMethod === 'Braintree') {
+            document.getElementById('braintree-container').style.display = 'block';
+            document.getElementById('yookassa-container').style.display = 'none';
+            initializeBraintree();
+        } else if (selectedPaymentMethod === 'YooKassa') {
+            updateTokens().then(() => {
+                document.getElementById('braintree-container').style.display = 'none';
+                document.getElementById('yookassa-container').style.display = 'block';
+                initializeYooKassa();
+            });
+        }
+    });
+
+    function showWidget() {
+        var selectedPaymentMethod = document.querySelector('input[name="PaymentMethod"]:checked').value;
+        if (selectedPaymentMethod === 'Braintree') {
+            document.getElementById('braintree-container').style.display = 'block';
+            document.getElementById('yookassa-container').style.display = 'none';
+            initializeBraintree();
+        } else if (selectedPaymentMethod === 'YooKassa') {
+            document.getElementById('braintree-container').style.display = 'none';
+            document.getElementById('yookassa-container').style.display = 'block';
+            initializeYooKassa();
+        }
+    }
+
+    // Set up the button click event
+    payButton.addEventListener('click', function () {
+        showWidget();
+    });
+</script> *@

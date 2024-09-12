@@ -1,0 +1,36 @@
+﻿@model IEnumerable<JToken>
+
+@{
+	Layout = "_Layout";
+}
+
+@if (Model != null)
+{
+    <div class="container mt-2">
+        <div class="row">
+	        @foreach (var item in Model)
+	        {
+                <div class="col-md-4"> 
+                    <div class="card mt-3">
+                        <img class="card-img-top" src="@item["image"]["imageUrl"].ToString().Replace("225.", "500.")" 
+                            style="width: 100%; height: 15vw; object-fit: cover;" />
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                @item["title"]
+                            </h5>
+                            <p class="card-text">
+                                $@item["price"]["value"]
+                            </p>
+                            <form id="@item["itemId"]" asp-controller="Ebay" asp-action="GetItem" method="post">
+                                <input type="hidden" name="id" value="@item["itemId"]" />
+                                <button type="submit" class="btn btn-success pull-right mt-2">
+                                    More Info
+                                 </button>
+                            </form> 
+                        </div>
+                    </div>
+                </div>
+	        }
+        </div>
+    </div>
+}

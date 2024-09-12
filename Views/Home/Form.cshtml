@@ -1,0 +1,87 @@
+﻿@model Product
+
+@{
+    Layout = "_Layout";
+    bool b = false;
+    if (Model.Name == "")
+    {
+        b = true;
+    }
+    string name = (b == true) ? "newproduct" : "changeproduct";
+}
+
+<partial name="_Validation" />
+
+<style>
+    .asterix:after{
+        content: " *";
+        color: crimson;
+    }
+    .asterix-before:before{
+        content: "*";
+        color: crimson;
+    }
+</style>
+
+<form enctype="multipart/form-data" asp-action="@name" asp-controller="Home"
+      asp-route-id="@Model.ProductId" method="post">
+    <div asp-validation-summary="All" class="alert-danger">
+    </div>
+    <div class="form-group mt-2">
+        <label class="asterix" asp-for="Name"></label>
+        <div>
+            <span asp-validation-for="Name" class="text-danger">
+            </span>
+        </div>
+        <input asp-for="Name" class="form-control"/>
+    </div>
+    <div class="form-group mt-2">
+        <label class="asterix" asp-for="Price"></label>
+        <div>
+            <span asp-validation-for="Price" class="text-danger">
+            </span>
+        </div>
+        <input type="number" asp-validation-for="Price" asp-for="Price" class="form-control"/>
+    </div>
+    <div class="form-group mt-2">
+        <label class="asterix" asp-for="Quantity"></label>
+        <div>
+            <span asp-validation-for="Quantity" class="text-danger"></span>
+        </div>
+        <input type="number" asp-for="Quantity" class="form-control"/>
+    </div>
+    <div class="form-group mt-2">
+        <label class="asterix" asp-for="CategoryId">Category</label>
+        <select class="form-control" asp-for="CategoryId">
+            @foreach (var category in ViewBag.Categories)
+            {
+                <option value="@category.CategoryId" class="@(Model.CategoryId == category.CategoryId ? "selected" : "")">@category.Name</option>
+            }
+        </select>
+    </div>
+    <div class="form-group mt-2">
+        <label class="asterix" asp-for="Description"></label>
+        <div>
+            <span asp-validation-for="Description" class="text-danger">
+            </span>
+        </div>
+        <textarea asp-for="Description" class="form-control"></textarea>
+    </div>
+    <div class="form-group mt-2">
+        @if (!string.IsNullOrEmpty(Model.ImageLink))
+        {
+            <label>Current Image</label>
+            <img class="form-control" src="@Model.ImageLink" style="max-width: 600px; max-height: 600px"/>
+        }
+    </div>
+    <div class="form-group mt-2">
+        <label class="form-label" for="formFile" asp-for="ImageFile">Upload New Image</label>
+        <input type="file" class="form-control" id="formFile" asp-for="ImageFile" accept="image/*"/>
+    </div>
+    <button type="submit" class="btn btn-primary mt-2">
+        Submit
+    </button>
+    <h5 class="mt-2">
+        <label class="asterix-before"><b> - required field</b></label>
+    </h5>
+</form>

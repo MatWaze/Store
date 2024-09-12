@@ -1,0 +1,41 @@
+﻿@model Order
+
+@{
+    Layout = "_Layout";
+}
+
+<div class="form-group">
+    <div class="bt-drop-in-wrapper" id="braintree-container">
+        <div id="bt-dropin"></div>
+     </div>
+</div>
+
+<form id="orderForm" method="post" asp-action="ProcessBraintree" asp-controller="Order">
+    <input type="hidden" name="orderId" asp-for="OrderID" />
+    @* <input type="hidden" name="nonce" id="nonce" /> *@
+    @* <input type="hidden" id="amount" name="Amount" value="@ViewBag.Amount" /> *@
+    <input type="hidden" asp-for="Nonce" id="nonce" name="nonce" />
+    <button class="btn-btn primary" type="submit">Complete Payment</button>
+</form>
+
+
+<script src="https://js.braintreegateway.com/web/dropin/1.22.0/js/dropin.min.js"></script>
+<script>
+    braintree.dropin.create({
+        authorization: '@ViewBag.ClientToken',
+        container: '#bt-dropin'
+    }, function (err, instance) {
+        document.getElementById('orderForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+            instance.requestPaymentMethod(function (err, payload) {
+                if (err) {
+                    console.error(err);
+                    return;
+                }
+                document.getElementById('nonce').value = payload.nonce; // Pass the nonce
+                document.getElementById('orderForm').submit();
+            });
+        });
+    });
+</script>
+
