@@ -7,7 +7,7 @@ public static class SessionExtensions
     public static void SetJson(this ISession session,
         string key, object value)
     {
-        session.SetString(key, JsonSerializer.Serialize(value));
+        session.SetString(key, System.Text.Json.JsonSerializer.Serialize(value));
     }
 
     public static T? GetJson<T>(this ISession session,
@@ -16,6 +16,6 @@ public static class SessionExtensions
         var sessionData = session.GetString(key);
         return sessionData == null
             ? default(T)
-            : JsonSerializer.Deserialize<T>(sessionData);
+            : System.Text.Json.JsonSerializer.Deserialize<T>(sessionData);
     }
 }
