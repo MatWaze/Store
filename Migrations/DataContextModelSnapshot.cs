@@ -158,6 +158,9 @@ namespace Store.Migrations
                     b.Property<string>("ImageLink")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("ImageUrls")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("ItemCountry")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
