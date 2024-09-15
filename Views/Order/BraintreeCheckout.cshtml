@@ -4,20 +4,22 @@
     Layout = "_Layout";
 }
 
-<div class="form-group">
-    <div class="bt-drop-in-wrapper" id="braintree-container">
-        <div id="bt-dropin"></div>
-     </div>
-</div>
+<section class="product-store position-relative padding-large ps-3">
+    <div class="form-group">
+        <div class="bt-drop-in-wrapper" id="braintree-container">
+            <div id="bt-dropin"></div>
+         </div>
+    </div>
 
-<form id="orderForm" method="post" asp-action="ProcessBraintree" asp-controller="Order">
-    <input type="hidden" name="orderId" asp-for="OrderID" />
-    @* <input type="hidden" name="nonce" id="nonce" /> *@
-    @* <input type="hidden" id="amount" name="Amount" value="@ViewBag.Amount" /> *@
-    <input type="hidden" asp-for="Nonce" id="nonce" name="nonce" />
-    <button class="btn-btn primary" type="submit">Complete Payment</button>
-</form>
-
+    <form id="orderForm" method="post" asp-action="ProcessBraintree" asp-controller="Order">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="orderId" asp-for="OrderID" />
+        @* <input type="hidden" name="nonce" id="nonce" /> *@
+        @* <input type="hidden" id="amount" name="Amount" value="@ViewBag.Amount" /> *@
+        <input type="hidden" asp-for="Nonce" id="nonce" name="nonce" />
+        <button class="btn-btn primary" type="submit">Complete Payment</button>
+    </form>
+</section>
 
 <script src="https://js.braintreegateway.com/web/dropin/1.22.0/js/dropin.min.js"></script>
 <script>
