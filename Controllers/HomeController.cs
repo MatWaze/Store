@@ -43,18 +43,19 @@ using Microsoft.EntityFrameworkCore.Metadata.Internal;
 namespace Store.Controllers
 {
 	[Authorize]
-	public class HomeController : Controller
+    [AutoValidateAntiforgeryToken]
+    public class HomeController : Controller
     {
         private IProductRepository context;
         private IOrderRepository orderContext;
 		private BlobStorageService _blobStorageService;
-        private UserManager<IdentityUser> userManager;
+        private UserManager<ApplicationUser> userManager;
 
         public int PageSize = 6;
 
         public HomeController(IProductRepository dataContext,
             BlobStorageService blobStorageService,
-			UserManager<IdentityUser> userMgr, IOrderRepository order)
+			UserManager<ApplicationUser> userMgr, IOrderRepository order)
 		{
 			context = dataContext;
 			_blobStorageService = blobStorageService;
@@ -64,6 +65,7 @@ namespace Store.Controllers
 
 		public IActionResult Index()
         {
+            
             List<string> imgList = new List<string>
             {
                 "all_store_parts.jpg", "exterior_parts.jpg", "parts_accessories.webp",
