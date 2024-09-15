@@ -31,8 +31,8 @@ namespace Store.Models
 			these Scoped services (UserManager<T> and RoleManager<T>) 
 			just like they would be during a real request.
 			 */
-			UserManager<IdentityUser> userManager = serviceProvider
-				.GetRequiredService<UserManager<IdentityUser>>();
+			UserManager<ApplicationUser> userManager = serviceProvider
+				.GetRequiredService<UserManager<ApplicationUser>>();
 			RoleManager<IdentityRole> roleManager = serviceProvider
 				.GetService<RoleManager<IdentityRole>>()!;
 
@@ -52,10 +52,10 @@ namespace Store.Models
 					await roleManager.CreateAsync(new IdentityRole(role));
 				}
 
-				IdentityUser user = new IdentityUser
+				ApplicationUser user = new ApplicationUser
 				{
 					UserName = username,
-					Email = email
+					Email = email,
 				};
 
 				IdentityResult result = await userManager
