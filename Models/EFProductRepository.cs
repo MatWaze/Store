@@ -6,8 +6,8 @@ namespace Store.Models
     public class EFProductRepository : IProductRepository
     {
         private DataContext context;
-        private UserManager<IdentityUser> userManager;
-        public EFProductRepository(DataContext dataContext, UserManager<IdentityUser> usrMgr)
+        private UserManager<ApplicationUser> userManager;
+        public EFProductRepository(DataContext dataContext, UserManager<ApplicationUser> usrMgr)
         {
             context = dataContext;
             userManager = usrMgr;
@@ -23,23 +23,14 @@ namespace Store.Models
 
         public async void AddProduct(Product product)
         {
-            var category = context.Categories.FirstOrDefault(c => c.CategoryId == product.CategoryId);
-            if (category != null)
+            string existingUser =  (await userManager.FindByIdAsync(product.UserId)).Id;
+            if (existingUser != null)
             {
-                product.Category = category;
-                string existingUser =  (await userManager.FindByIdAsync(product.UserId)).Id;
-                if (existingUser != null)
-                {
-                    product.UserId = existingUser;
-                }
-                
-                context.Products.Add(product);
-                context.SaveChanges();
+                product.UserId = existingUser;
             }
-            else
-            {
-                throw new Exception("Invalid CategoryId");
-            }
+            
+            context.Products.Add(product);
+            context.SaveChanges();
         }
 
         public void DeleteProduct(Product product)
