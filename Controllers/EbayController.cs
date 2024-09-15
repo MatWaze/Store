@@ -11,9 +11,16 @@ using Store.Infrastructure;
 using System.Reflection.Emit;
 using System.Text;
 using System.Text.Json;
+using System.Globalization;
+using Microsoft.VisualStudio.CodeCoverage;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.OutputCaching;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Store.Controllers
 {
+    [Authorize]
+    [AutoValidateAntiforgeryToken]
     public class EbayController : Controller
     {
         private IProductRepository context;
@@ -21,14 +28,17 @@ namespace Store.Controllers
         private GetLocation location;
         private HttpClient httpClient;
         private string token;
+		private UserManager<ApplicationUser> userManager;
 
-        public EbayController(OAuth2Api oauthApi, GetLocation loc,
-            HttpClient client, IProductRepository dataContext)
+		public EbayController(OAuth2Api oauthApi, GetLocation loc,
+            HttpClient client, IProductRepository dataContext,
+			UserManager<ApplicationUser> usrManager)
         {
             oauth = oauthApi;
             location = loc;
             httpClient = client;
             context = dataContext;
+            userManager = usrManager;
         }
 
         public List<string> Scopes = new List<string>()
@@ -48,14 +58,6 @@ namespace Store.Controllers
             return View();
         }
 
-
-        //public IActionResult Auth2()
-        //{
-        //    string clientId = "uhedu6u4q1b6mp2tvimjads6bng8s72q";
-        //    string apiUrl = $"https://yookassa.ru/oauth/v2/authorize?response_type=code&client_id={clientId}&state=test-user";
-        //    return Redirect(apiUrl);
-        //}
-
         public async Task<IActionResult> Callback(string code)
         {
             if (string.IsNullOrEmpty(code))
@@ -66,24 +68,67 @@ namespace Store.Controllers
             token = oauth.ExchangeCodeForAccessToken(OAuthEnvironment.PRODUCTION, code).AccessToken.Token;
             return RedirectToAction("Index", "Home"); // Redirect to a secure page or home page
         }
-        
+
         public async Task<IActionResult> GetItem(string id)
         {
             ViewBag.IsAdmin = User.IsInRole("admin");
-            //ViewBag.UserCountry = await location.GetCountry();
-            var accessToken = oauth.GetApplicationToken(OAuthEnvironment.PRODUCTION, Scopes)
-                .AccessToken.Token;
+			ViewBag.Disabled = false;
 
-            //var accessToken = oauth.ExchangeCodeForAccessToken(OAuthEnvironment.PRODUCTION, "").AccessToken.Token; 
-            JToken item = await EbayService.GetItemInfoAsync(httpClient, accessToken, id);
-            //Product newProduct = new Product
-            //{
-            //    Name = item["title"].ToString(),
+			//ViewBag.UserCountry = await location.GetCountry();
+			Product? prod = context.Products.FirstOrDefault(p => p.EbayProductId == id);
+            if (prod != null)
+            {
+                return View(prod);
+            }
+            else
+            {
+                var accessToken = oauth.GetApplicationToken(OAuthEnvironment.PRODUCTION, Scopes)
+                    .AccessToken.Token;
+                //var accessToken = oauth.ExchangeCodeForAccessToken(OAuthEnvironment.PRODUCTION, "").AccessToken.Token; 
 
-            //};
-            return View(item);
+                JToken item = await EbayService.GetItemInfoAsync(httpClient, accessToken, id);
+
+                string? quan = item["estimatedAvailabilities"]?.First()?["estimatedAvailableQuantity"]?.ToString()
+                    ?? null;
+                string? ship = item["shippingOptions"]?.FirstOrDefault()?["shippingCost"]?["value"]?.ToString()
+                    ?? null;
+
+                ApplicationUser? admin = await userManager.FindByNameAsync("admin");
+				var culture = CultureInfo.GetCultureInfo("en-US");
+				string category = item["categoryPath"].ToString().Split('|').Last();
+                long categoryId = long.Parse(item["categoryId"].ToString(), culture);
+
+                var additionalImages = item["additionalImages"];
+                string imageUrls = String.Empty;
+                
+                if (additionalImages != null)
+                {
+                    foreach (var image in additionalImages)
+                    {
+                        string imageUrl = image["imageUrl"].ToString();
+                        imageUrls += (imageUrl + " ");
+                    }
+                }
+
+                Product newProduct = new Product
+                {
+                    Name = item["title"].ToString(),
+                    EbayProductId = id,
+                    Category = new() { Name = category, EbayCategoryId = categoryId },
+                    Quantity = quan != null ? int.Parse(quan, culture) : 0,
+			        ItemCountry = item["itemLocation"]["country"].ToString()!,
+					Description = item["condition"].ToString(),
+					ImageLink = item["image"]["imageUrl"].ToString().Replace("225.", "500."),
+					Price = decimal.Parse(item["price"]["value"].ToString(), culture),
+					ShippingPrice = ship != null ? decimal.Parse(ship, culture) : -100,
+                    UserId = admin.Id,
+                    ImageUrls = imageUrls,
+				};
+                return View(newProduct);
+			}
         }
 
+        [OutputCache(PolicyName = "default", VaryByRouteValueNames = new[] { "queryName", "categoryNumber", "priceLow", "priceHigh" })]
         public async Task<IActionResult> Results(string queryName, int categoryNumber, int priceLow, int priceHigh)
         {
             if (priceLow > priceHigh)
