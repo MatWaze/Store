@@ -5,7 +5,9 @@ using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json.Linq;
 using Store.Controllers;
 using Store.Infrastructure;
+using System.Collections.Immutable;
 using System.Globalization;
+using System.Linq;
 using static System.Formats.Asn1.AsnWriter;
 
 namespace Store.Models
@@ -33,6 +35,19 @@ namespace Store.Models
 	                    ?? null;
 					if (!(quan == null || ship == null))
 					{
+						var additionalImages = item["additionalImages"];
+
+						string imageUrls = String.Empty;
+						// Loop through the additional images and extract the imageUrl
+						if (additionalImages != null)
+						{
+							foreach (var image in additionalImages)
+							{
+								string imageUrl = image["imageUrl"].ToString();
+								imageUrls += (imageUrl + " ");
+							}
+						}
+						
 						var newProduct = new Product
                         {
                             Name = item["title"]!.ToString(),
@@ -44,8 +59,9 @@ namespace Store.Models
                             ImageLink = item["image"]["imageUrl"].ToString().Replace("225.", "500."),
                             Price = decimal.Parse(item["price"]["value"].ToString(), culture),
                             ShippingPrice = decimal.Parse(ship, culture),
-                            UserId = adminId
-                        };
+                            UserId = adminId,
+							ImageUrls = imageUrls,
+						};
                         context.Products.Add(newProduct);
 					}
                 }
@@ -54,7 +70,7 @@ namespace Store.Models
         }
 
         public static async Task SeedDatabase(HttpClient httpClient,
-			DataContext context, UserManager<IdentityUser> userManager)
+			DataContext context, UserManager<ApplicationUser> userManager)
 		{
 			await context.Database.MigrateAsync();
 			
@@ -69,7 +85,7 @@ namespace Store.Models
                 var o = new OAuth2Api();
 				string access = o.GetApplicationToken(OAuthEnvironment.PRODUCTION, Scopes)
 					.AccessToken.Token;
-                IdentityUser? admin = await userManager.FindByNameAsync("admin");
+                ApplicationUser? admin = await userManager.FindByNameAsync("admin");
                 
 				Category c1 = new() { Name = "All Store Parts", EbayCategoryId = 6000 };
 				Category c2 = new() { Name = "Parts & Accessories", EbayCategoryId = 6028 };
@@ -77,11 +93,11 @@ namespace Store.Models
 				Category c4 = new() { Name = "Car & Truck Parts & Accessories", EbayCategoryId = 6030 };
 				Category c5 = new() { Name = "Motorcycle & Scooter Parts & Accessories", EbayCategoryId = 10063 };
 
-				JObject items1 = await EbayService.SearchItemsAsync(httpClient, access, "dt parts", 6000, 1, 1000, 6);
-                JObject items2 = await EbayService.SearchItemsAsync(httpClient, access, "parts", 6028, 1, 1000, 4);
-                JObject items3 = await EbayService.SearchItemsAsync(httpClient, access, "exterior parts", 33637, 1, 1000, 5);
-				JObject items4 = await EbayService.SearchItemsAsync(httpClient, access, "car parts", 6030, 1, 1000, 4);
-				JObject items5 = await EbayService.SearchItemsAsync(httpClient, access, "motorcycle parts", 10063, 1, 1000, 2);
+				JObject items1 = await EbayService.SearchItemsAsync(httpClient, access, "dt parts", 1, 1000, 4, "6000");
+                JObject items2 = await EbayService.SearchItemsAsync(httpClient, access, "parts", 1, 1000, 4, "6028");
+                JObject items3 = await EbayService.SearchItemsAsync(httpClient, access, "exterior parts", 1, 1000, 5, "33637");
+				JObject items4 = await EbayService.SearchItemsAsync(httpClient, access, "car parts", 1, 1000, 4, "6030");
+				JObject items5 = await EbayService.SearchItemsAsync(httpClient, access, "motorcycle parts", 1, 1000, 3, "10063");
 
 				await SeedData.SeedProductsAsync(httpClient, access, context, items1, c1, admin.Id);
 				await SeedData.SeedProductsAsync(httpClient, access, context, items2, c2, admin.Id);
