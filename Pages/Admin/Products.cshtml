@@ -23,6 +23,7 @@
 					<td>@p.Price.ToString("c")</td>
 					<td>
 						<form method="post">
+							@Html.AntiForgeryToken()
 							<input type="hidden" name="ProductId" value="@p.ProductId"/>
 							<button class="btn btn-danger" type="submit">
 								Delete

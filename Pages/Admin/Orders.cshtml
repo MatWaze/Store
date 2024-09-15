@@ -21,6 +21,7 @@
                 <th>Quantity</th>
                 <td>
                     <form asp-page-handler="Ship">
+                        @Html.AntiForgeryToken()
                         <input type="hidden" name="OrderID" value="@o.OrderID"/>
                         <button type="submit" class="btn btn-sm btn-danger">
                             Ship
@@ -62,6 +63,7 @@
                     <th>Quantity</th>
                     <td>
                         <form asp-page-handler="Unship">
+                            @Html.AntiForgeryToken()
                             <input type="hidden" name="OrderID" value="@o.OrderID"/>
                             <button type="submit" class="btn btn-sm btn-danger">
                                 Reset
