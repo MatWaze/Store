@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Store.Models
 {
-    public class IdentityContext : IdentityDbContext<IdentityUser>
+    public class IdentityContext : IdentityDbContext<ApplicationUser>
     {
         public IdentityContext(DbContextOptions<IdentityContext> opts)
         : base(opts) { }
