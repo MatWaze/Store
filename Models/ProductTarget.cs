@@ -9,6 +9,6 @@ namespace Store.Models
             Enumerable.Empty<Product>();
 
         public PagingInfo PagingInfo { get; set; } = new();
-        public IdentityUser CurrentUser { get; set; } = new();
+        public ApplicationUser CurrentUser { get; set; } = new();
     }
 }
