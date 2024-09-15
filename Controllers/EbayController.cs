@@ -110,11 +110,23 @@ namespace Store.Controllers
                     }
                 }
 
+                Category? cat = null;
+                if (context.Categories.Count() < 10)
+                {
+                    cat = context.Categories
+                        .FirstOrDefault(c => c.EbayCategoryId == categoryId);    
+                }
+                else
+                {
+                    cat = context.Categories
+                        .FirstOrDefault(c => c.EbayCategoryId == 6000);
+                }
+                
                 Product newProduct = new Product
                 {
                     Name = item["title"].ToString(),
                     EbayProductId = id,
-                    Category = new() { Name = category, EbayCategoryId = categoryId },
+                    Category = cat ?? new() { Name = category, EbayCategoryId = categoryId },
                     Quantity = quan != null ? int.Parse(quan, culture) : 0,
 			        ItemCountry = item["itemLocation"]["country"].ToString()!,
 					Description = item["condition"].ToString(),
@@ -124,6 +136,8 @@ namespace Store.Controllers
                     UserId = admin.Id,
                     ImageUrls = imageUrls,
 				};
+                context.AddProduct(newProduct);
+                Console.WriteLine("Saved product");
                 return View(newProduct);
 			}
         }
@@ -143,7 +157,7 @@ namespace Store.Controllers
 
             JObject keyValuePairs = await EbayService.SearchItemsAsync(httpClient,
                 accessToken, queryName, categoryNumber, priceLow, priceHigh);
-
+            Console.WriteLine(keyValuePairs);
             JToken? itemSummaries = keyValuePairs["itemSummaries"];
             if (itemSummaries != null)
             {
@@ -151,7 +165,7 @@ namespace Store.Controllers
 
                 return View("Results", items);
             }
-
+            Console.WriteLine("No results were found. Try again.");
             ViewBag.Categories = context.Categories.ToArray();
 
             return View("Search", new QueryProduct());
