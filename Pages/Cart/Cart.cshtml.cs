@@ -37,10 +37,15 @@ namespace Store.Pages.Cart
             {
                 if (product.Quantity > 0)
                 {
-                    product.Quantity--;
-                    repo.SaveProduct(product);
+                    //product.Quantity--;
+                    //repo.SaveProduct(product);
                     //product.Deleted = true;
-                    Cart.AddItem(product, 1, Request);
+                    CartLine? cl = Cart.Lines.FirstOrDefault(c => c.Product.ProductId == product.ProductId);
+                    if (cl == null || cl.Quantity < product.Quantity)
+                    {
+                        Cart.AddItem(product, 1, Request); // Add to cart 
+                    }
+
                 }
             }
             return RedirectToPage(new { returnUrl = returnUrl });
@@ -52,12 +57,10 @@ namespace Store.Pages.Cart
                 .FirstOrDefault(p => p.ProductId == productId);
             if (product != null)
             {
-                CartLine? cart = Cart.Lines
-                    .FirstOrDefault(cl => cl.Product.ProductId == productId);
-                Console.WriteLine("cart q: " + cart.Quantity);
-                product.Quantity += cart.Quantity;
-                Console.WriteLine(product.Quantity);
-                repo.SaveProduct(product);
+                //CartLine? cart = Cart.Lines
+                //    .FirstOrDefault(cl => cl.Product.ProductId == productId);
+                //product.Quantity += cart.Quantity;
+                //repo.SaveProduct(product);
                 //product.Deleted = false;
                 Cart.RemoveLine(product, Request);
             }

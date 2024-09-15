@@ -2,7 +2,7 @@
 @model CartModel
 
 @{
-    Layout = "_CartLayout";
+    Layout = "_Layout";
 }
 
 <h2>Your cart</h2>
@@ -30,6 +30,7 @@
                 </td>
                 <td>
                     <form asp-page-handler="Remove">
+                        @Html.AntiForgeryToken()
                         <input type="hidden" name="ProductId" value="@line.Product.ProductId"/>
                         <input type="hidden" name="returnUrl" value="@Model.ReturnUrl"/>
                         <button type="submit" class="btn btn-sm btn-danger">
