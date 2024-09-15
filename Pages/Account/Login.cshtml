@@ -11,6 +11,7 @@
 </div>
 
 <form method="post">
+	@Html.AntiForgeryToken()
 	<input type="hidden" name="returnUrl" value="@Model.ReturnUrl"/>
 	<div class="form-group">
 		<label>UserName</label>
@@ -26,9 +27,9 @@
 @functions{
 	public class LoginModel : PageModel
 	{
-		private SignInManager<IdentityUser> signInManager;
+		private SignInManager<ApplicationUser> signInManager;
 
-		public LoginModel(SignInManager<IdentityUser> signInMgr)
+		public LoginModel(SignInManager<ApplicationUser> signInMgr)
 		{
 			signInManager = signInMgr;
 		}

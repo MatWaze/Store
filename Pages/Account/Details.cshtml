@@ -6,7 +6,7 @@
 }
 <table class="table table-sm table-bordered">
 	<tbody>
-		@if (Model.IdentityUser == null)
+		@if (Model.ApplicationUser == null)
 		{
 			<tr><th class="text-center">No User</th></tr>
 		}
@@ -14,11 +14,11 @@
 		{
 			<tr>
 				<th>Name</th>
-				<td>@Model.IdentityUser.UserName</td>
+				<td>@Model.ApplicationUser.UserName</td>
 			</tr>
 			<tr>
 				<th>Email</th>
-				<td>@Model.IdentityUser.Email</td>
+				<td>@Model.ApplicationUser.Email</td>
 			</tr>
 		}
 	</tbody>
@@ -27,14 +27,14 @@
 @functions{
 	public class DetailsModel : PageModel
 	{
-		private UserManager<IdentityUser> userManager;
+		private UserManager<ApplicationUser> userManager;
 
-		public DetailsModel(UserManager<IdentityUser> manager)
+		public DetailsModel(UserManager<ApplicationUser> manager)
 		{
 			userManager = manager;
 		}
 
-		public IdentityUser? IdentityUser { get; set; }
+		public ApplicationUser? ApplicationUser { get; set; }
 
 		public async Task OnGetAsync()
 		{
@@ -42,7 +42,7 @@
 				User.Identity.Name != null &&
 				User.Identity.IsAuthenticated)
 			{
-				IdentityUser = await userManager
+				ApplicationUser = await userManager
 					.FindByNameAsync(User.Identity.Name);
 			}
 		}
