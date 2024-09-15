@@ -7,7 +7,7 @@ namespace Store.Infrastructure
     public class EbayService
     {
         public static async Task<JObject> SearchItemsAsync(HttpClient httpClient,
-            string accessToken, string query, int categoryId, int priceLow, int priceUpper, int limit = 5)
+            string accessToken, string query, int priceLow, int priceUpper, int limit = 5, string categoryId = "")
         {
             string apiUrl =
                 $"https://api.ebay.com/buy/browse/v1/item_summary/search?q={query}" +
