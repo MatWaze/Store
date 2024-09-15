@@ -7,6 +7,7 @@
 
 <h5 class="bg-warning text-white text-center p-2">Edit User</h5>
 <form method="post">
+	@Html.AntiForgeryToken()
 	<div asp-validation-summary="All" class="text-danger"></div>
 	<div class="form-group">
 		<label>ID</label>
@@ -37,9 +38,9 @@
 @functions{
 	public class EditorModel : AdminPageModel
 	{
-		public UserManager<IdentityUser> UserManager;
+		public UserManager<ApplicationUser> UserManager;
 
-		public EditorModel(UserManager<IdentityUser> userManager)
+		public EditorModel(UserManager<ApplicationUser> userManager)
 		{
 			UserManager = userManager;
 		}
@@ -58,7 +59,7 @@
 
 		public async Task OnGetAsync(string id)
 		{
-			IdentityUser? user = await UserManager.FindByIdAsync(id);
+			ApplicationUser? user = await UserManager.FindByIdAsync(id);
 			if (user != null)
 			{
 				Id = user.Id;
@@ -71,7 +72,7 @@
 		{
 			if (ModelState.IsValid)
 			{
-				IdentityUser? user = await UserManager.FindByIdAsync(Id);
+				ApplicationUser? user = await UserManager.FindByIdAsync(Id);
 				if (user != null)
 				{
 					user.UserName = UserName;

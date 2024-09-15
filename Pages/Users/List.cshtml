@@ -19,7 +19,7 @@
 	}
 	else
 	{
-		foreach (IdentityUser user in Model.Users)
+		foreach (ApplicationUser user in Model.Users)
 		{
 			<tr>
 				<td>@user.Id</td>
@@ -27,6 +27,7 @@
 				<td>@user.Email</td>
 				<td class="text-center">
 					<form asp-page="List" method="post">
+						@Html.AntiForgeryToken()
 						<input type="hidden" name="Id" value="@user.Id"/>
 						<a class="btn btn-sm btn-warning"
 							asp-page="Editor" asp-route-id="@user.Id"
@@ -49,14 +50,14 @@
 @functions{
 	public class ListModel : AdminPageModel
 	{
-		public UserManager<IdentityUser> UserManager;
-		public ListModel(UserManager<IdentityUser> userManager)
+		public UserManager<ApplicationUser> UserManager;
+		public ListModel(UserManager<ApplicationUser> userManager)
 		{
 			UserManager = userManager;
 		}
 
-		public IEnumerable<IdentityUser> Users { get; set; }
-			= Enumerable.Empty<IdentityUser>();
+		public IEnumerable<ApplicationUser> Users { get; set; }
+			= Enumerable.Empty<ApplicationUser>();
 		public void OnGet()
 		{
 			Users = UserManager.Users;
@@ -64,7 +65,7 @@
 
 		public async Task<IActionResult> OnPostAsync(string id)
 		{
-			IdentityUser? user = await UserManager.FindByIdAsync(id);
+			ApplicationUser? user = await UserManager.FindByIdAsync(id);
 			if (user != null)
 			{
 				await UserManager.DeleteAsync(user);

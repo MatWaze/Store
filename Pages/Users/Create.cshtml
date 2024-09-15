@@ -4,6 +4,7 @@
 <h5 class="bg-primary text-white p-2">Create User</h5>
 
 <form method="post">
+	@Html.AntiForgeryToken()
 	<div asp-validation-summary="All" class="text-danger">
 	</div>
 	<div class="form-group">
@@ -32,9 +33,9 @@
 @functions{
 	public class CreateModel : AdminPageModel
 	{
-		public UserManager<IdentityUser> UserManager;
+		public UserManager<ApplicationUser> UserManager;
 
-		public CreateModel(UserManager<IdentityUser> userManager)
+		public CreateModel(UserManager<ApplicationUser> userManager)
 		{
 			UserManager = userManager;
 		}
@@ -53,7 +54,7 @@
 		{
 			if (ModelState.IsValid)
 			{
-				IdentityUser user = new IdentityUser
+				ApplicationUser user = new ApplicationUser
 				{
 					UserName = UserName,
 					Email = Email
