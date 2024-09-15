@@ -1,26 +1,28 @@
 using System.Text.Json.Serialization;
 using Azure.Core;
+using Microsoft.AspNetCore.Identity;
 using Store.Infrastructure;
 
 namespace Store.Models
 {
     public class SessionCart : Cart
     {
-        [JsonIgnore]
+        [System.Text.Json.Serialization.JsonIgnore]
         public ISession? Session { get; set; }
+        public string? userName { get; set; }
         
         public static Cart GetCart(IServiceProvider services)
         {
             ISession? session =
                 services.GetRequiredService<IHttpContextAccessor>()
                     .HttpContext?.Session;
-                    
-            var cart = session?.GetJson<SessionCart>
-                ($"cart_{services.GetRequiredService<IHttpContextAccessor>()
-                    .HttpContext?.Request.Cookies[".AspNetCore.Identity.Application"]}") 
-                ?? 
-                new SessionCart();
+            string? userName = services.GetRequiredService<IHttpContextAccessor>()
+                    .HttpContext?.User?.Identity?.Name;
+
+            var cart = session?.GetJson<SessionCart>($"cart_{userName}") 
+                ?? new SessionCart();
             cart.Session = session;
+            cart.userName = userName;
             return cart;
         }
 
@@ -29,16 +31,14 @@ namespace Store.Models
         {
             base.AddItem(product, quantity, request);
             Session?
-                .SetJson($"cart_{request
-                    .Cookies[".AspNetCore.Identity.Application"]}", this);
+                .SetJson($"cart_{userName}", this);
         }
 
         public override void RemoveLine(Product product, HttpRequest request)
         {
             base.RemoveLine(product, request);
             Session?
-                .SetJson($"cart_{request
-                    .Cookies[".AspNetCore.Identity.Application"]}", this);
+                .SetJson($"cart_{userName}", this);
 
         }
 
@@ -46,8 +46,7 @@ namespace Store.Models
         {
             base.Clear(request);
             Session?
-                .Remove($"cart_{request
-                    .Cookies[".AspNetCore.Identity.Application"]}");
+                .Remove($"cart_{userName}");
         }
 
     }
