@@ -5,6 +5,7 @@
 	Create Role
 </h5>
 <form method="post">
+	@Html.AntiForgeryToken()
 	<div asp-validation-summary="All" class="text-danger">
 		<label>Role Name</label>
 		<input name="Name" class="form-control" value="@Model.Name"/>
@@ -20,7 +21,7 @@
 	{
 		public RoleManager<IdentityRole> RoleManager;
 
-		public CreateModel(UserManager<IdentityUser> userManager,
+		public CreateModel(UserManager<ApplicationUser> userManager,
 			RoleManager<IdentityRole> roleManager)
 		{
 			RoleManager = roleManager;

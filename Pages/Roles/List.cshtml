@@ -17,6 +17,7 @@
 				<td>@(await Model.GetMembersString(role.Name))</td>
 				<td class="text-center">
 					<form asp-page="List" method="post">
+						@Html.AntiForgeryToken()
 						<input type="hidden" name="Id" value="@role.Id" />
 						<a class="btn btn-sm btn-warning"
 							asp-page="Editor"
@@ -36,10 +37,10 @@
 @functions {
 	public class ListModel : AdminPageModel
 	{
-		public UserManager<IdentityUser> UserManager;
+		public UserManager<ApplicationUser> UserManager;
 		public RoleManager<IdentityRole> RoleManager;
 
-		public ListModel(UserManager<IdentityUser> userManager,
+		public ListModel(UserManager<ApplicationUser> userManager,
 			RoleManager<IdentityRole> roleManager)
 		{
 			UserManager = userManager;
@@ -56,7 +57,7 @@
 
 		public async Task<string> GetMembersString(string? role)
 		{
-			IEnumerable<IdentityUser> users
+			IEnumerable<ApplicationUser> users
 				= (await UserManager.GetUsersInRoleAsync(role!));
 			string result = users.Count() == 0 ? "No members"
 				: string.Join(", ", users.Take(3).Select(u => u.UserName).ToArray());

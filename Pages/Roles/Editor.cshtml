@@ -6,6 +6,7 @@
 </h5>
 
 <form method="post">
+	@Html.AntiForgeryToken()
 	<input type="hidden" name="rolename" value="@Model.Role?.Name" />
 	<div asp-validation-summary="All" class="text-danger"></div>
 	<h5 class="bg-secondary text-white p-2">Members</h5>
@@ -18,7 +19,7 @@
 					<td colspan="3" class="text-center">No members</td>
 				</tr>
 			}
-			@foreach (IdentityUser user in await Model.Members())
+			@foreach (ApplicationUser user in await Model.Members())
 			{
 				<tr>
 					<td>@user.UserName</td>
@@ -46,7 +47,7 @@
 					</td>
 				</tr>
 			}
-			@foreach (IdentityUser user in await Model.NonMembers())
+			@foreach (ApplicationUser user in await Model.NonMembers())
 			{
 				<tr>
 					<td>@user.UserName</td>
@@ -69,10 +70,10 @@
 @functions{
 	public class EditorModel : AdminPageModel
 	{
-		public UserManager<IdentityUser> UserManager;
+		public UserManager<ApplicationUser> UserManager;
 		public RoleManager<IdentityRole> RoleManager;
 
-		public EditorModel(UserManager<IdentityUser> userManager,
+		public EditorModel(UserManager<ApplicationUser> userManager,
 			RoleManager<IdentityRole> roleManager)
 		{
 			UserManager = userManager;
@@ -81,17 +82,17 @@
 
 		public IdentityRole? Role { get; set; } = new();
 
-		public Task<IList<IdentityUser>> Members()
+		public Task<IList<ApplicationUser>> Members()
 		{
 			if (Role?.Name != null)
 			{
 				return UserManager.GetUsersInRoleAsync(Role.Name);
 			}
-			return Task.FromResult(new List<IdentityUser>()
-				as IList<IdentityUser>);
+			return Task.FromResult(new List<ApplicationUser>()
+				as IList<ApplicationUser>);
 		}
 
-		public async Task<IEnumerable<IdentityUser>> NonMembers() =>
+		public async Task<IEnumerable<ApplicationUser>> NonMembers() =>
 			UserManager.Users.ToList().Except(await Members());
 
 		// model binding gets the id from the query string thanks to page "{id}"
@@ -104,7 +105,7 @@
 			string rolename)
 		{
 			Role = await RoleManager.FindByNameAsync(rolename);
-			IdentityUser? user = await UserManager.FindByIdAsync(userid);
+			ApplicationUser? user = await UserManager.FindByIdAsync(userid);
 			if (user != null)
 			{
 				IdentityResult result;
