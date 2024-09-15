@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.DataProtection;
 using Azure.Extensions.AspNetCore.DataProtection.Keys;
 using Microsoft.AspNetCore.DataProtection.AzureKeyVault;
 using eBay.ApiClient.Auth.OAuth2;
+using Microsoft.AspNetCore.Antiforgery;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,6 +33,19 @@ builder.Services.AddTransient<IBraintreeService,
     BraintreeService>();
 
 
+builder.Services.AddOutputCache(opts =>
+{
+    opts.AddPolicy("default", policy =>
+    {
+        policy.Expire(TimeSpan.FromSeconds(120));
+    });
+});
+
+// configure anti-forgery
+builder.Services.Configure<AntiforgeryOptions>(opts => {
+    opts.HeaderName = "X-XSRF-TOKEN";
+});
+
 // setting up Identity
 builder.Services.AddDbContext<IdentityContext>(opts =>
 {
@@ -39,7 +53,7 @@ builder.Services.AddDbContext<IdentityContext>(opts =>
         builder.Configuration["ConnectionStrings:IdentityConnection"]);
 });
 
-builder.Services.AddIdentity<IdentityUser, IdentityRole>()
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<IdentityContext>();
 
 builder.Services.AddControllersWithViews();
@@ -70,11 +84,31 @@ builder.Services.AddSession();
 
 var app = builder.Build();
 
+app.UseOutputCache();
+
 app.UseStaticFiles();
 app.UseSession();
 
+//IAntiforgery antiforgery = app.Services.GetRequiredService<IAntiforgery>();
+
+//app.Use(async (context, next) => {
+//    if (!context.Request.Path.StartsWithSegments("/api"))
+//    {
+//        string? token =
+//        antiforgery.GetAndStoreTokens(context).RequestToken;
+//        if (token != null)
+//        {
+//            context.Response.Cookies.Append("XSRF-TOKEN",
+//            token,
+//            new CookieOptions { HttpOnly = false });
+//        }
+//    }
+//    await next();
+//});
+
 app.UseAuthentication();
 app.UseAuthorization();
+
 
 app.MapControllerRoute("catpage",
     "{categoryId}/Page{productPage:int}",
@@ -94,7 +128,7 @@ var context = app.Services.CreateScope()
 	.ServiceProvider.GetRequiredService<DataContext>();
 
 var userManager = app.Services.CreateScope()
-    .ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
+    .ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
 
 CredentialUtil.Load("D:\\files\\aspnet\\Store\\ebay.yml");
