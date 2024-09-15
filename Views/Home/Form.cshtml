@@ -25,6 +25,7 @@
 
 <form enctype="multipart/form-data" asp-action="@name" asp-controller="Home"
       asp-route-id="@Model.ProductId" method="post">
+    @Html.AntiForgeryToken()
     <div asp-validation-summary="All" class="alert-danger">
     </div>
     <div class="form-group mt-2">
