@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.AspNetCore.Identity;
+using System.Collections.Immutable;
 
 namespace Store.Models
 {
@@ -36,7 +37,9 @@ namespace Store.Models
 		[NotMapped]
 		public IFormFile? ImageFile { get; set; }
 		public string? ImageLink { get; set; }
-		
+
+		public string? ImageUrls { get; set; }
+
 		public string? UserId { get; set; }
 		// public IdentityUser? User { get; set; }
 
