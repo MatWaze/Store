@@ -7,31 +7,38 @@
 
 <partial name="_Validation" />
 
-<form asp-action="SearchForm" asp-controller="Ebay" method="post">
-    @Html.AntiForgeryToken()
-    <div class="form-group mt-2">
-        <label class="asterix" asp-for="QueryName"></label>
-        <input asp-for="QueryName" class="form-control" />
-        <span asp-validation-for="QueryName" class="text-danger"></span>
-    </div>
-    <div class="form-group mt-2">
-        <label class="asterix" asp-for="CategoryNumber">Category</label>
-        <select asp-for="CategoryNumber" class="form-control">
-            @foreach (var category in ViewBag.Categories)
-            {
-                <option value="@category.EbayCategoryId">@category.Name</option>
-            }
-        </select>
-    </div>
-    <div class="form-group mt-2">
-        <label asp-for="PriceLow">Price Lower Bound</label>
-        <input type="number" asp-for="PriceLow" class="form-control" />
-        <span asp-validation-for="PriceLow" class="text-danger"></span>
-    </div>
-    <div class="form-group mt-2">
-        <label asp-for="PriceHigh">Price Upper Bound</label>
-        <input type="number" asp-for="PriceHigh" class="form-control" />
-        <span asp-validation-for="PriceHigh" class="text-danger"></span>
-    </div>
-    <button type="submit" class="btn btn-primary mt-2">Search</button>
-</form>
+<section class="product-store position-relative padding-large ps-2">
+    <h3>Search for specific item</h3>
+    <form asp-action="SearchForm" asp-controller="Ebay" method="post">
+        @Html.AntiForgeryToken()
+        <div class="form-group mt-2">
+            <label class="asterix" asp-for="QueryName">
+                Query
+            </label>
+            <input asp-for="QueryName" class="form-control"/>
+            <span asp-validation-for="QueryName" class="text-danger"></span>
+        </div>
+        <div class="form-group mt-2">
+            <label class="asterix" asp-for="CategoryNumber">Category</label>
+            <select asp-for="CategoryNumber" class="form-control">
+                @foreach (var category in ViewBag.Categories)
+                {
+                    <option value="@category.EbayCategoryId">@category.Name</option>
+                }
+                <option value="">Any</option>
+            </select>
+        </div>
+        <div class="form-group mt-2">
+            <label asp-for="PriceLow">Price Lower Bound</label>
+            <input type="number" asp-for="PriceLow" class="form-control" />
+            <span asp-validation-for="PriceLow" class="text-danger"></span>
+        </div>
+        <div class="form-group mt-2">
+            <label asp-for="PriceHigh">Price Upper Bound</label>
+            <input type="number" asp-for="PriceHigh" class="form-control" />
+            <span asp-validation-for="PriceHigh" class="text-danger"></span>
+        </div>
+        <button type="submit" class="btn btn-primary mt-2">Search</button>
+    </form>
+
+</section>
