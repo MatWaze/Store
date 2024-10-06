@@ -1,45 +1,11 @@
-﻿using Azure.Storage.Blobs.Models;
-using Azure.Storage.Blobs;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Store.Models;
 using Store.Models.ViewModels;
-using System.Net.Http.Headers;
-using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Store.Infrastructure;
-using EbayNet;
-using EbayNet.Authentication;
-using System.Configuration;
-using eBay.ApiClient.Auth.OAuth2;
-using eBay.ApiClient.Auth.OAuth2.Model;
-using Newtonsoft.Json.Linq;
-using static System.Formats.Asn1.AsnWriter;
-using System.Collections.Generic;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
-using System.Drawing.Printing;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
-/*
-    {
-      "categoryId": "6000",
-      "categoryName": "eBay Motors"
-    },
-    {
-        "categoryId": "6028",
-        "categoryName": "Parts & Accessories"
-    },
-    {
-        "categoryId": "33637",
-        "categoryName": "Exterior Parts & Accessories"
-    },
-    {
-        "categoryId": "6030",
-        "categoryName": "Car & Truck Parts & Accessories"
-    } 
-*/
 namespace Store.Controllers
 {
 	[Authorize]
@@ -47,7 +13,6 @@ namespace Store.Controllers
     public class HomeController : Controller
     {
         private IProductRepository context;
-        private IOrderRepository orderContext;
 		private BlobStorageService _blobStorageService;
         private UserManager<ApplicationUser> userManager;
 
@@ -55,17 +20,15 @@ namespace Store.Controllers
 
         public HomeController(IProductRepository dataContext,
             BlobStorageService blobStorageService,
-			UserManager<ApplicationUser> userMgr, IOrderRepository order)
+			UserManager<ApplicationUser> userMgr)
 		{
 			context = dataContext;
 			_blobStorageService = blobStorageService;
 			userManager = userMgr;
-			orderContext = order;
-		}
+        }
 
-		public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            
             List<string> imgList = new List<string>
             {
                 "all_store_parts.jpg", "exterior_parts.jpg", "parts_accessories.webp",
@@ -175,7 +138,7 @@ namespace Store.Controllers
             ViewBag.CurrentUser = await userManager.GetUserAsync(User);
             Product[] pr = context.Products
                 .Include(p => p.Category).ToArray();
-
+            
             var prods = pr.OrderBy(p => p.ProductId)
                 .Where(p => (p.Category.EbayCategoryId == categoryId)
                     && p.Deleted == false)
@@ -183,7 +146,7 @@ namespace Store.Controllers
                 .Take(PageSize)
                 .ToArray();
 
-            return View(new ProductTarget
+            return View(new ProductTarget<Product>
             {
                 Products = prods,
                 PagingInfo = new PagingInfo
