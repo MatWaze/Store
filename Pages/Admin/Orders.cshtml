@@ -147,7 +147,7 @@
         public async Task<IActionResult> OnPostShip(int OrderID)
         {
             UpdateData(0);
-            Order? ord = await ShippedOrders.FirstOrDefaultAsync(o => o.OrderID == OrderID);
+            Order? ord = ShippedOrders.FirstOrDefault(o => o.OrderID == OrderID);
             await ShipOrder(OrderID);
             return Page();
         }
