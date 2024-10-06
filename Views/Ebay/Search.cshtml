@@ -23,9 +23,8 @@
             <select asp-for="CategoryNumber" class="form-control">
                 @foreach (var category in ViewBag.Categories)
                 {
-                    <option value="@category.EbayCategoryId">@category.Name</option>
+                        <option value="@category.EbayCategoryId" class="@(Model.CategoryNumber == category.EbayCategoryId ? "selected" : "")">@category.Name</option>
                 }
-                <option value="">Any</option>
             </select>
         </div>
         <div class="form-group mt-2">

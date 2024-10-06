@@ -11,21 +11,18 @@
 
 <section class="product-store padding-small ps-3">
     <form id="checkout-form" asp-controller="Order" asp-action="Checkout" method="post">
-            @Html.AntiForgeryToken()
-        <div asp-validation-summary="All" class="alert-danger">
-        </div>
-
+        @Html.AntiForgeryToken()
         <h3>Ship to</h3>
         <div class="form-group">
             <label>Name:</label>
-            <input asp-for="Name" id="Name" class="form-control" />
+            <input asp-for="Name" id="Name" class="form-control" value="@(ViewBag.User.FullName ?? String.Empty)" />
             <span asp-validation-for="Name" class="text-danger">
             </span>
         </div>
         <h3 class="mt-4">Address</h3>
         <div class="form-group">
             <label>Line 1:</label>
-            <input asp-for="Line1" id="Line1" class="form-control" />
+            <input asp-for="Line1" id="Line1" class="form-control" value="@(ViewBag.User.Street ?? String.Empty)" />
             <span asp-validation-for="Line1" class="text-danger">
             </span>
         </div>
@@ -39,25 +36,25 @@
         </div>
         <div class="form-group">
             <label>City:</label>
-            <input asp-for="City" id="City" class="form-control" />
+            <input asp-for="City" id="City" class="form-control" value="@(ViewBag.User.City ?? String.Empty)" />
             <span asp-validation-for="City" class="text-danger">
             </span>
         </div>
         <div class="form-group">
             <label>State:</label>
-            <input asp-for="State" id="State" class="form-control" />
+            <input asp-for="State" id="State" class="form-control" value="@(ViewBag.User.Region ?? String.Empty)"/>
             <span asp-validation-for="State" class="text-danger">
             </span>
         </div>
         <div class="form-group">
             <label>Zip:</label>
-            <input asp-for="Zip" id="Zip" class="form-control" />
+            <input asp-for="Zip" id="Zip" class="form-control" value="@(ViewBag.User.PostalCode ?? String.Empty)" />
             <span asp-validation-for="Zip" class="text-danger">
             </span>
         </div>
         <div class="form-group">
             <label>Country:</label>
-            <input asp-for="Country" id="Country" class="form-control" />
+            <input asp-for="Country" id="Country" class="form-control" value="@(ViewBag.User.Country ?? String.Empty)" />
             <span asp-validation-for="Country" class="text-danger">
             </span>
         </div>

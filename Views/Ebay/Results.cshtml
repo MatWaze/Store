@@ -1,4 +1,4 @@
-﻿@model IEnumerable<JToken>
+﻿@model ProductTarget<JToken>
 
 @{
 	Layout = "_Layout";
@@ -6,32 +6,42 @@
 
 @if (Model != null)
 {
-    <div class="container mt-2">
-        <div class="row">
-	        @foreach (var item in Model)
-	        {
-                <div class="col-md-4"> 
-                    <div class="card mt-3">
-                        <img class="card-img-top" src="@item["image"]["imageUrl"].ToString().Replace("225.", "500.")" 
-                            style="width: 100%; height: 15vw; object-fit: cover;" />
-                        <div class="card-body">
-                            <h5 class="card-title">
-                                @item["title"]
-                            </h5>
-                            <p class="card-text">
-                                $@item["price"]["value"]
-                            </p>
-                            <form id="@item["itemId"]" asp-controller="Ebay" asp-action="GetItem" method="post">
-                                @Html.AntiForgeryToken()
-                                <input type="hidden" name="id" value="@item["itemId"]" />
-                                <button type="submit" class="btn btn-success pull-right mt-2">
-                                    More Info
-                                 </button>
-                            </form> 
+    <section class="product-store position-relative padding-large">
+        <div class="container">
+            <div class="row">
+	            @foreach (var item in Model.Products)
+	            {
+                    <div class="col-md-4"> 
+                        <div class="card mt-3">
+                            <img class="card-img-top" src="@item["image"]["imageUrl"].ToString().Replace("225.", "500.")" 
+                                style="width: 100%; height: 15vw; object-fit: cover;" />
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    @item["title"]
+                                </h5>
+                                <p class="card-text">
+                                    $@item["price"]["value"]
+                                </p>
+                                <form id="@item["itemId"]" asp-controller="Ebay" asp-action="GetItem" method="post">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@item["itemId"]" />
+                                    <button type="submit" class="btn btn-success pull-right mt-2">
+                                        More Info
+                                     </button>
+                                </form> 
+                            </div>
                         </div>
                     </div>
-                </div>
-	        }
+	            }
+            </div>
         </div>
-    </div>
+    </section>
 }
+<div>
+    <ol class="pagination justify-content-center mt-4"
+        page-model="@Model.PagingInfo" page-action="Results"
+        page-classes-enabled="true" query-name="@ViewBag.QueryName"
+        ebay-category="@ViewBag.EbayCategory" low-price="@ViewBag.Low"
+        up-price="@ViewBag.Up">
+    </ol>
+</div>

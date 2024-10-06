@@ -1,4 +1,4 @@
-﻿@model ProductTarget
+﻿@model ProductTarget<Product>
 
 @{
     Layout = "_Layout";
@@ -25,9 +25,9 @@
                                         @p.Price.ToString("c", new CultureInfo("en-US"))
                             </p>
                             <a href="@Url.Action("GetItem", "Ebay", new { id = @p.EbayProductId })" class="btn btn-primary mt-2">View Product</a>
-                                    @if (p.UserId.Equals(ViewBag.CurrentUser.Id) || ViewBag.CurrentUser.UserName == "admin")
+                                    @if (ViewBag.CurrentUser.UserName == "admin")
                                     {
-                                    <a href="@Url.Action("Delete", "Home", new { id = @p.ProductId })" class="btn btn-danger mt-2">Delete Product</a>
+                                        <a href="@Url.Action("Delete", "Home", new { id = @p.ProductId })" class="btn btn-danger mt-2">Delete Product</a>
                                     }
                                     @* @if (p.UserId != ViewBag.CurrentUser.Id || ViewBag.CurrentUser.UserName == "admin") *@
                                     @* { *@

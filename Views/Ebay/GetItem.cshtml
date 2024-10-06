@@ -1,4 +1,5 @@
 ﻿@model Product
+@inject Cart cart
 
 @{
     // string price = Model["price"]["value"].ToString();
@@ -6,6 +7,7 @@
 
     List<string> images = Model.ImageUrls.Split(' ').ToList();
     Layout = "_Layout";
+    
 }
 
 <section class="product-store position-relative padding-large">
@@ -37,22 +39,13 @@
                     <a href="@Url.Action("Search", "Ebay")" class="btn btn-primary">
                         Go Back
                     </a>
-                    <form id="@Model.EbayProductId.ToString()" asp-page="/Cart/Cart" method="post">
+                    <form id="addToCartForm" method="post">
                         @Html.AntiForgeryToken()
-                        <input type="hidden" name="ebayProductId" value="@Model.EbayProductId" /> 
-                    <input type="hidden" name="returnUrl" value="@ViewContext.HttpContext.Request.PathAndQuery()?id=@Model.EbayProductId" /> 
-                        @if (Model.Quantity > 0) 
-                        { 
-                            <button type="submit" class="btn btn-success pull-right mt-2"> 
-                                Add To Cart 
-                            </button> 
-                        } 
-                        else 
-                        { 
-                            <button disabled class="btn btn-success pull-right mt-2"> 
-                                Add To Cart 
-                            </button> 
-                        } 
+                        <input type="hidden" name="ebayProductId" value="@Model.EbayProductId" />
+                        <input type="hidden" name="returnUrl" value="@ViewContext.HttpContext.Request.PathAndQuery()?id=@Model.EbayProductId" />
+                        <button @(cart.Lines.Count >= Model.Quantity ? "disabled" : "")  type="submit" id="addToCartButton" class="btn btn-success pull-right mt-2"> 
+                            Add To Cart 
+                        </button>
                     </form>
                 </div>
             </div>
@@ -96,4 +89,58 @@
         background-color: black; /* Make the icons more visible */
     }
 
+</style>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    var cartLineCount = @cart.Lines.Count();
+    var availableQuantity = @Model.Quantity;
+
+     function checkCartAndDisableButton() {
+        if (cartLineCount >= availableQuantity) {
+            $('#addToCartButton').prop('disabled', true); // Disable button
+        } else {
+            $('#addToCartButton').prop('disabled', false); // Enable button
+        }
+    }
+
+    checkCartAndDisableButton();
+    $(document).ready(function () {
+        $('#addToCartButton').on('click', function (e) {
+            cartLineCount++;
+            checkCartAndDisableButton();
+            e.preventDefault();
+            
+            var formData = $('#addToCartForm').serialize();
+            
+            $.ajax({
+                url: '@Url.Page("/Cart/Cart", "AddToCart")',
+                type: 'POST',
+                data: formData,
+                success: function (response) {
+                    if (response.success) {
+                        window.updateCart(response.totalItems, response.totalValue);
+                        $('#cartStatusMessage').text('Item added to cart!').show();
+                        $('#cartItemCount').text(response.totalItems); // Update item count display
+                        $('#cartTotalValue').text(response.totalValue); // Update total value display
+                        setTimeout(function () {
+                            $('#cartStatusMessage').fadeOut();
+                        }, 3000);
+                    } else {
+                        $('#cartStatusMessage').text('Failed to add item.').show();
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.log(error);
+                }
+            });
+        });
+    });
+</script>
+
+<style>
+    .carousel-control-prev-icon,
+    .carousel-control-next-icon {
+        background-color: black; /* Make the icons more visible */
+    }
 </style>

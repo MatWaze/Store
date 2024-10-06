@@ -1,6 +1,9 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+@inject Cart cart
+@inject IViteManifest Manifest
 
+
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,6 +11,9 @@
     <link href="/lib/bootstrap-icons/bootstrap-icons.css" rel="stylesheet"/>
     <link href="/lib/font-awesome/css/all.min.css" rel="stylesheet"/>
     <link rel="stylesheet" type="text/css" href="/lib/style.css">
+    <link href="https://cdn.jsdelivr.net/npm/radzen-blazor@latest/dist/radzen-blazor.min.css" rel="stylesheet" />
+
+    <link href="https://cdn.syncfusion.com/ej2/20.1.55/styles/material.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -18,8 +24,12 @@
 
 <body>
     <partial name="_Validation" />
+    <script type="module" src="/dir/@Manifest["src/main.jsx"].File"></script>
+    <script src="https://cdn.jsdelivr.net/npm/radzen-blazor@latest/dist/radzen-blazor.min.js"></script>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.js"></script>
+    <script src="https://cdn.syncfusion.com/ej2/20.1.55/dist/ej2.min.js"></script>
 
     <header id="header" class="site-header header-scrolled position-fixed text-black bg-light">
         <nav id="header-nav" class="navbar navbar-expand-lg px-3 mb-3">
@@ -53,28 +63,8 @@
                 <li class="nav-item">
                     <a class="nav-link me-4" href="#yearly-sale">Sale</a>
                 </li>
-                <li class="nav-item dropdown">
-                    <a class="nav-link me-4 dropdown-toggle link-dark" data-bs-toggle="dropdown" 
-                        href="#" role="button" aria-expanded="false">
-                        Pages
-                    </a>
-                    <ul class="dropdown-menu">
-                        <li>
-                            <a href="index.html" class="dropdown-item">About</a>
-                        </li>
-                        <li>
-                            <a href="index.html" class="dropdown-item">Shop</a>
-                        </li>
-                        <li>
-                            <a href="index.html" class="dropdown-item">Single Post</a>
-                        </li>
-                        <li>
-                            <a href="index.html" class="dropdown-item">Single Product</a>
-                        </li>
-                        <li>
-                            <a href="index.html" class="dropdown-item">Contact</a>
-                        </li>
-                    </ul>
+                <li class="nav-item">
+                    <a class="nav-link me-4" href="/Profile">Profile</a>
                 </li>
                 <li class="nav-item">
                     <div class="user-items ps-5">
@@ -94,7 +84,12 @@
                             </a>
                             </li>
                             <li>
-                                <vc:cart-summary/>
+                                <div id="cart-button" 
+                                     data-cart-items="@Html.Raw(Json.Serialize(cart.Lines.Sum(x => x.Quantity)))" 
+                                     data-cart-total="@Html.Raw(Json.Serialize(cart.ComputeTotalValue().ToString("c")))">
+                                </div>
+
+                                @* <vc:cart-summary/> *@
                             </li>
                         </ul>
                     </div>

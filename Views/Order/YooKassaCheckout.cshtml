@@ -5,7 +5,7 @@
     var integer = Model;
 }
 
-<div class="form-group">
+<div class="form-group product-store position-relative padding-large ps-3">
     <div id="payment-form"></div>
 </div>
 
@@ -14,7 +14,7 @@
     //Инициализация виджета. Все параметры обязательные.
   const checkout = new window.YooMoneyCheckoutWidget({
       confirmation_token: '@ViewBag.ConfirmationToken', //Токен, который перед проведением оплаты нужно получить от ЮKassa
-      return_url: 'https://c945-212-34-238-14.ngrok-free.app/Completed?orderId=@integer', //Ссылка на страницу завершения оплаты, это может быть любая ваша страница
+      return_url: 'https://iparts.me/Completed?orderId=@integer', //Ссылка на страницу завершения оплаты, это может быть любая ваша страница
       //При необходимости можно изменить цвета виджета, подробные настройки см. в документации
        //customization: {
         //Настройка цветовой схемы, минимум один параметр, значения цветов в HEX
