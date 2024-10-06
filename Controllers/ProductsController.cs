@@ -23,19 +23,19 @@ public class ProductsController : ControllerBase
     //    return context.Products.AsAsyncEnumerable();
     //}
 
-    [HttpGet("{id}")]
-    public async Task<IActionResult> GetProduct(long id)
-    {
-        Product? prod = await context.Products.FindAsync(id);
-        if (prod == null)
-        {
-            return NotFound();
-        }
-        return Ok(prod);
-    }
+    //[HttpGet("{id}")]
+    //public async Task<IActionResult> GetProduct(long id)
+    //{
+    //    Product? prod = await context.Products.FindAsync(id);
+    //    if (prod == null)
+    //    {
+    //        return NotFound();
+    //    }
+    //    return Ok(prod);
+    //}
 
-    private string VerificationToken = "a94cbd68e463cb9780e2008b1f61986110a5fd0ff8b99c9cba15f1f802ad65f";
-    private string EndpointUrl = "https://ea49-83-139-26-101.ngrok-free.app/api/products";
+    private string VerificationToken = "a94cbd68e463cb9780e2008b1f61986110a5fd0ff8b99c9cba15f1f802ad65";
+    private string EndpointUrl = "https://eafd-83-139-27-248.ngrok-free.app/api/products";
     private string NotificationsPath = "./notifications/";
 
     [HttpGet]
