@@ -1,21 +1,15 @@
 ﻿using eBay.ApiClient.Auth.OAuth2.Model;
 using eBay.ApiClient.Auth.OAuth2;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Newtonsoft.Json.Linq;
 using Store.Models;
-using System.Net.Http.Headers;
 using Store.Models.ViewModels;
-using static System.Formats.Asn1.AsnWriter;
 using Store.Infrastructure;
-using System.Reflection.Emit;
-using System.Text;
-using System.Text.Json;
 using System.Globalization;
-using Microsoft.VisualStudio.CodeCoverage;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Store.Controllers
 {
@@ -29,16 +23,18 @@ namespace Store.Controllers
         private HttpClient httpClient;
         private string token;
 		private UserManager<ApplicationUser> userManager;
+        private readonly IMemoryCache _memoryCache;
 
-		public EbayController(OAuth2Api oauthApi, GetLocation loc,
+        public EbayController(OAuth2Api oauthApi, GetLocation loc,
             HttpClient client, IProductRepository dataContext,
-			UserManager<ApplicationUser> usrManager)
+			UserManager<ApplicationUser> usrManager, IMemoryCache memoryCache = null)
         {
             oauth = oauthApi;
             location = loc;
             httpClient = client;
             context = dataContext;
             userManager = usrManager;
+            _memoryCache = memoryCache;
         }
 
         public List<string> Scopes = new List<string>()
@@ -46,6 +42,7 @@ namespace Store.Controllers
             "https://api.ebay.com/oauth/api_scope"
         };
 
+        public int PageSize = 6;
 
         public IActionResult Auth()
         {
@@ -71,7 +68,7 @@ namespace Store.Controllers
 
         public async Task<IActionResult> GetItem(string id)
         {
-            ViewBag.IsAdmin = User.IsInRole("admin");
+            //ViewBag.IsAdmin = User.IsInRole("admin");
 			ViewBag.Disabled = false;
 
 			//ViewBag.UserCountry = await location.GetCountry();
@@ -143,7 +140,7 @@ namespace Store.Controllers
         }
 
         [OutputCache(PolicyName = "default", VaryByRouteValueNames = new[] { "queryName", "categoryNumber", "priceLow", "priceHigh" })]
-        public async Task<IActionResult> Results(string queryName, int categoryNumber, int priceLow, int priceHigh)
+        public async Task<IActionResult> Results(string queryName, int categoryNumber, int priceLow, int priceHigh, int itemPage = 1)
         {
             if (priceLow > priceHigh)
             {
@@ -151,24 +148,74 @@ namespace Store.Controllers
                 priceLow = priceHigh;
                 priceHigh = temp;
             }
+           
+            ViewBag.QueryName = queryName;
+            ViewBag.EbayCategory = categoryNumber;
+            ViewBag.Low = priceLow;
+            ViewBag.Up = priceHigh;
 
-            var accessToken = oauth.GetApplicationToken(OAuthEnvironment.PRODUCTION, Scopes)
-                .AccessToken.Token;
+            string cacheKey = $"{queryName}_{categoryNumber}_{priceLow}_{priceHigh}";
 
-            JObject keyValuePairs = await EbayService.SearchItemsAsync(httpClient,
-                accessToken, queryName, categoryNumber, priceLow, priceHigh);
-            Console.WriteLine(keyValuePairs);
+            if (!_memoryCache.TryGetValue(cacheKey, out JObject keyValuePairs))
+            {
+                var accessToken = oauth.GetApplicationToken(OAuthEnvironment.PRODUCTION, Scopes).AccessToken.Token;
+                keyValuePairs = await EbayService.SearchItemsAsync(httpClient, accessToken, queryName, priceLow, priceHigh, 50, categoryNumber.ToString());
+                _memoryCache.Set(cacheKey, keyValuePairs, TimeSpan.FromMinutes(5)); // Cache for 5 minutes
+            }
+
             JToken? itemSummaries = keyValuePairs["itemSummaries"];
             if (itemSummaries != null)
             {
-                var items = itemSummaries.AsEnumerable();
+                var items = itemSummaries
+                    .Skip((itemPage - 1) * PageSize)
+                    .Take(PageSize)
+                    .ToArray();
 
-                return View("Results", items);
+                return View("Results", new ProductTarget<JToken>
+                {
+                    Products = items,
+                    PagingInfo = new PagingInfo
+                    {
+                        ItemsPerPage = PageSize,
+                        CurrentPage = itemPage,
+                        ItemsCount = itemSummaries.Count()
+                    }
+                });
+            }
+            else
+            {
+                _memoryCache.Remove(cacheKey);
+                cacheKey = $"{queryName}_{priceLow}_{priceHigh}";
+
+                if (!_memoryCache.TryGetValue(cacheKey, out keyValuePairs))
+                {
+                    var accessToken = oauth.GetApplicationToken(OAuthEnvironment.PRODUCTION, Scopes).AccessToken.Token;
+                    keyValuePairs = await EbayService.SearchItemsAsync(httpClient, accessToken, queryName, priceLow, priceHigh, 50);
+                    _memoryCache.Set(cacheKey, keyValuePairs, TimeSpan.FromMinutes(5)); // Cache for 5 minutes
+                }
+                itemSummaries = keyValuePairs["itemSummaries"];
+                if (itemSummaries != null)
+                {
+                    var items = itemSummaries
+                        .Skip((itemPage - 1) * PageSize)
+                        .Take(PageSize)
+                        .ToArray();
+
+                    return View("Results", new ProductTarget<JToken>
+                    {
+                        Products = items,
+                        PagingInfo = new PagingInfo
+                        {
+                            ItemsPerPage = PageSize,
+                            CurrentPage = itemPage,
+                            ItemsCount = itemSummaries.Count()
+                        }
+                    });
+                }
             }
             Console.WriteLine("No results were found. Try again.");
             ViewBag.Categories = context.Categories.ToArray();
-
-            return View("Search", new QueryProduct());
+            return RedirectToAction("Home", "Index")/*View("Search", new QueryProduct())*/;
         }
 
         [HttpPost]
