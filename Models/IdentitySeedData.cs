@@ -56,6 +56,8 @@ namespace Store.Models
 				{
 					UserName = username,
 					Email = email,
+					YooKassaAccessToken = null,
+					FullName = "Matevos Amazarian",
 				};
 
 				IdentityResult result = await userManager

@@ -8,7 +8,7 @@ namespace Store.Models
 	{
 		public DataContext(DbContextOptions<DataContext> options)
 			: base(options) { }
-		public DbSet<Product> Products => Set<Product>();
+		public virtual DbSet<Product> Products => Set<Product>();
 		public DbSet<Category> Categories => Set<Category>();
 		public DbSet<Order> Orders => Set<Order>();
 	}

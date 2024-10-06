@@ -1,34 +1,33 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Store.Infrastructure;
+using System.Linq;
 using static Microsoft.AspNetCore.Mvc.ControllerBase;
 namespace Store.Models
 {
     public class EFProductRepository : IProductRepository
     {
+
         private DataContext context;
         private UserManager<ApplicationUser> userManager;
         public EFProductRepository(DataContext dataContext, UserManager<ApplicationUser> usrMgr)
         {
             context = dataContext;
             userManager = usrMgr;
+            //context.Products.Load();  // Preload all products
+            //context.Categories.Load();
         }
 
         public IQueryable<Product> Products => context.Products;
-        // public IQueryable<IdentityUser> Users => context.Users;
+
         public IQueryable<Category> Categories => context.Categories;
         public void SaveProduct(Product product)
         {
             context.SaveChanges();
         }
 
-        public async void AddProduct(Product product)
+        public void AddProduct(Product product)
         {
-            string existingUser =  (await userManager.FindByIdAsync(product.UserId)).Id;
-            if (existingUser != null)
-            {
-                product.UserId = existingUser;
-            }
-            
             context.Products.Add(product);
             context.SaveChanges();
         }

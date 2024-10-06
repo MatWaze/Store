@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Store.Infrastructure;
 
 namespace Store.Models;
 

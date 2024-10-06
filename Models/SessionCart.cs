@@ -26,25 +26,24 @@ namespace Store.Models
             return cart;
         }
 
-        public override void AddItem(Product product, int quantity,
-            HttpRequest request)
+        public override void AddItem(Product product, int quantity)
         {
-            base.AddItem(product, quantity, request);
+            base.AddItem(product, quantity);
             Session?
                 .SetJson($"cart_{userName}", this);
         }
 
-        public override void RemoveLine(Product product, HttpRequest request)
+        public override void RemoveLine(Product product)
         {
-            base.RemoveLine(product, request);
+            base.RemoveLine(product);
             Session?
                 .SetJson($"cart_{userName}", this);
 
         }
 
-        public override void Clear(HttpRequest request)
+        public override void Clear()
         {
-            base.Clear(request);
+            base.Clear();
             Session?
                 .Remove($"cart_{userName}");
         }
