@@ -9,10 +9,19 @@ using Azure.Extensions.AspNetCore.DataProtection.Keys;
 using Microsoft.AspNetCore.DataProtection.AzureKeyVault;
 using eBay.ApiClient.Auth.OAuth2;
 using Microsoft.AspNetCore.Antiforgery;
+using Yandex.Checkout.V3;
+using Vite.AspNetCore;
+using Microsoft.Extensions.Options;
+using Azure.Storage.Blobs.Models;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRazorPages();
+builder.Services.AddViteServices(opts =>
+{
+    opts.Manifest = "dir/.vite/manifest.json";
+});
 
 builder.Services.AddDbContext<DataContext>(opts =>
 {
@@ -26,6 +35,8 @@ builder.Services.AddScoped<OAuth2Api>();
 
 builder.Services.AddScoped<Cart>(sp => SessionCart.GetCart(sp));
 
+builder.Services.AddMemoryCache();
+
 builder.Services.AddSingleton<IHttpContextAccessor,
     HttpContextAccessor>();
 
@@ -37,7 +48,7 @@ builder.Services.AddOutputCache(opts =>
 {
     opts.AddPolicy("default", policy =>
     {
-        policy.Expire(TimeSpan.FromSeconds(120));
+        policy.Expire(TimeSpan.FromMinutes(4));
     });
 });
 
@@ -66,7 +77,6 @@ builder.Services.Configure<IdentityOptions>(opts =>
     opts.Password.RequireUppercase = false;
     opts.Password.RequireDigit = false;
     opts.User.RequireUniqueEmail = true;
-    opts.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyz";
 });
 
 builder.Services.AddAzureClients(opts =>
@@ -109,6 +119,11 @@ app.UseSession();
 app.UseAuthentication();
 app.UseAuthorization();
 
+// WebSockets support is required for HMR (hot module reload).
+// Uncomment the following line if your pipeline doesn't contain it.
+// app.UseWebSockets();
+// Enable all required features to use the Vite Development Server.
+// Pass true if you want to use the integrated middleware.
 
 app.MapControllerRoute("catpage",
     "{categoryId}/Page{productPage:int}",
@@ -117,7 +132,6 @@ app.MapControllerRoute("catpage",
 app.MapControllerRoute("page",
     "Page{productPage:int}",
     new { Controller = "Home", action = "Products", productPage = 1 });
-
 
 app.MapDefaultControllerRoute();
 app.MapRazorPages();
@@ -130,9 +144,18 @@ var context = app.Services.CreateScope()
 var userManager = app.Services.CreateScope()
     .ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
+var blob = app.Services.CreateScope()
+    .ServiceProvider.GetRequiredService<BlobStorageService>();
 
-CredentialUtil.Load("D:\\files\\aspnet\\Store\\ebay.yml");
+using (Stream fileStream = await blob.GetFileStreamAsync("ebay.yml"))
+{
+    using (StreamReader streamReader = new StreamReader(fileStream))
+    {
+        CredentialUtil.Load(streamReader);
+    }
+}
 
 await SeedData.SeedDatabase(new HttpClient(), context, userManager);
+
 
 app.Run(); 
