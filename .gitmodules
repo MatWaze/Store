@@ -1,0 +1,3 @@
+[submodule "Yandex.Checkout.V3"]
+	path = Yandex.Checkout.V3
+	url = .\\Yandex.Checkout.V3\\
