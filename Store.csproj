@@ -25,6 +25,7 @@
     <PackageReference Include="Microsoft.Extensions.Azure" Version="1.7.2" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="7.0.12" />
     <PackageReference Include="Moq" Version="4.18.4" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="7.0.0" />
     <PackageReference Include="Radzen.Blazor" Version="5.2.9" />
     <PackageReference Include="Syncfusion.EJ2.AspNet.Core" Version="27.1.51" />
     <PackageReference Include="System.Linq.Async" Version="6.0.1" />
@@ -44,6 +45,6 @@
   </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="Yandex.Checkout.V3\Yandex.Checkout.V3\Yandex.Checkout.V3.csproj" />
+      <ProjectReference Include="Yandex.Checkout.V3\Yandex.Checkout.V3.csproj" />
     </ItemGroup>
 </Project>

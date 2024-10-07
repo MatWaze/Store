@@ -294,6 +294,7 @@ public class OrderController : Controller
                 Payment p = await asyncClient.CapturePaymentAsync(payment.Id);
                 int orderId = int.Parse(p.Metadata["OrderID"]);
                 Order? ord = repo.Orders.FirstOrDefault(o => o.OrderID == orderId);
+                ord.PaymentStatus = "Paid";
 
                 Product[] productIdsInOrder = ord.Lines.Select(cl => cl.Product).ToArray();
                 Console.WriteLine("count: " + ord.Lines.Count());

@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StoreTests", "..\StoreTests
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Yandex.Checkout.V3", "Yandex.Checkout.V3", "{AC469CC2-DEEA-47AA-B14D-1B3C73EFD042}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yandex.Checkout.V3", "Yandex.Checkout.V3\Yandex.Checkout.V3\Yandex.Checkout.V3.csproj", "{E5B856F5-95C6-45F7-9800-EB2EFA6BA5F9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yandex.Checkout.V3", "Yandex.Checkout.V3\Yandex.Checkout.V3.csproj", "{E5B856F5-95C6-45F7-9800-EB2EFA6BA5F9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
