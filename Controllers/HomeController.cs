@@ -77,6 +77,11 @@ namespace Store.Controllers
             return RedirectToAction(nameof(Products));
         }
 
+        public IActionResult PrivacyPolicy()
+        {
+            return View();
+        }
+
         //[HttpPost]
         //public async Task<IActionResult> NewProduct(long id, Product product)
         //{

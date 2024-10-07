@@ -26,7 +26,7 @@ builder.Services.AddViteServices(opts =>
 builder.Services.AddDbContext<DataContext>(opts =>
 {
 	opts.UseSqlServer(
-		builder.Configuration["ConnectionStrings:StoreConnection"]);
+		builder.Configuration["ConnectionStrings:HerokuConnection"]);
 });
 
 builder.Services.AddSingleton<BlobStorageService>();
@@ -61,7 +61,7 @@ builder.Services.Configure<AntiforgeryOptions>(opts => {
 builder.Services.AddDbContext<IdentityContext>(opts =>
 {
     opts.UseSqlServer(
-        builder.Configuration["ConnectionStrings:IdentityConnection"]);
+        builder.Configuration["ConnectionStrings:HerokuIdentityConnection"]);
 });
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()

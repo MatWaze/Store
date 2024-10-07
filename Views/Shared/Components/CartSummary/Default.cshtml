@@ -5,8 +5,8 @@
     {
        <small class="navbar-text">
             <b>Your cart:</b>
-            @Model.Lines.Sum(x => x.Quantity) item(s)
-            @Model.ComputeTotalValue().ToString("c")
+            @Model.Lines.Sum(x => x.Quantity) item
+            @Model.ComputeTotalValue()
         </small>
     }
     <a class="btn btn-md btn-secondary navbar-btn mt-2"
