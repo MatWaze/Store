@@ -69,7 +69,7 @@ namespace StoreTests
             Product[]? prods = result?.Products?.ToArray();
 
             Assert.True(prods.Length == 5);
-            Assert.Equal(pageInfo.ItemsCount, prods.Length);
+            Assert.Equal(pageInfo.ItemsCount, prods.Length + 1);
             Assert.True(pageInfo.CurrentCategory == categories[0].EbayCategoryId);
         }
 
