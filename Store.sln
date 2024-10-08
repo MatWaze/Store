@@ -5,7 +5,7 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Store", "Store.csproj", "{341091B2-833C-44EB-9B2C-E32A8A111197}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StoreTests", "..\StoreTests\StoreTests.csproj", "{5DD55897-1669-4E2D-A10A-45C6044C9E94}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StoreTests", "StoreTests\StoreTests.csproj", "{5DD55897-1669-4E2D-A10A-45C6044C9E94}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Yandex.Checkout.V3", "Yandex.Checkout.V3", "{AC469CC2-DEEA-47AA-B14D-1B3C73EFD042}"
 EndProject

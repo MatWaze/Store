@@ -47,4 +47,5 @@
     <ItemGroup>
       <ProjectReference Include=".\Yandex.Checkout.V3\Yandex.Checkout.V3.csproj" />
     </ItemGroup>
+
 </Project>
