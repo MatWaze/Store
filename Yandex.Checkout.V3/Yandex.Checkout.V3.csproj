@@ -31,9 +31,6 @@
     <None Include="..\README.md" Pack="true" PackagePath="\" />
   </ItemGroup>  
     
-  <ItemGroup>
-    <Compile Include="GlobalUsings.cs" />
-  </ItemGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
     <Reference Include="System.Net.Http" />
     <Compile Remove="AsyncClient.Enumerable.cs" />
