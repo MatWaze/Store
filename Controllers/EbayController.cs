@@ -130,7 +130,7 @@ namespace Store.Controllers
 					ImageLink = item["image"]["imageUrl"].ToString().Replace("225.", "500."),
 					Price = decimal.Parse(item["price"]["value"].ToString(), culture),
 					ShippingPrice = ship != null ? decimal.Parse(ship, culture) : -100,
-                    UserId = admin.Id,
+                    //UserId = admin.Id,
                     ImageUrls = imageUrls,
 				};
                 context.AddProduct(newProduct);

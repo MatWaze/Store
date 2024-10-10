@@ -25,10 +25,10 @@ builder.Services.AddViteServices(opts =>
 
 builder.Services.AddDbContext<DataContext>(opts =>
 {
-    //opts.UseSqlServer(
-    //	builder.Configuration["ConnectionStrings:StoreConnection"]);
-    opts.UseNpgsql(
-        builder.Configuration["ConnectionStrings:HerokuConnection"]);
+    opts.UseSqlServer(
+        builder.Configuration["ConnectionStrings:AzureStoreConnection"]);
+    //opts.UseNpgsql(
+    //    builder.Configuration["ConnectionStrings:HerokuConnection"]);
 });
 
 builder.Services.AddSingleton<BlobStorageService>();
