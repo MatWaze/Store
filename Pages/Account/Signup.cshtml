@@ -1,0 +1,132 @@
+﻿@page
+@model SignupModel
+
+<div class="padding-large container d-flex justify-content-center align-items-center vh-100">
+  <div class="col-md-8"> <!-- Increased width from col-md-6 to col-md-8 -->
+	<div class="card mt-3 p-5" style="max-width: 800px;"> <!-- Increased padding (p-5) and max-width -->
+	  <div class="card-header bg-white text-black text-center" style="margin: 0; padding: 20px 0;"> <!-- Removed margin, added vertical padding -->
+		<h4 style="font-size: 32px;">@Localizer["Sign Up"]</h4> <!-- Increased font size for the title -->
+	  </div>
+	  <div class="card-body">
+		<div class="text-danger" asp-validation-summary="All"></div>
+
+		<form method="post">
+			@Html.AntiForgeryToken()
+			<input type="hidden" name="returnUrl" value="@Model.ReturnUrl"/>
+			<div class="form-group">
+				<label style="font-size: 20px;">@Localizer["UserName"]</label>
+				<input class="form-control form-control-lg" asp-for="UserName" />
+				<span asp-validation-for="UserName" class="text-danger"></span>
+			</div>
+			<div class="form-group">
+				<label style="font-size: 20px;">@Localizer["FullName"]</label>
+				<input class="form-control form-control-lg" asp-for="FullName" />
+				<span asp-validation-for="FullName" class="text-danger"></span>
+			</div>
+			<div class="form-group">
+				<label style="font-size: 20px;">@Localizer["Email"]</label>
+				<input class="form-control form-control-lg" asp-for="Email" />
+				<span asp-validation-for="Email" class="text-danger"></span>
+			</div>
+			<div class="form-group">
+				<label style="font-size: 20px;">@Localizer["Password"]</label>
+				<input asp-for="Password" type="password" class="form-control form-control-lg" />
+				<span asp-validation-for="Password" class="text-danger"></span>
+			</div>
+			<div class="form-group">
+				<label style="font-size: 20px;">@Localizer["ConfirmPassword"]</label>
+				<input asp-for="ConfirmPassword" type="password" class="form-control form-control-lg" />
+				<span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+			</div>
+			<button class="btn btn-primary mt-4 w-100 btn-lg" type="submit">@Localizer["Signing Up"]</button>
+		</form>
+	  </div>
+	</div>
+  </div>
+</div>
+
+
+@functions{
+	public class SignupModel : PageModel
+	{
+		private UserManager<ApplicationUser> userManager;
+		private RoleManager<IdentityRole> roleManager;
+		private ISendEmail emailManager;
+		private IRazorViewToStringRenderer razorView;
+
+		public SignupModel(UserManager<ApplicationUser> userMgr,
+			RoleManager<IdentityRole> roleMgr,
+			ISendEmail emailMgr,
+			IRazorViewToStringRenderer razorViewToString)
+		{
+			userManager = userMgr;
+			roleManager = roleMgr;
+			emailManager = emailMgr;
+			razorView = razorViewToString;
+		}
+
+		[Required(ErrorMessageResourceName = "Required",
+			ErrorMessageResourceType = typeof(ValidationMessages))]
+		[BindProperty]
+		public string UserName { get; set; } = "";
+
+		[Required(ErrorMessageResourceName = "Required",
+			ErrorMessageResourceType = typeof(ValidationMessages))]
+		[BindProperty]
+		public string FullName { get; set; } = "";
+
+		[Required(ErrorMessageResourceName = "Required",
+			ErrorMessageResourceType = typeof(ValidationMessages))]
+		[BindProperty]
+		public string Email { get; set; } = "";
+
+		[Required(ErrorMessageResourceName = "Required",
+			ErrorMessageResourceType = typeof(ValidationMessages))]
+		[BindProperty]
+		public string Password { get; set; } = "";
+
+		[Required(ErrorMessageResourceName = "Required",
+			ErrorMessageResourceType = typeof(ValidationMessages))]
+		[Compare("Password", ErrorMessageResourceName = "MustMatch",
+			ErrorMessageResourceType = typeof(ValidationMessages))]
+		[BindProperty]
+		public string ConfirmPassword { get; set; } = "";
+
+		[BindProperty(SupportsGet = true)]
+		public string? ReturnUrl { get; set; }
+
+		public async Task<IActionResult> OnPostAsync()
+		{
+			if (ModelState.IsValid)
+			{
+				ApplicationUser user = new ApplicationUser
+				{
+					FullName = this.FullName,
+					Email = this.Email,
+					UserName = this.UserName
+				};
+				string password = this.Password;
+				string role = "Regulars";
+
+				if (await roleManager.FindByNameAsync(role) == null)
+				{
+					await roleManager.CreateAsync(new IdentityRole(role));
+				}
+
+				IdentityResult result = await userManager
+					.CreateAsync(user, password);
+
+				if (result.Succeeded)
+				{
+					string htmlContext = await razorView.RenderViewToStringAsync<int>("EmailSignupNotification", 4);
+					await userManager.AddToRoleAsync(user, role);
+					await emailManager.SendEmailAsync(this.Email, "ILoveParts Registration", htmlContext);
+					return Redirect(ReturnUrl ?? "/");
+				}
+				ModelState.AddModelError("",
+					"Invalid username or password");
+			}
+			return Page();
+		}
+	}
+}

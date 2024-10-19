@@ -1,28 +1,35 @@
 ﻿@page
 @model LoginModel
-@{
-	Layout = "_Layout";
-}
-<div class="bg-primary text-center text-white p-2">
-	<h4>Log In</h4> 
+
+<div class="padding-large container d-flex justify-content-center align-items-center vh-100">
+  <div class="col-md-8"> <!-- Increased width from col-md-6 to col-md-8 -->
+	<div class="card mt-3 p-5" style="max-width: 800px;"> <!-- Increased padding (p-5) and max-width -->
+	  <div class="card-header bg-white text-black text-center" style="margin: 0; padding: 20px 0;"> <!-- Removed margin, added vertical padding -->
+		<h4 style="font-size: 32px;">@Localizer["Login"]</h4> <!-- Increased font size for the title -->
+	  </div>
+	  <div class="card-body">
+		<div class="text-danger" asp-validation-summary="All"></div>
+
+		<form method="post">
+			@Html.AntiForgeryToken()
+			<input type="hidden" name="returnUrl" value="@Model.ReturnUrl"/>
+			<div class="form-group">
+				<label style="font-size: 20px;">@Localizer["UserName"]</label> <!-- Increased font size -->
+				<input class="form-control form-control-lg" asp-for="UserName" /> <!-- Larger input fields -->
+				<span asp-validation-for="UserName" class="text-danger"></span>
+			</div>
+			<div class="form-group">
+				<label style="font-size: 20px;">@Localizer["Password"]</label> <!-- Increased font size -->
+				<input asp-for="Password" type="password" class="form-control form-control-lg" /> <!-- Larger input fields -->
+				<span asp-validation-for="Password" class="text-danger"></span>
+			</div>
+			<button class="btn btn-primary mt-4 w-100 btn-lg" type="submit">@Localizer["Login"]</button> <!-- Larger button and top margin -->
+		</form>
+	  </div>
+	</div>
+  </div>
 </div>
 
-<div class="m-1 text-danger" asp-validation-summary="All">
-</div>
-
-<form method="post">
-	@Html.AntiForgeryToken()
-	<input type="hidden" name="returnUrl" value="@Model.ReturnUrl"/>
-	<div class="form-group">
-		<label>UserName</label>
-		<input class="form-control" asp-for="UserName" />
-	</div>
-	<div class="form-group">
-		<label>Password</label>
-		<input asp-for="Password" type="password" class="form-control" />
-	</div>
-	<button class="btn btn-primary mt-2" type="submit">Log In</button>
-</form>
 
 @functions{
 	public class LoginModel : PageModel
@@ -34,9 +41,13 @@
 			signInManager = signInMgr;
 		}
 
+		[Required(ErrorMessageResourceName = "Required",
+			ErrorMessageResourceType = typeof(ValidationMessages))]
 		[BindProperty]
 		public string UserName { get; set; } = "";
 
+		[Required(ErrorMessageResourceName = "Required",
+			ErrorMessageResourceType = typeof(ValidationMessages))]
 		[BindProperty]
 		public string Password { get; set; } = "";
 

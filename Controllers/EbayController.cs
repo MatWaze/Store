@@ -21,13 +21,13 @@ namespace Store.Controllers
         private OAuth2Api oauth;
         private GetLocation location;
         private HttpClient httpClient;
-        private string token;
+        private string? token;
 		private UserManager<ApplicationUser> userManager;
         private readonly IMemoryCache _memoryCache;
 
         public EbayController(OAuth2Api oauthApi, GetLocation loc,
             HttpClient client, IProductRepository dataContext,
-			UserManager<ApplicationUser> usrManager, IMemoryCache memoryCache = null)
+			UserManager<ApplicationUser> usrManager, IMemoryCache memoryCache)
         {
             oauth = oauthApi;
             location = loc;
@@ -66,10 +66,12 @@ namespace Store.Controllers
             return RedirectToAction("Index", "Home"); // Redirect to a secure page or home page
         }
 
-        public async Task<IActionResult> GetItem(string id)
+        public async Task<IActionResult> GetItem(string id, string returnUrl = "/")
         {
-            //ViewBag.IsAdmin = User.IsInRole("admin");
+            if (id == null )
+                return RedirectToAction("PageNotFound", "Home");
 			ViewBag.Disabled = false;
+            ViewBag.ReturnUrl = returnUrl;
 
 			//ViewBag.UserCountry = await location.GetCountry();
 			Product? prod = context.Products.FirstOrDefault(p => p.EbayProductId == id);
@@ -107,23 +109,18 @@ namespace Store.Controllers
                     }
                 }
 
-                Category? cat = null;
-                if (context.Categories.Count() < 10)
-                {
-                    cat = context.Categories
-                        .FirstOrDefault(c => c.EbayCategoryId == categoryId);    
-                }
-                else
+                Category? cat = context.Categories
+                    .FirstOrDefault(c => c.EbayCategoryId == categoryId);    
+                if (cat == null)
                 {
                     cat = context.Categories
                         .FirstOrDefault(c => c.EbayCategoryId == 6000);
                 }
-                
                 Product newProduct = new Product
                 {
                     Name = item["title"].ToString(),
                     EbayProductId = id,
-                    Category = cat ?? new() { Name = category, EbayCategoryId = categoryId },
+                    Category = cat,
                     Quantity = quan != null ? int.Parse(quan, culture) : 0,
 			        ItemCountry = item["itemLocation"]["country"].ToString()!,
 					Description = item["condition"].ToString(),
@@ -140,11 +137,15 @@ namespace Store.Controllers
         }
 
         [OutputCache(PolicyName = "default", VaryByRouteValueNames = new[] { "queryName", "categoryNumber", "priceLow", "priceHigh" })]
-        public async Task<IActionResult> Results(string queryName, int categoryNumber, int priceLow, int priceHigh, int itemPage = 1)
+        public async Task<IActionResult> Results(string queryName, int? priceLow, int? priceHigh, int itemPage = 1, int? categoryNumber = null)
         {
+            if (queryName == null)
+            {
+                return RedirectToAction("PageNotFound", "Home");
+            }
             if (priceLow > priceHigh)
             {
-                int temp = priceLow;
+                int temp = (int) priceLow;
                 priceLow = priceHigh;
                 priceHigh = temp;
             }
@@ -155,15 +156,14 @@ namespace Store.Controllers
             ViewBag.Up = priceHigh;
 
             string cacheKey = $"{queryName}_{categoryNumber}_{priceLow}_{priceHigh}";
-
             if (!_memoryCache.TryGetValue(cacheKey, out JObject keyValuePairs))
             {
                 var accessToken = oauth.GetApplicationToken(OAuthEnvironment.PRODUCTION, Scopes).AccessToken.Token;
-                keyValuePairs = await EbayService.SearchItemsAsync(httpClient, accessToken, queryName, priceLow, priceHigh, 50, categoryNumber.ToString());
+                keyValuePairs = await EbayService.SearchItemsAsync(httpClient, accessToken, queryName, 
+                    (int) priceLow!, (int) priceHigh!, 50, categoryNumber != null ? categoryNumber.ToString() : "");
                 _memoryCache.Set(cacheKey, keyValuePairs, TimeSpan.FromMinutes(5)); // Cache for 5 minutes
             }
-
-            JToken? itemSummaries = keyValuePairs["itemSummaries"];
+            JToken? itemSummaries = keyValuePairs?["itemSummaries"];
             if (itemSummaries != null)
             {
                 var items = itemSummaries
@@ -182,40 +182,9 @@ namespace Store.Controllers
                     }
                 });
             }
-            else
-            {
-                _memoryCache.Remove(cacheKey);
-                cacheKey = $"{queryName}_{priceLow}_{priceHigh}";
-
-                if (!_memoryCache.TryGetValue(cacheKey, out keyValuePairs))
-                {
-                    var accessToken = oauth.GetApplicationToken(OAuthEnvironment.PRODUCTION, Scopes).AccessToken.Token;
-                    keyValuePairs = await EbayService.SearchItemsAsync(httpClient, accessToken, queryName, priceLow, priceHigh, 50);
-                    _memoryCache.Set(cacheKey, keyValuePairs, TimeSpan.FromMinutes(5)); // Cache for 5 minutes
-                }
-                itemSummaries = keyValuePairs["itemSummaries"];
-                if (itemSummaries != null)
-                {
-                    var items = itemSummaries
-                        .Skip((itemPage - 1) * PageSize)
-                        .Take(PageSize)
-                        .ToArray();
-
-                    return View("Results", new ProductTarget<JToken>
-                    {
-                        Products = items,
-                        PagingInfo = new PagingInfo
-                        {
-                            ItemsPerPage = PageSize,
-                            CurrentPage = itemPage,
-                            ItemsCount = itemSummaries.Count()
-                        }
-                    });
-                }
-            }
             Console.WriteLine("No results were found. Try again.");
             ViewBag.Categories = context.Categories.ToArray();
-            return RedirectToAction("Home", "Index")/*View("Search", new QueryProduct())*/;
+            return RedirectToAction("Index", "Home")/*View("Search", new QueryProduct())*/;
         }
 
         [HttpPost]
@@ -224,7 +193,7 @@ namespace Store.Controllers
         {
             if (queryProduct.PriceLow > queryProduct.PriceHigh)
             {
-                int temp = queryProduct.PriceLow;
+                int? temp = queryProduct.PriceLow;
                 queryProduct.PriceLow = queryProduct.PriceHigh;
                 queryProduct.PriceHigh = temp;
             }

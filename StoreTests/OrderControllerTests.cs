@@ -1,4 +1,5 @@
-﻿using eBay.ApiClient.Auth.OAuth2;
+﻿using Braintree;
+using eBay.ApiClient.Auth.OAuth2;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -29,9 +30,9 @@ namespace StoreTests
 
             using (var context = new DataContext(options))
             {
-                Mock<IBraintreeService> mockBrain = new Mock<IBraintreeService>();
+                Mock<IBraintreeGateway> mockBrain = new Mock<IBraintreeGateway>();
 
-
+                 
                 var mockUserManager = new Mock<UserManager<ApplicationUser>>(
                    Mock.Of<IUserStore<ApplicationUser>>(), null, null, null, null, null, null, null, null);
 
@@ -64,7 +65,7 @@ namespace StoreTests
 
                 // Act
                 controller = new OrderController(mockBrain.Object,
-                    order, repo, cart, mockUserManager.Object, null, null);
+                    order, repo, cart, mockUserManager.Object, null, null, null, null);
             }
             return controller;
         }

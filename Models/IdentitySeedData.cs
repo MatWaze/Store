@@ -47,7 +47,7 @@ namespace Store.Models
 			
 			if (await userManager.FindByNameAsync(username) == null)
 			{
-				if (await roleManager.FindByNameAsync(email) == null)
+				if (await roleManager.FindByNameAsync(role) == null)
 				{
 					await roleManager.CreateAsync(new IdentityRole(role));
 				}
@@ -58,6 +58,11 @@ namespace Store.Models
 					Email = email,
 					YooKassaAccessToken = null,
 					FullName = "Matevos Amazarian",
+                    Country = "Armenia",
+                    Region = "Yerevan",
+                    City = "Yerevan",
+                    Street = "Karp Khachvankyan",
+                    PostalCode = "0010",
 				};
 
 				IdentityResult result = await userManager

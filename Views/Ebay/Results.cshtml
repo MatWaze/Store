@@ -22,9 +22,10 @@
                                 <p class="card-text">
                                     $@item["price"]["value"]
                                 </p>
-                                <form id="@item["itemId"]" asp-controller="Ebay" asp-action="GetItem" method="post">
+                                <form id="@item["itemId"]" asp-controller="Ebay" asp-action="GetItem" method="post"
+									asp-route-id="@item["itemId"]">
                                     @Html.AntiForgeryToken()
-                                    <input type="hidden" name="id" value="@item["itemId"]" />
+									<input type="hidden" name=returnUrl value="@ViewContext.HttpContext.Request.PathAndQuery()"/>
                                     <button type="submit" class="btn btn-success pull-right mt-2">
                                         More Info
                                      </button>

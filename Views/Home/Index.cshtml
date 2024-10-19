@@ -1,20 +1,19 @@
 ﻿@model IEnumerable<Category>
 
 @{
-    Layout = "_Layout";
     int i = 0;
 }
 
-<section id="company-services" class="padding-large no-padding-bottom">
+<section id="company-services" class="padding-large padding-top no-padding-bottom">
       <div class="container">
         <div class="row justify-content-center">
           <div class="col-lg-3 col-md-6 pb-3">
             <div class="icon-box d-flex">
-              <div class="icon-box-icon pe-3 pb-3">
-              </div>
               <div class="icon-box-content">
-                <h3 class="card-title text-uppercase text-dark">Quality guarantee</h3>
-                <p>Dolor sit amet orem ipsu mcons ectetur adipi elit.</p>
+				<img src="/images/guarantee.png"  class="img-fluid mb-4" alt="@Localizer["QualityGuarantee"]"
+					style="margin-left: 35px; margin-top: 12px; width: 160px"/>
+                <h3 class="card-title text-uppercase text-dark">@Localizer["QualityGuarantee"]</h3>
+                <p>@Localizer["QualityGuaranteeP"]</p>
               </div>
             </div>
           </div>
@@ -26,8 +25,10 @@
                 </svg>
               </div>
               <div class="icon-box-content">
-                <h3 class="card-title text-uppercase text-dark">Daily offers</h3>
-                <p>Amet consectetur adipi elit loreme ipsum dolor sit.</p>
+				<img src="/images/fast_delivery.png"  class="img-fluid mb-4" alt="@Localizer["QualityGuarantee"]"
+					style="margin-left: 25px; width: 170px"/>
+                <h3 class="card-title text-uppercase text-dark">@Localizer["FastDelivery"]</h3>
+                <p>@Localizer["FastDeliveryP"]</p>
               </div>
             </div>
           </div>
@@ -39,30 +40,33 @@
                 </svg>
               </div>
               <div class="icon-box-content">
-                <h3 class="card-title text-uppercase text-dark">100% secure payment</h3>
-                <p>Rem Lopsum dolor sit amet, consectetur adipi elit.</p>
+				<img src="/images/secure_payment.png"  class="img-fluid mb-4" alt="@Localizer["QualityGuarantee"]"
+					style="margin-left: 33px; margin-top: 7px; width: 160px"/>
+                <h3 class="card-title text-uppercase text-dark">@Localizer["SecurePayment"]</h3>
+                <p>@Localizer["SecurePaymentP"]</p>
               </div>
             </div>
-          </div>
+          </div>`
         </div>
       </div>
 </section>
 
 <section class="product-store position-relative padding-large no-padding-top">
     <div class="container">
-        <h2 class="mt-2 ">Shop by Category</h2>
+        <h2 class="mt-2 ">@Localizer["ShopByCategory"]</h2>
         <div class="row">
             @foreach (var cat in Model)
             {
                 <div class="col-md-4"> 
                     <div class="card mt-3">
-                        <img class="card-img-top" src="/images/@ViewBag.CategoryList[i]" style="width: 100%; height: 15vw; object-fit: cover;" />
+						<img class="card-img-top" src="/images/@ViewBag.CategoryList[i++]"
+							style="width: 100%; height: 15vw; object-fit: cover;" />
                         <div class="card-body">
                             <h5 class="card-title">
-                                @cat.Name
+                                @Localizer[$"{cat.Name}"]
                             </h5>
                             <a href="@Url.Action("Products", "Home", new { categoryId = cat.EbayCategoryId })"
-                                class="btn btn-primary mt-2">See Products
+                                class="btn btn-primary mt-2">@Localizer["See Products"]
                             </a>
                         </div>
                     </div>

@@ -12,12 +12,12 @@ using Microsoft.AspNetCore.Antiforgery;
 using Yandex.Checkout.V3;
 using Vite.AspNetCore;
 using Microsoft.Extensions.Options;
-using Azure.Storage.Blobs.Models;
-using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Mvc.Razor;
+using System.Globalization;
+using Microsoft.AspNetCore.Localization;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddRazorPages();
 builder.Services.AddViteServices(opts =>
 {
     opts.Manifest = "dir/.vite/manifest.json";
@@ -42,9 +42,42 @@ builder.Services.AddMemoryCache();
 builder.Services.AddSingleton<IHttpContextAccessor,
     HttpContextAccessor>();
 
-builder.Services.AddTransient<IBraintreeService,
+builder.Services.AddScoped<IBraintreeService,
     BraintreeService>();
 
+builder.Services.AddScoped<ISendEmail,
+    SendEmailGoogle>();
+
+builder.Services.AddTransient<IRazorViewToStringRenderer, 
+    RazorViewToStringRenderer>();
+
+builder.Services.AddScoped(provider => provider.GetRequiredService<IBraintreeService>().CreateGateway());
+
+// Configure Localization
+builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+
+builder.Services.AddRazorPages()
+    .AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix)
+    .AddDataAnnotationsLocalization();
+
+
+builder.Services.AddControllersWithViews()
+    .AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix)
+    .AddDataAnnotationsLocalization();
+
+
+builder.Services.Configure<RequestLocalizationOptions>(options =>
+{
+    var supportedCultures = new[]
+    {
+        new CultureInfo("en-US"), // Default Culture
+        new CultureInfo("ru-RU"), // Russian
+    };
+
+    options.DefaultRequestCulture = new RequestCulture("en-US");
+    options.SupportedCultures = supportedCultures;
+    options.SupportedUICultures = supportedCultures;
+});
 
 builder.Services.AddOutputCache(opts =>
 {
@@ -70,8 +103,6 @@ builder.Services.AddDbContext<IdentityContext>(opts =>
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<IdentityContext>();
-
-builder.Services.AddControllersWithViews();
 
 builder.Services.Configure<IdentityOptions>(opts =>
 {
@@ -102,6 +133,8 @@ app.UseOutputCache();
 
 app.UseStaticFiles();
 app.UseSession();
+
+app.UseRequestLocalization();
 
 //IAntiforgery antiforgery = app.Services.GetRequiredService<IAntiforgery>();
 

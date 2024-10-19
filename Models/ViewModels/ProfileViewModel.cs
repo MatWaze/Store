@@ -2,7 +2,8 @@
 {
     public class ProfileViewModel
     {
-        public ApplicationUser? User { get; set; }
+        public BasicInfoViewModel? BasicInfo { get; set; }
+        public AddressViewModel? Address { get; set; }
         public List<Order>? Orders { get; set; }
     }
 }

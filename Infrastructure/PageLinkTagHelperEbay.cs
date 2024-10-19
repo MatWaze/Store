@@ -21,11 +21,11 @@ namespace Store.Infrastructure
 
         public string? QueryName {  get; set; }
 
-        public int EbayCategory {  get; set; }
+        public int? EbayCategory {  get; set; }
         
-        public int LowPrice { get; set; }
+        public int? LowPrice { get; set; }
 
-        public int UpPrice { get; set; }
+        public int? UpPrice { get; set; }
 
         [HtmlAttributeName(DictionaryAttributePrefix = "page-url-")]
         public Dictionary<string, object> PageUrlValues { get; set; }
@@ -57,9 +57,9 @@ namespace Store.Infrastructure
                     a1.Attributes["class"] = "page-link";
 
                     PageUrlValues["queryName"] = QueryName;  // Replace with dynamic values
-                    PageUrlValues["categoryNumber"] = EbayCategory;          // Replace with dynamic values
-                    PageUrlValues["priceLow"] = LowPrice;                   // Replace with dynamic values
-                    PageUrlValues["priceHigh"] = UpPrice;
+                    PageUrlValues["categoryNumber"] = EbayCategory ?? 0;          // Replace with dynamic values
+                    PageUrlValues["priceLow"] = LowPrice ?? 0;                   // Replace with dynamic values
+                    PageUrlValues["priceHigh"] = UpPrice ?? 0;
 
                     PageUrlValues["itemPage"] = (PageModel.CurrentPage - 1 == 0 ? 1 :
                         PageModel.CurrentPage - 1);

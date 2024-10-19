@@ -11,7 +11,7 @@
          </div>
     </div>
 
-    <form id="orderForm" method="post" asp-action="ProcessBraintree" asp-controller="Order">
+    <form id="orderForm" method="post" asp-action="ProcessBraintree" asp-controller="Braintree">
         @Html.AntiForgeryToken()
         <input type="hidden" name="orderId" asp-for="OrderID" />
         @* <input type="hidden" name="nonce" id="nonce" /> *@
