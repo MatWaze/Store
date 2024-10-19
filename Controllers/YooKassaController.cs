@@ -51,7 +51,7 @@ namespace Store.Controllers
             CreateYooWebHook("waiting_for_capture", accessToken);
             ViewBag.ConfirmationToken = await YooToken(orderId, accessToken);
             Console.WriteLine("Confirmation token: " + ViewBag.ConfirmationToken);
-            return View("Views/Order/YooKassaCheckout", orderId);
+            return View("Views/Order/YooKassaCheckout.cshtml", orderId);
         }
 
         public async Task<NewReceipt> CreateYooReceipt()
@@ -95,7 +95,7 @@ namespace Store.Controllers
             else
             {
                 Console.WriteLine("user already authenticated");
-                return RedirectToAction("YooKassaPayment", "Braintree",
+                return RedirectToAction("YooKassaPayment",
                     new { orderId = orderId, accessToken = user.YooKassaAccessToken });
             }
         }
