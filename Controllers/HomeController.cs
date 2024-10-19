@@ -5,6 +5,7 @@ using Store.Models.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Store.Infrastructure;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Store.Controllers
 {
@@ -35,10 +36,6 @@ namespace Store.Controllers
                 "car_track_parts.jpg", "motorcycle_parts.webp"
             };
             ViewBag.CategoryList = imgList;
-            foreach (var cat in context.Categories.ToArray())
-            {
-                Console.WriteLine("cat: " + cat.Name);
-            }
             return View(context.Categories.ToArray());
         }
 
@@ -137,6 +134,11 @@ namespace Store.Controllers
         //        return View("Form", prodToChange);
         //    }
         //}
+
+        public IActionResult PageNotFound()
+        {
+            return View();
+        }
 
         public async Task<IActionResult> Products(long categoryId = 6000, int productPage = 1)
         {

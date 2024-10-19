@@ -2,12 +2,16 @@
 @inject Cart cart
 
 @{
-    // string price = Model["price"]["value"].ToString();
-    // string? shippingPrice = Model["shippingOptions"]?.First()?["shippingCost"]?["value"]?.ToString() ?? null;
-
-    List<string> images = Model.ImageUrls.Split(' ').ToList();
-    Layout = "_Layout";
-    
+	List<string> images = Model.ImageUrls.Split(' ').ToList();
+	Layout = "_Layout";
+	CartLine? ct = cart
+		.Lines
+		.Find(cl => cl.Product.ProductId == Model.ProductId);
+	int count = 0;
+	if (ct != null)
+	{
+		count = ct.Quantity;
+	}
 }
 
 <section class="product-store position-relative padding-large">
@@ -36,7 +40,7 @@
                     <h3 class="card-text" style="font-size: 25px;">
                         Available: @(Model.Quantity > 0 ? Model.Quantity :  "None")
                     </h3>
-                    <a href="@Url.Action("Search", "Ebay")" class="btn btn-primary">
+                    <a href="@ViewBag.ReturnUrl" class="btn btn-primary">
                         Go Back
                     </a>
                     <form id="addToCartForm" method="post">
@@ -93,7 +97,7 @@
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
-    var cartLineCount = @cart.Lines.Count();
+    var cartLineCount = @count;
     var availableQuantity = @Model.Quantity;
 
      function checkCartAndDisableButton() {

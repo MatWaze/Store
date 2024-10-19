@@ -22,9 +22,4 @@ public class BraintreeService : IBraintreeService
         };
         return gateway;
     }
-
-    public IBraintreeGateway GetGateway()
-    {
-        return CreateGateway();
-    }
 }

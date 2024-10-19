@@ -16,29 +16,36 @@ namespace Store.Controllers;
 [AutoValidateAntiforgeryToken]
 public class OrderController : Controller
 {
-    public IBraintreeService brainService;
+    public IBraintreeGateway brainGateway;
     public IOrderRepository repo;
     public HttpClient httpClient;
     public IProductRepository prodRepo;
     public Cart cart;
     private IConfiguration config;
     private UserManager<ApplicationUser> userManager;
+    private IRazorViewToStringRenderer razorView;
+    private ISendEmail sendEmail;
 
-    public OrderController(IBraintreeService braintreeService,
+    public OrderController(IBraintreeGateway braintreeService,
         IOrderRepository repository,
         IProductRepository productRepository,
         Cart cartService,
         UserManager<ApplicationUser> usrMgr,
         IConfiguration configuration,
-        HttpClient client)
+        HttpClient client,
+        IRazorViewToStringRenderer razorViewToString,
+        ISendEmail send
+        )
     {   
-        brainService = braintreeService;
+        brainGateway = braintreeService;
         repo = repository;
         prodRepo = productRepository;
         cart = cartService;
         userManager = usrMgr;
         config = configuration;
         httpClient = client;
+        razorView = razorViewToString;
+        sendEmail = send;
     }
 
     public async Task<string?> GetUserYooAccessToken()
@@ -62,86 +69,7 @@ public class OrderController : Controller
         CreateYooWebHook("waiting_for_capture", accessToken);
         ViewBag.ConfirmationToken = await YooToken(orderId, accessToken);
         Console.WriteLine("Confirmation token: " + ViewBag.ConfirmationToken);
-        return View("YooKassaCheckout", orderId);
-    }
-
-    public IActionResult BraintreePayment(int orderId)
-    {
-        Order? order = repo.Orders.FirstOrDefault(o => o.OrderID == orderId);
-
-        if (order == null)
-        {
-            return NotFound();
-        }
-        IBraintreeGateway gateway = brainService.GetGateway();
-        string clientToken = gateway.ClientToken.Generate();
-        ViewBag.ClientToken = clientToken;
-
-        Console.WriteLine("name: id: " + order.Name + order.OrderID);
-        return View("BraintreeCheckout", order);
-    }
-
-    [HttpPost]
-    public IActionResult ProcessBraintree([FromForm] int orderId, 
-        [FromForm] string nonce)
-    {
-        Order? order = repo.Orders.FirstOrDefault(o => o.OrderID == orderId);
-        IBraintreeGateway gateway = brainService.GetGateway();
-        var request = new TransactionRequest
-        {
-            Amount = cart.Lines.Sum(e => e.Product.Price * e.Quantity),
-            PaymentMethodNonce = nonce,
-            Options = new TransactionOptionsRequest
-            {
-                SubmitForSettlement = true
-            }
-        };
-        Result<Transaction> result = gateway.Transaction
-            .Sale(request);
-        order.PaymentId = request.OrderId;
-        repo.SaveOrder(order);
-        if (result.IsSuccess())
-        {
-            order.PaymentStatus = "Paid";
-            Console.WriteLine("Success");
-            var productIdsInOrder = order.Lines.Select(cl => cl.Product.ProductId).ToHashSet();
-            foreach (var prod in prodRepo.Products.ToList<Product>())
-            {
-                if (productIdsInOrder.Contains(prod.ProductId))
-                {
-                    CartLine? line = cart.Lines.Find(cl => cl.Product.ProductId == prod.ProductId);
-                    Console.WriteLine("line quan: " + line.Quantity);
-                    if (prod.Quantity > 0)
-                    {
-                        prod.Quantity -= line.Quantity;
-                    }
-                    if (prod.Quantity == 0)
-                    {
-                        prod.Deleted = true;
-                    }
-					prodRepo.SaveProduct(prod);
-				}
-			}
-			repo.SaveOrder(order);
-            return RedirectToPage("/Completed",
-                new { orderId = order.OrderID });
-        }
-        else
-        {
-            var productIdsInOrder = cart.Lines.Select(cl => cl.Product.ProductId).ToHashSet();
-            foreach (var prod in prodRepo.Products)
-            {
-                if (productIdsInOrder.Contains(prod.ProductId))
-                {
-                    CartLine? cartLine = order.Lines
-                        .FirstOrDefault(p => p.Product.ProductId == prod.ProductId);
-                    prod.Quantity += cartLine.Quantity;
-                    prodRepo.SaveProduct(prod);
-                }
-            }
-            //repo.DeleteOrder(order);
-            return RedirectToAction("Products", "Home");
-        }
+        return View("Views/Order/YooKassaCheckout", orderId);
     }
 
     public async Task<NewReceipt> CreateYooReceipt()
@@ -185,7 +113,7 @@ public class OrderController : Controller
         else
         {
             Console.WriteLine("user already authenticated");
-			return RedirectToAction("YooKassaPayment", 
+			return RedirectToAction("YooKassaPayment", "Braintree",
                 new { orderId = orderId, accessToken = user.YooKassaAccessToken });
 		}
 	}
@@ -195,7 +123,7 @@ public class OrderController : Controller
         if (string.IsNullOrEmpty(code))
         {
             Console.WriteLine("error");
-            return RedirectToAction("Error");
+            return RedirectToAction("Index", "Home");
         }
         string url = "https://yookassa.ru/oauth/v2/token";
        
@@ -221,14 +149,14 @@ public class OrderController : Controller
             await userManager.UpdateAsync(user);
 
             Order? ord = repo.Orders.FirstOrDefault(o => o.UserId == user.Id);
-			return RedirectToAction("YooKassaPayment", 
+			return RedirectToAction("YooKassaPayment", "Braintree",
                 new { orderId = ord?.OrderID, accessToken = user.YooKassaAccessToken });
         }
         else
         {
             string errorResponse = await response.Content.ReadAsStringAsync();
             Console.WriteLine($"Error: {errorResponse}");
-            return RedirectToAction("Error");
+            return RedirectToAction("Index", "Home");
         }
     }
 
@@ -266,7 +194,7 @@ public class OrderController : Controller
     [HttpPost]
     [AllowAnonymous]
     [IgnoreAntiforgeryToken]
-    [Route("Order/Notification")]
+    [Route("Braintree/Notification")]
     public async Task<IActionResult> Notification()
     {
         // Enable buffering to allow multiple reads of the request body
@@ -346,7 +274,7 @@ public class OrderController : Controller
                 var content = new
                 {
                     @event = "payment." + notificationEvent,
-                    url = "https://iparts.me/Order/Notification" 
+                    url = "https://iparts.me/Braintree/Notification" 
                 };
                 Console.WriteLine($"Creating WebHook for {notificationEvent}");
                 httpClient.DefaultRequestHeaders.Add("Idempotence-Key", Guid.NewGuid().ToString());
@@ -372,7 +300,6 @@ public class OrderController : Controller
             if (order.Lines.Count() > 0)
             {
                 var user = await userManager.GetUserAsync(User);
-                Console.WriteLine(user?.UserName ?? "null name");
                 order.UserId = user.Id;
                 order.Lines = cart.Lines;
                 order.PaymentStatus = "Pending";
@@ -381,11 +308,11 @@ public class OrderController : Controller
 
                 if (order.PaymentMethod == "Braintree")
                 {
-                    return RedirectToAction("BraintreePayment", new { orderId = order.OrderID });
+                    return RedirectToAction("BraintreePayment", "Braintree", new { orderId = order.OrderID });
                 }
                 else/* if (order.PaymentMethod == "YooKassa")*/
                 {
-					return RedirectToAction("Auth2", new { orderId = order.OrderID });
+					return RedirectToAction("Auth2", "YooKassa", new { orderId = order.OrderID });
                 }
             }
             else

@@ -3,20 +3,6 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 
 // eslint-disable-next-line react-refresh/only-export-components
-function Counter() {
-    const [count, setCount] = useState(0);
-
-    const increment = () => {
-        setCount(count + 1);
-    };
-
-    return (
-        <div>
-            <button onClick={increment}>Increment</button>
-            <p>Count: {count}</p>
-        </div>
-    );
-}
 
 function CartButton() {
     const [cart, setCart] = useState({
@@ -67,15 +53,6 @@ function CartButton() {
 const cartButtonElement = document.querySelector("#cart-button");
 if (cartButtonElement) {
     createRoot(cartButtonElement).render(
-        <StrictMode>
             <CartButton />
-        </StrictMode>
     );
 }
-
-
-createRoot(document.getElementById('react-counter')).render(
-    <StrictMode>
-        <Counter />
-    </StrictMode>,
-);
