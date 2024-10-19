@@ -175,7 +175,7 @@ namespace Store.Controllers
         [HttpPost]
         [AllowAnonymous]
         [IgnoreAntiforgeryToken]
-        [Route("Braintree/Notification")]
+        [Route("YooKassa/Notification")]
         public async Task<IActionResult> Notification()
         {
             // Enable buffering to allow multiple reads of the request body
