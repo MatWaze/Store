@@ -3,10 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
 using Store.Models;
 using System.Net.Http.Headers;
-using System.Net.Http;
 using System.Text;
 using Yandex.Checkout.V3;
-using Braintree;
 using Microsoft.AspNetCore.Identity;
 using Store.Infrastructure;
 
@@ -14,7 +12,6 @@ namespace Store.Controllers
 {
     public class YooKassaController : Controller
     {
-        public IBraintreeGateway brainGateway;
         public IOrderRepository repo;
         public HttpClient httpClient;
         public IProductRepository prodRepo;
@@ -24,7 +21,7 @@ namespace Store.Controllers
         private IRazorViewToStringRenderer razorView;
         private ISendEmail sendEmail;
 
-        public YooKassaController(IBraintreeGateway braintreeService,
+        public YooKassaController(
             IOrderRepository repository,
             IProductRepository productRepository,
             Cart cartService,
@@ -35,7 +32,6 @@ namespace Store.Controllers
             ISendEmail send
             )
         {
-            brainGateway = braintreeService;
             repo = repository;
             prodRepo = productRepository;
             cart = cartService;
