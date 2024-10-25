@@ -102,7 +102,7 @@ public class OrderController : Controller
         }
         else
         {
-            return RedirectToAction("Checkout", new { order });
+            return RedirectToAction("New");
         }
     }
 }

@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
 using Store.Infrastructure;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.AspNetCore.OutputCaching;
 
 namespace StoreTests
 {
@@ -34,7 +35,7 @@ namespace StoreTests
             {
                 CredentialUtil.Load(@"D:\files\aspnet\Store\ebay.yml");
                 Mock<OAuth2Api> mockOauth = new Mock<OAuth2Api>();
-                Mock<HttpClient> mockClient = new Mock<HttpClient>();
+                Mock<EbayService> mockClient = new Mock<EbayService>();
 
                 var mockUserManager = new Mock<UserManager<ApplicationUser>>(
                    Mock.Of<IUserStore<ApplicationUser>>(), null, null, null, null, null, null, null, null);
@@ -66,7 +67,7 @@ namespace StoreTests
 
                 // Act
                 EbayController ebay = new EbayController(mockOauth.Object,
-                    null, mockClient.Object, repo, mockUserManager.Object, null);
+                    null, mockClient.Object, repo, mockUserManager.Object, null, null);
 
                 Product? result = ((await ebay.GetItem("v1|315684160193|0") as ViewResult)?
                     .ViewData.Model as Product) ?? null;
@@ -94,7 +95,7 @@ namespace StoreTests
             {
                 CredentialUtil.Load(@"D:\files\aspnet\Store\ebay.yml");
                 Mock<OAuth2Api> mockOauth = new Mock<OAuth2Api>();
-                Mock<HttpClient> mockClient = new Mock<HttpClient>();
+                Mock<EbayService> mockClient = new Mock<EbayService>();
 
                 var mockUserManager = new Mock<UserManager<ApplicationUser>>(
                    Mock.Of<IUserStore<ApplicationUser>>(), null, null, null, null, null, null, null, null);
@@ -124,11 +125,11 @@ namespace StoreTests
                     "https://api.ebay.com/oauth/api_scope"
                 };
 
-                var mem = new Mock<IMemoryCache>();
+                var mem = new Mock<IOutputCacheStore>();
 
                 // Act
                 EbayController ebay = new EbayController(mockOauth.Object,
-                    null, mockClient.Object, repo, mockUserManager.Object, mem.Object);
+                    null, mockClient.Object, repo, mockUserManager.Object, mem.Object, null);
 
                 var result = ((await ebay.Results("dt parts", 6000, 10, 1000) as ViewResult)?
                     .ViewData.Model as IEnumerable<JToken>) ?? null;

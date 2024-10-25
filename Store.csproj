@@ -11,6 +11,7 @@
 
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="Azure.AI.Translation.Text" Version="1.0.0" />
     <PackageReference Include="Azure.Extensions.AspNetCore.DataProtection.Keys" Version="1.2.4" />
     <PackageReference Include="Azure.Storage.Blobs" Version="12.21.1" />
     <PackageReference Include="Braintree" Version="5.26.0" />
@@ -32,6 +33,8 @@
     <PackageReference Include="Moq" Version="4.18.4" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="7.0.0" />
     <PackageReference Include="Radzen.Blazor" Version="5.2.9" />
+    <PackageReference Include="ServiceStack.Interfaces" Version="8.0.0" />
+    <PackageReference Include="ServiceStack.Redis" Version="8.0.0" />
     <PackageReference Include="Syncfusion.EJ2.AspNet.Core" Version="27.1.51" />
     <PackageReference Include="System.Linq.Async" Version="6.0.1" />
     <PackageReference Include="Vite.AspNetCore" Version="2.1.2" />

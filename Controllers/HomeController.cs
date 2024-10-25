@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Store.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Localization;
 
 namespace Store.Controllers
 {
@@ -79,6 +80,18 @@ namespace Store.Controllers
             return View();
         }
 
+        [HttpPost]
+        public IActionResult SetLanguage(string culture, string returnUrl)
+        {
+            Response.Cookies.Append(
+                CookieRequestCultureProvider.DefaultCookieName,
+                CookieRequestCultureProvider.MakeCookieValue(new RequestCulture(culture)),
+                new CookieOptions { Expires = DateTimeOffset.UtcNow.AddYears(1) }
+            );
+
+            return LocalRedirect(returnUrl);
+        }
+
         //[HttpPost]
         //public async Task<IActionResult> NewProduct(long id, Product product)
         //{
@@ -147,8 +160,8 @@ namespace Store.Controllers
                 .Include(p => p.Category).ToArray();
             
             var prods = pr.OrderBy(p => p.ProductId)
-                .Where(p => (p.Category.EbayCategoryId == categoryId)
-                    && p.Deleted == false)
+                .Where(p => (p.Deleted == false 
+                    && (categoryId == 6000 || p.Category.EbayCategoryId == categoryId)))
                 .Skip((productPage - 1) * PageSize)
                 .Take(PageSize)
                 .ToArray();
@@ -160,9 +173,8 @@ namespace Store.Controllers
                 {
                     CurrentPage = productPage,
                     ItemsPerPage = PageSize,
-                    ItemsCount = pr.Where(p => 
-                        (p.Category.EbayCategoryId == categoryId)
-                        && p.Deleted == false).Count(),
+                    ItemsCount = pr.Where(p => (p.Deleted == false 
+                        && (categoryId == 6000 || p.Category.EbayCategoryId == categoryId))).Count(),
                     CurrentCategory = categoryId
                 },
             });

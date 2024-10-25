@@ -63,7 +63,7 @@ namespace Store.Controllers
                 var result = await usrMgr.UpdateAsync(currentUser);
             }
             
-            return View("Index", new ProfileViewModel
+            return RedirectToAction("Index", new ProfileViewModel
             {
                 BasicInfo = new BasicInfoViewModel 
                 { 
@@ -101,7 +101,7 @@ namespace Store.Controllers
 
                 await usrMgr.UpdateAsync(user);
             }
-            return View("Index", new ProfileViewModel
+            return RedirectToAction("Index", new ProfileViewModel
             {
                 BasicInfo = new BasicInfoViewModel
                 {

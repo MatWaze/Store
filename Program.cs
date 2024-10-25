@@ -15,6 +15,10 @@ using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Mvc.Razor;
 using System.Globalization;
 using Microsoft.AspNetCore.Localization;
+using Azure.AI.Translation.Text;
+using Azure;
+using ServiceStack.Redis;
+using Microsoft.AspNetCore.OutputCaching;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,6 +35,19 @@ builder.Services.AddDbContext<DataContext>(opts =>
     //    builder.Configuration["ConnectionStrings:HerokuConnection"]);
 });
 
+builder.Services.AddSingleton<IRedisClientAsync>(c =>
+{
+    var client = new RedisClient(
+        builder.Configuration["RedisConnection:Host"],
+        int.Parse(builder.Configuration["RedisConnection:Port"]!),
+        builder.Configuration["RedisConnection:Password"]
+    );
+    return client;
+});
+
+builder.Services.AddSingleton<IOutputCacheStore,
+    CacheService>();
+
 builder.Services.AddSingleton<BlobStorageService>();
 builder.Services.AddSingleton<GetLocation>();
 builder.Services.AddScoped<OAuth2Api>();
@@ -42,6 +59,9 @@ builder.Services.AddMemoryCache();
 builder.Services.AddSingleton<IHttpContextAccessor,
     HttpContextAccessor>();
 
+builder.Services.AddSingleton<IEbayService,
+    EbayService>();
+
 builder.Services.AddScoped<IBraintreeService,
     BraintreeService>();
 
@@ -50,6 +70,18 @@ builder.Services.AddScoped<ISendEmail,
 
 builder.Services.AddTransient<IRazorViewToStringRenderer, 
     RazorViewToStringRenderer>();
+
+builder.Services.AddSingleton<TextTranslationClient>(opts =>
+{
+    return new TextTranslationClient(
+        new AzureKeyCredential(builder.Configuration["AzureTranslation:ApiKey"]),
+        builder.Configuration["AzureTranslation:Region"]
+    );
+});
+
+builder.Services.AddSingleton<IAzureTranslation,
+    AzureTranslation>();
+
 
 builder.Services.AddScoped(provider => provider.GetRequiredService<IBraintreeService>().CreateGateway());
 
@@ -70,7 +102,7 @@ builder.Services.Configure<RequestLocalizationOptions>(options =>
 {
     var supportedCultures = new[]
     {
-        new CultureInfo("en-US"), // Default Culture
+        new CultureInfo("en-US"), // English
         new CultureInfo("ru-RU"), // Russian
     };
 
@@ -192,7 +224,10 @@ using (Stream fileStream = await blob.GetFileStreamAsync("ebay.yml"))
     }
 }
 
-await SeedData.SeedDatabase(new HttpClient(), context, userManager);
+var ebaySrv = app.Services.CreateScope()
+    .ServiceProvider.GetRequiredService<IEbayService>();
+
+await SeedData.SeedDatabase(ebaySrv, context, userManager);
 
 
 app.Run(); 

@@ -75,10 +75,10 @@
 		<div class="logo">
 			<img src="https://dontknowhowtonameit1.blob.core.windows.net/web/wwwroot/images/logo_iparts.png" alt="ILoveParts Logo"> <!-- Update with your logo URL -->
 		</div>
-		<h1>Thank You for Your Order!</h1>
-		<h2>Order Details</h2>
-		<p><strong>Name:</strong> @Model.Name</p>
-		<p><strong>Shipping Address:</strong></p>
+		<h1>@Localizer["Thank You for Your Order!"]</h1>
+		<h2>@Localizer["Order Details"]</h2>
+		<p><strong>@Localizer["Name"]:</strong> @Model.Name</p>
+		<p><strong>@Localizer["Shipping Address"]:</strong></p>
 		<p>@Model.Line1</p>
 		@if (!string.IsNullOrEmpty(Model.Line2))
 		{
@@ -92,7 +92,7 @@
 		<p>@Model.Country</p>
 
 		<div class="order-summary">
-			<h2>Items Purchased</h2>
+			<h2>@Localizer["Items Purchased"]</h2>
 			@foreach (var line in Model.Lines)
 			{
 				<div class="order-item">
@@ -104,12 +104,12 @@
 				</div>
 			}
 			<div class="total">
-				Total: @(Model.Lines.Sum(line => line.Product.Price * line.Quantity))
+				@Localizer["Total"]: $@(Model.Lines.Sum(line => line.Product.Price * line.Quantity))
 			</div>
 		</div>
 
 		<div class="footer">
-			<p>If you have any questions, feel free to contact us!</p>
+			<p>@Localizer["If you have any questions, feel free to contact us!"]</p>
 		</div>
 	</div>
 </body>

@@ -14,7 +14,7 @@ namespace Store.Models
 {
 	public static class SeedData
 	{
-        private static async Task SeedProductsAsync(HttpClient client, string token, DataContext context,
+        private static async Task SeedProductsAsync(IEbayService client, string token, DataContext context,
 	        JToken items2, Category cat, string adminId)
         {
 			var items = items2["itemSummaries"];
@@ -22,7 +22,7 @@ namespace Store.Models
             {
                 string ebayId = item["itemId"].ToString();
 
-                var itemAsync = await EbayService.GetItemInfoAsync(client, token, ebayId);
+                var itemAsync = await client.GetItemInfoAsync(token, ebayId);
                 var existingProduct = await context.Products
                     .FirstOrDefaultAsync(p => p.EbayProductId == ebayId);
 
@@ -69,7 +69,7 @@ namespace Store.Models
             await context.SaveChangesAsync();
         }
 
-        public static async Task SeedDatabase(HttpClient httpClient,
+        public static async Task SeedDatabase(IEbayService httpClient,
 			DataContext context, UserManager<ApplicationUser> userManager)
 		{
 			await context.Database.MigrateAsync();
@@ -78,7 +78,7 @@ namespace Store.Models
 				context.Categories.Count() == 0)
 			{
                 List<string> Scopes = new List<string>()
-				{
+				{ 
 					"https://api.ebay.com/oauth/api_scope"
 				};
 
@@ -93,11 +93,11 @@ namespace Store.Models
 				Category c4 = new() { Name = "Car & Truck Parts & Accessories", EbayCategoryId = 6030 };
 				Category c5 = new() { Name = "Motorcycle & Scooter Parts & Accessories", EbayCategoryId = 10063 };
 
-				JObject items1 = await EbayService.SearchItemsAsync(httpClient, access, "dt parts", 1, 1000, 4, "6000");
-                JObject items2 = await EbayService.SearchItemsAsync(httpClient, access, "parts", 1, 1000, 4, "6028");
-                JObject items3 = await EbayService.SearchItemsAsync(httpClient, access, "exterior parts", 1, 1000, 5, "33637");
-				JObject items4 = await EbayService.SearchItemsAsync(httpClient, access, "car parts", 1, 1000, 4, "6030");
-				JObject items5 = await EbayService.SearchItemsAsync(httpClient, access, "motorcycle parts", 1, 1000, 3, "10063");
+				JObject items1 = await httpClient.SearchItemsAsync(access, "dt parts", 1, 1000, 4, "6000");
+                JObject items2 = await httpClient.SearchItemsAsync(access, "parts", 1, 1000, 4, "6028");
+                JObject items3 = await httpClient.SearchItemsAsync(access, "exterior parts", 1, 1000, 5, "33637");
+				JObject items4 = await httpClient.SearchItemsAsync(access, "car parts", 1, 1000, 4, "6030");
+				JObject items5 = await httpClient.SearchItemsAsync( access, "motorcycle parts", 1, 1000, 3, "10063");
 
 				await SeedData.SeedProductsAsync(httpClient, access, context, items1, c1, admin.Id);
 				await SeedData.SeedProductsAsync(httpClient, access, context, items2, c2, admin.Id);
