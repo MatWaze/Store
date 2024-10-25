@@ -117,25 +117,25 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="All Store Parts" xml:space="preserve">
-    <value>Все запчасти</value>
+  <data name="If you have any questions, feel free to contact us!" xml:space="preserve">
+    <value>Если у вас есть какие-либо вопросы, не стесняйтесь связаться с нами!</value>
   </data>
-  <data name="Car &amp; Truck Parts &amp; Accessories" xml:space="preserve">
-    <value>Запчасти для авто и грузовиков</value>
+  <data name="Items Purchased" xml:space="preserve">
+    <value>Купленные предметы</value>
   </data>
-  <data name="Exterior Parts &amp; Accessories" xml:space="preserve">
-    <value>Внешние запчасти</value>
+  <data name="Name" xml:space="preserve">
+    <value>Имя</value>
   </data>
-  <data name="Motorcycle &amp; Scooter Parts &amp; Accessories" xml:space="preserve">
-    <value>Запчасти для мотоциклов</value>
+  <data name="Order Details" xml:space="preserve">
+    <value>Детали заказа</value>
   </data>
-  <data name="Parts &amp; Accessories" xml:space="preserve">
-    <value>Запчасти и аксессуары</value>
+  <data name="Shipping Address" xml:space="preserve">
+    <value>Адрес доставки</value>
   </data>
-  <data name="Search for specific item" xml:space="preserve">
-    <value>Поиск предмета по критериям</value>
+  <data name="Thank You for Your Order!" xml:space="preserve">
+    <value>Спасибо за ваш заказ!</value>
   </data>
-  <data name="See Products" xml:space="preserve">
-    <value>Посмотреть детали</value>
+  <data name="Total" xml:space="preserve">
+    <value>Всего</value>
   </data>
 </root>

@@ -117,25 +117,34 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="All Store Parts" xml:space="preserve">
-    <value>Все запчасти</value>
+  <data name="Checkout" xml:space="preserve">
+    <value>Checkout</value>
   </data>
-  <data name="Car &amp; Truck Parts &amp; Accessories" xml:space="preserve">
-    <value>Запчасти для авто и грузовиков</value>
+  <data name="Continue shopping" xml:space="preserve">
+    <value>Continue shopping</value>
   </data>
-  <data name="Exterior Parts &amp; Accessories" xml:space="preserve">
-    <value>Внешние запчасти</value>
+  <data name="Empty Cart" xml:space="preserve">
+    <value>Your cart is empty</value>
   </data>
-  <data name="Motorcycle &amp; Scooter Parts &amp; Accessories" xml:space="preserve">
-    <value>Запчасти для мотоциклов</value>
+  <data name="Item" xml:space="preserve">
+    <value>Item</value>
   </data>
-  <data name="Parts &amp; Accessories" xml:space="preserve">
-    <value>Запчасти и аксессуары</value>
+  <data name="Price" xml:space="preserve">
+    <value>Price</value>
   </data>
-  <data name="Search for specific item" xml:space="preserve">
-    <value>Поиск предмета по критериям</value>
+  <data name="Quantity" xml:space="preserve">
+    <value>Quantity</value>
   </data>
-  <data name="See Products" xml:space="preserve">
-    <value>Посмотреть детали</value>
+  <data name="Remove" xml:space="preserve">
+    <value>Remove product</value>
+  </data>
+  <data name="Subtotal" xml:space="preserve">
+    <value>Subtotal</value>
+  </data>
+  <data name="Total" xml:space="preserve">
+    <value>Total</value>
+  </data>
+  <data name="Your cart" xml:space="preserve">
+    <value>Cart</value>
   </data>
 </root>

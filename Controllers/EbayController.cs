@@ -10,6 +10,10 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Caching.Memory;
+using Azure.Core;
+using Azure.AI.Translation.Text;
+using System.Text;
+using System.Threading;
 
 namespace Store.Controllers
 {
@@ -20,21 +24,28 @@ namespace Store.Controllers
         private IProductRepository context;
         private OAuth2Api oauth;
         private GetLocation location;
-        private HttpClient httpClient;
+        private IEbayService ebayService;
         private string? token;
 		private UserManager<ApplicationUser> userManager;
-        private readonly IMemoryCache _memoryCache;
+        private readonly IOutputCacheStore _memoryCache;
+        private IAzureTranslation azureTranslate;
 
-        public EbayController(OAuth2Api oauthApi, GetLocation loc,
-            HttpClient client, IProductRepository dataContext,
-			UserManager<ApplicationUser> usrManager, IMemoryCache memoryCache)
+        public EbayController(
+            OAuth2Api oauthApi, 
+            GetLocation loc,
+            IEbayService ebaySrv, 
+            IProductRepository dataContext,
+			UserManager<ApplicationUser> usrManager,
+            IOutputCacheStore memoryCache,
+            IAzureTranslation azureTranslation)
         {
             oauth = oauthApi;
             location = loc;
-            httpClient = client;
+            ebayService = ebaySrv;
             context = dataContext;
             userManager = usrManager;
             _memoryCache = memoryCache;
+            azureTranslate = azureTranslation;
         }
 
         public List<string> Scopes = new List<string>()
@@ -43,6 +54,8 @@ namespace Store.Controllers
         };
 
         public int PageSize = 6;
+
+        public string currentCulture = CultureInfo.CurrentCulture.Name;
 
         public IActionResult Auth()
         {
@@ -81,11 +94,10 @@ namespace Store.Controllers
             }
             else
             {
-                var accessToken = oauth.GetApplicationToken(OAuthEnvironment.PRODUCTION, Scopes)
-                    .AccessToken.Token;
+                string accessToken = await GetTokenFromCacheOrDefault();
                 //var accessToken = oauth.ExchangeCodeForAccessToken(OAuthEnvironment.PRODUCTION, "").AccessToken.Token; 
 
-                JToken item = await EbayService.GetItemInfoAsync(httpClient, accessToken, id);
+                JToken item = await ebayService.GetItemInfoAsync(accessToken, id);
 
                 string? quan = item["estimatedAvailabilities"]?.First()?["estimatedAvailableQuantity"]?.ToString()
                     ?? null;
@@ -131,13 +143,72 @@ namespace Store.Controllers
                     ImageUrls = imageUrls,
 				};
                 context.AddProduct(newProduct);
-                Console.WriteLine("Saved product");
                 return View(newProduct);
 			}
         }
 
+        public async Task<string> GetTokenFromCacheOrDefault()
+        {
+            string? accessToken = null;
+            CancellationToken cancellationToken = new();
+            byte[]? bytes = await _memoryCache.GetAsync("EbayApplicationToken", cancellationToken);
+
+            if (bytes != null)
+            {
+                accessToken = Encoding.ASCII.GetString(bytes);
+            }
+            if (accessToken == null)
+            {
+                accessToken = oauth
+                    .GetApplicationToken(OAuthEnvironment.PRODUCTION, Scopes)
+                    .AccessToken.Token;
+
+                await _memoryCache.SetAsync(
+                    "EbayApplicationToken", 
+                    Encoding.ASCII.GetBytes(accessToken),
+                    new string[] { "tag" }, 
+                    TimeSpan.FromMinutes(90),
+                    cancellationToken
+                );
+            }
+            return accessToken!;
+        }
+
+        public async Task TranslateTitles(JObject json, CancellationToken cancellationToken)
+        {
+            foreach (var item in json["itemSummaries"])
+            {
+                string engTitle = item["itemHref"].ToString();
+                string? translated = null;
+                byte[]? bytes = await _memoryCache.GetAsync(engTitle, cancellationToken);
+
+                if (bytes != null)
+                {
+                    translated = Encoding.UTF8.GetString(bytes);
+                }
+                if (translated == null)
+                {
+                    TranslatedTextItem? transText = await azureTranslate
+                        .TranslateTextAsync(item["title"].ToString(), to: "ru");
+
+                    translated = transText?
+                        .Translations?
+                        .FirstOrDefault()?
+                        .Text;
+                    await _memoryCache.SetAsync(
+                        engTitle,
+                        Encoding.UTF8.GetBytes(translated),
+                        new string[] { "tag" },
+                        TimeSpan.FromMinutes(15), 
+                        cancellationToken
+                    );
+                }
+                item["title"] = translated;
+            }
+        }
+
         [OutputCache(PolicyName = "default", VaryByRouteValueNames = new[] { "queryName", "categoryNumber", "priceLow", "priceHigh" })]
-        public async Task<IActionResult> Results(string queryName, int? priceLow, int? priceHigh, int itemPage = 1, int? categoryNumber = null)
+        public async Task<IActionResult> Results(string queryName, int? priceLow, int? priceHigh, int itemPage = 1, int? categoryNumber = 0)
         {
             if (queryName == null)
             {
@@ -156,14 +227,41 @@ namespace Store.Controllers
             ViewBag.Up = priceHigh;
 
             string cacheKey = $"{queryName}_{categoryNumber}_{priceLow}_{priceHigh}";
-            if (!_memoryCache.TryGetValue(cacheKey, out JObject keyValuePairs))
+            CancellationToken cancellationToken = new();
+            JObject? keyValuePairs = null;
+            byte[]? array = await _memoryCache.GetAsync(cacheKey, cancellationToken);
+
+            if (array == null)
             {
-                var accessToken = oauth.GetApplicationToken(OAuthEnvironment.PRODUCTION, Scopes).AccessToken.Token;
-                keyValuePairs = await EbayService.SearchItemsAsync(httpClient, accessToken, queryName, 
-                    (int) priceLow!, (int) priceHigh!, 50, categoryNumber != null ? categoryNumber.ToString() : "");
-                _memoryCache.Set(cacheKey, keyValuePairs, TimeSpan.FromMinutes(5)); // Cache for 5 minutes
+                string accessToken = await GetTokenFromCacheOrDefault();
+
+                keyValuePairs = await ebayService.SearchItemsAsync(accessToken, queryName, 
+                    (int) priceLow!, (int) priceHigh!, 50, (categoryNumber != 0 ? categoryNumber.ToString() : "")!);
+
+                if (keyValuePairs.ContainsKey("itemSummaries"))
+                {
+                    if (currentCulture == "ru-RU")
+                    {
+                       await TranslateTitles(keyValuePairs, cancellationToken);
+                    }
+                    string json = JsonConvert.SerializeObject(keyValuePairs);
+
+                    await _memoryCache.SetAsync(
+                        cacheKey,
+                        Encoding.UTF8.GetBytes(json),
+                        new string[] { "tag" },
+                        TimeSpan.FromMinutes(15),
+                        cancellationToken
+                    );
+                }
+            }
+            else
+            {
+                string byteString = Encoding.UTF8.GetString(array);
+                keyValuePairs = JObject.Parse(byteString);
             }
             JToken? itemSummaries = keyValuePairs?["itemSummaries"];
+            
             if (itemSummaries != null)
             {
                 var items = itemSummaries
@@ -182,14 +280,13 @@ namespace Store.Controllers
                     }
                 });
             }
-            Console.WriteLine("No results were found. Try again.");
             ViewBag.Categories = context.Categories.ToArray();
-            return RedirectToAction("Index", "Home")/*View("Search", new QueryProduct())*/;
+            return View("Search")/*View("Search", new QueryProduct())*/;
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult SearchForm(QueryProduct queryProduct, int pageNumber = 1, int pageSize = 2)
+        public async Task<IActionResult> SearchForm(QueryProduct queryProduct, int pageNumber = 1, int pageSize = 2)
         {
             if (queryProduct.PriceLow > queryProduct.PriceHigh)
             {
@@ -202,14 +299,17 @@ namespace Store.Controllers
             {
                 return RedirectToAction("Results", new
                 {
-                    queryName = queryProduct.QueryName,
+                    queryName = (await azureTranslate.TranslateTextAsync(
+                        queryProduct.QueryName!,
+                        "ru",
+                        "en"
+                    ))?.Translations?.FirstOrDefault()?.Text,
                     categoryNumber = queryProduct.CategoryNumber,
                     priceLow = queryProduct.PriceLow,
                     priceHigh = queryProduct.PriceHigh
-                });
+                });;
             }
             ViewBag.Categories = context.Categories.ToArray();
-
             return View("Search", queryProduct);
         }
 

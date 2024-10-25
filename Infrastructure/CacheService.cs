@@ -1,22 +1,41 @@
 ﻿using Microsoft.AspNetCore.OutputCaching;
+using ServiceStack.Redis;
 
 namespace Store.Infrastructure
 {
     public class CacheService : IOutputCacheStore
-    {
-        public ValueTask EvictByTagAsync(string tag, CancellationToken cancellationToken)
+    { 
+
+        private IRedisClientAsync client;
+
+        public CacheService(IRedisClientAsync redisClient)
+        {
+            client = redisClient;
+        }
+
+        public ValueTask EvictByTagAsync(string tag, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
 
-        public ValueTask<byte[]?> GetAsync(string key, CancellationToken cancellationToken)
+        public async ValueTask<byte[]?> GetAsync(string key, CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            byte[]? data = null;
+
+            if (key != null)
+            {
+                data = await client.GetAsync<byte[]>(key);
+            }
+            return data;
         }
 
-        public ValueTask SetAsync(string key, byte[] value, string[]? tags, TimeSpan validFor, CancellationToken cancellationToken)
+        public async ValueTask SetAsync(string key, byte[] value, string[]? tags,
+            TimeSpan validFor, CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            if (key != null)
+            {
+                await client.SetAsync(key, value, validFor, cancellationToken);
+            }
         }
     }
 }

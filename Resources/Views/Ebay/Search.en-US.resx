@@ -132,6 +132,9 @@
   <data name="Parts &amp; Accessories" xml:space="preserve">
     <value>Parts &amp; Accessories</value>
   </data>
+  <data name="Search for specific item" xml:space="preserve">
+    <value>Search for specific item</value>
+  </data>
   <data name="See Products" xml:space="preserve">
     <value>See Products</value>
   </data>
