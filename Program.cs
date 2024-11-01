@@ -1,17 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using Store.Models;
-using Store.Controllers;
 using Microsoft.Extensions.Azure;
 using Microsoft.AspNetCore.Identity;
 using Store.Infrastructure;
-using Microsoft.AspNetCore.DataProtection;
-using Azure.Extensions.AspNetCore.DataProtection.Keys;
-using Microsoft.AspNetCore.DataProtection.AzureKeyVault;
 using eBay.ApiClient.Auth.OAuth2;
 using Microsoft.AspNetCore.Antiforgery;
-using Yandex.Checkout.V3;
 using Vite.AspNetCore;
-using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Mvc.Razor;
 using System.Globalization;
 using Microsoft.AspNetCore.Localization;
@@ -19,8 +13,14 @@ using Azure.AI.Translation.Text;
 using Azure;
 using ServiceStack.Redis;
 using Microsoft.AspNetCore.OutputCaching;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
+
 
 builder.Services.AddViteServices(opts =>
 {
@@ -29,10 +29,10 @@ builder.Services.AddViteServices(opts =>
 
 builder.Services.AddDbContext<DataContext>(opts =>
 {
-    opts.UseSqlServer(
-        builder.Configuration["ConnectionStrings:AzureStoreConnection"]);
-    //opts.UseNpgsql(
-    //    builder.Configuration["ConnectionStrings:HerokuConnection"]);
+    //opts.UseSqlServer(
+    //    builder.Configuration["ConnectionStrings:AzureStoreConnection"]);
+
+    opts.UseNpgsql(Environment.GetEnvironmentVariable("HerokuConnection"));
 });
 
 builder.Services.AddSingleton<IRedisClientAsync>(c =>
@@ -40,13 +40,15 @@ builder.Services.AddSingleton<IRedisClientAsync>(c =>
     var client = new RedisClient(
         builder.Configuration["RedisConnection:Host"],
         int.Parse(builder.Configuration["RedisConnection:Port"]!),
-        builder.Configuration["RedisConnection:Password"]
+        Environment.GetEnvironmentVariable("RedisConnection")
     );
     return client;
 });
 
+
 builder.Services.AddSingleton<IOutputCacheStore,
     CacheService>();
+
 
 builder.Services.AddSingleton<BlobStorageService>();
 builder.Services.AddSingleton<GetLocation>();
@@ -74,8 +76,7 @@ builder.Services.AddTransient<IRazorViewToStringRenderer,
 builder.Services.AddSingleton<TextTranslationClient>(opts =>
 {
     return new TextTranslationClient(
-        new AzureKeyCredential(builder.Configuration["AzureTranslation:ApiKey"]),
-        builder.Configuration["AzureTranslation:Region"]
+        new AzureKeyCredential(Environment.GetEnvironmentVariable("AzureTranslation"))
     );
 });
 
@@ -128,9 +129,8 @@ builder.Services.Configure<AntiforgeryOptions>(opts => {
 builder.Services.AddDbContext<IdentityContext>(opts =>
 {
     //opts.UseSqlServer(
-        //builder.Configuration["ConnectionStrings:IdentityConnection"]);
-    opts.UseNpgsql(
-        builder.Configuration["ConnectionStrings:HerokuIdentityConnection"]);
+    //builder.Configuration["ConnectionStrings:IdentityConnection"]);
+    opts.UseNpgsql(Environment.GetEnvironmentVariable("HerokuIdentityConnection"));
 });
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
@@ -148,7 +148,7 @@ builder.Services.Configure<IdentityOptions>(opts =>
 
 builder.Services.AddAzureClients(opts =>
 {
-    opts.AddBlobServiceClient(builder.Configuration["ConnectionStrings:BlobConnection"]);
+    opts.AddBlobServiceClient(Environment.GetEnvironmentVariable("BlobConnection"));
 });
 
 builder.Services.AddScoped<IProductRepository, EFProductRepository>();
@@ -159,6 +159,62 @@ builder.Services.AddHttpClient();
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession();
 
+builder.Services.AddAuthentication(opts =>
+{
+    opts.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+
+    opts.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+}).AddCookie(opts =>
+{
+    opts.Events.DisableAuthForPath(e => e.OnRedirectToLogin, 
+        "/api", StatusCodes.Status401Unauthorized);
+
+    opts.Events.DisableAuthForPath(e => e.OnRedirectToAccessDenied, 
+        "/api", StatusCodes.Status403Forbidden);
+}).AddJwtBearer(opts =>
+{
+    opts.RequireHttpsMetadata = false;
+    opts.SaveToken = true;
+    opts.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(
+            Encoding.ASCII.GetBytes(Environment.GetEnvironmentVariable("jwtSecret")!)
+        ),
+        ValidateAudience = false,
+        ValidateIssuer = false
+    };
+    opts.Events = new JwtBearerEvents
+    {
+        OnTokenValidated = async ctx =>
+        {
+            UserManager<ApplicationUser> userManager = ctx
+                .HttpContext
+                .RequestServices
+                .GetRequiredService<UserManager<ApplicationUser>>();
+
+            SignInManager<ApplicationUser> signInManager = ctx
+                .HttpContext
+                .RequestServices
+                .GetRequiredService<SignInManager<ApplicationUser>>();
+
+            string? userName = ctx.Principal?
+                .FindFirst(ClaimTypes.Name)?
+                .Value;
+
+            if (userName != null)
+            {
+                ApplicationUser? user = await userManager.FindByNameAsync(userName);
+                if (user != null)
+                {
+                    ctx.Principal = await signInManager
+                        .CreateUserPrincipalAsync(user);
+                }
+            }
+        }
+    };
+});
+
 var app = builder.Build();
 
 app.UseOutputCache();
@@ -168,31 +224,10 @@ app.UseSession();
 
 app.UseRequestLocalization();
 
-//IAntiforgery antiforgery = app.Services.GetRequiredService<IAntiforgery>();
-
-//app.Use(async (context, next) => {
-//    if (!context.Request.Path.StartsWithSegments("/api"))
-//    {
-//        string? token =
-//        antiforgery.GetAndStoreTokens(context).RequestToken;
-//        if (token != null)
-//        {
-//            context.Response.Cookies.Append("XSRF-TOKEN",
-//            token,
-//            new CookieOptions { HttpOnly = false });
-//        }
-//    }
-//    await next();
-//});
 
 app.UseAuthentication();
 app.UseAuthorization();
 
-// WebSockets support is required for HMR (hot module reload).
-// Uncomment the following line if your pipeline doesn't contain it.
-// app.UseWebSockets();
-// Enable all required features to use the Vite Development Server.
-// Pass true if you want to use the integrated middleware.
 
 app.MapControllerRoute("catpage",
     "{categoryId}/Page{productPage:int}",
