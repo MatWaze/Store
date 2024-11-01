@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import './index.css';
 import { useTranslation } from 'react-i18next';
 import './i18n'; // Import i18n configuration
+import SpeechToText from './SpeechToText.jsx';
 
 function CartButton() {
     const { t } = useTranslation(); // Hook for localization
@@ -51,3 +52,8 @@ if (cartButtonElement) {
         <CartButton />
     );
 }
+
+const speechButton = document.getElementById("speech-to-text-react");
+createRoot(speechButton).render(
+    <SpeechToText />
+)
