@@ -10,21 +10,24 @@
 	  <div class="card-body">
 		<div class="text-danger" asp-validation-summary="All"></div>
 
-		<form method="post">
-			@Html.AntiForgeryToken()
-			<input type="hidden" name="returnUrl" value="@Model.ReturnUrl"/>
-			<div class="form-group">
-				<label style="font-size: 20px;">@Localizer["UserName"]</label> <!-- Increased font size -->
-				<input class="form-control form-control-lg" asp-for="UserName" /> <!-- Larger input fields -->
-				<span asp-validation-for="UserName" class="text-danger"></span>
-			</div>
-			<div class="form-group">
-				<label style="font-size: 20px;">@Localizer["Password"]</label> <!-- Increased font size -->
-				<input asp-for="Password" type="password" class="form-control form-control-lg" /> <!-- Larger input fields -->
-				<span asp-validation-for="Password" class="text-danger"></span>
-			</div>
-			<button class="btn btn-primary mt-4 w-100 btn-lg" type="submit">@Localizer["Login"]</button> <!-- Larger button and top margin -->
-		</form>
+        <form method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="returnUrl" value="@Model.ReturnUrl"/>
+            <div class="form-group">
+                <label style="font-size: 20px;">@Localizer["UserName"]</label> <!-- Increased font size -->
+                <input class="form-control form-control-lg" asp-for="UserName" /> <!-- Larger input fields -->
+                <span asp-validation-for="UserName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label style="font-size: 20px;">@Localizer["Password"]</label> <!-- Increased font size -->
+                <input asp-for="Password" type="password" class="form-control form-control-lg" /> <!-- Larger input fields -->
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+            <button class="btn btn-primary mt-4 w-100 btn-lg" type="submit">@Localizer["Login"]</button> <!-- Larger button and top margin -->
+        </form>
+        <span>
+            Don't have an account? <a asp-page="Signup">Sign up!</a>
+        </span>
 	  </div>
 	</div>
   </div>
