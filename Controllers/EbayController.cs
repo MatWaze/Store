@@ -110,14 +110,14 @@ namespace Store.Controllers
                 long categoryId = long.Parse(item["categoryId"].ToString(), culture);
 
                 var additionalImages = item["additionalImages"];
-                string imageUrls = String.Empty;
+                StringBuilder imageUrls = new StringBuilder();
                 
                 if (additionalImages != null)
                 {
                     foreach (var image in additionalImages)
                     {
                         string imageUrl = image["imageUrl"].ToString();
-                        imageUrls += (imageUrl + " ");
+                        imageUrls.Append(imageUrl + " ");
                     }
                 }
 
@@ -131,6 +131,11 @@ namespace Store.Controllers
                 Product newProduct = new Product
                 {
                     Name = item["title"].ToString(),
+                    NameRu = (await azureTranslate
+                        .TranslateTextAsync(item["title"].ToString()))?
+                        .Translations
+                        .FirstOrDefault()?
+                        .Text,
                     EbayProductId = id,
                     Category = cat,
                     Quantity = quan != null ? int.Parse(quan, culture) : 0,
@@ -140,7 +145,7 @@ namespace Store.Controllers
 					Price = decimal.Parse(item["price"]["value"].ToString(), culture),
 					ShippingPrice = ship != null ? decimal.Parse(ship, culture) : -100,
                     //UserId = admin.Id,
-                    ImageUrls = imageUrls,
+                    ImageUrls = imageUrls.ToString(),
 				};
                 context.AddProduct(newProduct);
                 return View(newProduct);
@@ -178,36 +183,17 @@ namespace Store.Controllers
         {
             foreach (var item in json["itemSummaries"])
             {
-                string engTitle = item["itemHref"].ToString();
-                string? translated = null;
-                byte[]? bytes = await _memoryCache.GetAsync(engTitle, cancellationToken);
-
-                if (bytes != null)
-                {
-                    translated = Encoding.UTF8.GetString(bytes);
-                }
-                if (translated == null)
-                {
-                    TranslatedTextItem? transText = await azureTranslate
-                        .TranslateTextAsync(item["title"].ToString(), to: "ru");
-
-                    translated = transText?
-                        .Translations?
-                        .FirstOrDefault()?
-                        .Text;
-                    await _memoryCache.SetAsync(
-                        engTitle,
-                        Encoding.UTF8.GetBytes(translated),
-                        new string[] { "tag" },
-                        TimeSpan.FromMinutes(15), 
-                        cancellationToken
-                    );
-                }
-                item["title"] = translated;
+                string? transText = await ebayService
+                    .TranslateFromToAsync(
+                    await GetTokenFromCacheOrDefault(), 
+                    item["title"].ToString(), 
+                    "ru"
+                );
+                    
+                item["title"] = transText;
             }
         }
 
-        [OutputCache(PolicyName = "default", VaryByRouteValueNames = new[] { "queryName", "categoryNumber", "priceLow", "priceHigh" })]
         public async Task<IActionResult> Results(string queryName, int? priceLow, int? priceHigh, int itemPage = 1, int? categoryNumber = 0)
         {
             if (queryName == null)
@@ -250,7 +236,7 @@ namespace Store.Controllers
                         cacheKey,
                         Encoding.UTF8.GetBytes(json),
                         new string[] { "tag" },
-                        TimeSpan.FromMinutes(15),
+                        TimeSpan.FromMinutes(90),
                         cancellationToken
                     );
                 }
@@ -281,7 +267,7 @@ namespace Store.Controllers
                 });
             }
             ViewBag.Categories = context.Categories.ToArray();
-            return View("Search")/*View("Search", new QueryProduct())*/;
+            return RedirectToAction("Search")/*View("Search", new QueryProduct())*/;
         }
 
         [HttpPost]
@@ -299,11 +285,12 @@ namespace Store.Controllers
             {
                 return RedirectToAction("Results", new
                 {
-                    queryName = (await azureTranslate.TranslateTextAsync(
-                        queryProduct.QueryName!,
-                        "ru",
-                        "en"
-                    ))?.Translations?.FirstOrDefault()?.Text,
+                    queryName = queryProduct.QueryName,
+                    //queryName = (await azureTranslate.TranslateTextAsync(
+                    //    queryProduct.QueryName!,
+                    //    "ru",
+                    //    "en"
+                    //))?.Translations?.FirstOrDefault()?.Text,
                     categoryNumber = queryProduct.CategoryNumber,
                     priceLow = queryProduct.PriceLow,
                     priceHigh = queryProduct.PriceHigh
