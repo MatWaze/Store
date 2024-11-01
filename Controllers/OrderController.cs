@@ -27,7 +27,6 @@ public class OrderController : Controller
         IProductRepository productRepository,
         Cart cartService,
         UserManager<ApplicationUser> usrMgr,
-        IConfiguration configuration,
         HttpClient client,
         IRazorViewToStringRenderer razorViewToString,
         ISendEmail send
@@ -38,7 +37,6 @@ public class OrderController : Controller
         prodRepo = productRepository;
         cart = cartService;
         userManager = usrMgr;
-        config = configuration;
         httpClient = client;
         razorView = razorViewToString;
         sendEmail = send;

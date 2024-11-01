@@ -95,7 +95,7 @@ namespace Store.Controllers
                 repo.SaveOrder(order);
                 ApplicationUser? user = await userManager.GetUserAsync(User);
                 string htmlContent = await razorView
-                .RenderViewToStringAsync<Order>("EmailOrderNotification", order);
+                  .RenderViewToStringAsync<Order>("EmailOrderNotification", order);
 
                 await sendEmail.SendEmailAsync(user?.Email, "ILoveParts order created", htmlContent);
                 return RedirectToPage("/Completed",

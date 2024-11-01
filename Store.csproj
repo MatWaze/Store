@@ -18,9 +18,11 @@
     <PackageReference Include="Ebay.Net" Version="1.0.1" />
     <PackageReference Include="eBay.OAuth.Client" Version="2.0.2" />
     <PackageReference Include="MailKit" Version="4.8.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="7.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.DataProtection.AzureKeyVault" Version="3.1.24" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="7.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Localization" Version="2.2.0" />
+    <PackageReference Include="Microsoft.CognitiveServices.Speech" Version="1.41.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.0">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
@@ -33,9 +35,11 @@
     <PackageReference Include="Moq" Version="4.18.4" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="7.0.0" />
     <PackageReference Include="Radzen.Blazor" Version="5.2.9" />
+    <PackageReference Include="Serilog.AspNetCore" Version="8.0.3" />
     <PackageReference Include="ServiceStack.Interfaces" Version="8.0.0" />
     <PackageReference Include="ServiceStack.Redis" Version="8.0.0" />
     <PackageReference Include="Syncfusion.EJ2.AspNet.Core" Version="27.1.51" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.25.0" />
     <PackageReference Include="System.Linq.Async" Version="6.0.1" />
     <PackageReference Include="Vite.AspNetCore" Version="2.1.2" />
   </ItemGroup>
@@ -52,9 +56,9 @@
     <Folder Include="wwwroot\dir\" />
   </ItemGroup>
 
-    <ItemGroup>
+    <!--<ItemGroup>
       <ProjectReference Include=".\Yandex.Checkout.V3\Yandex.Checkout.V3.csproj" />
-    </ItemGroup>
+    </ItemGroup>-->
 
     <ItemGroup>
       <Compile Update="Resources\Models\FormNames.Designer.cs">
@@ -93,6 +97,11 @@
         <Generator>PublicResXFileCodeGenerator</Generator>
         <CustomToolNamespace></CustomToolNamespace>
       </EmbeddedResource>
+    </ItemGroup>
+
+
+    <ItemGroup>
+      <None Remove="react-app\file.sql" />
     </ItemGroup>
    
 

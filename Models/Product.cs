@@ -15,6 +15,8 @@ namespace Store.Models
 		[Remote("Name", "Validation", ErrorMessage = "Please enter a name")]
 		public required string Name { get; set; }
 
+        public string? NameRu { get; set; }
+
 		[Range(1, 999999, ErrorMessage = "Please enter a positive price")]
 		[Column(TypeName = "decimal(8, 2)")]
 		public decimal Price { get; set; }

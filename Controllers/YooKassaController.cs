@@ -30,7 +30,7 @@ namespace Store.Controllers
             HttpClient client,
             IRazorViewToStringRenderer razorViewToString,
             ISendEmail send
-            )
+         )
         {
             repo = repository;
             prodRepo = productRepository;
@@ -69,7 +69,7 @@ namespace Store.Controllers
             var user = await userManager.GetUserAsync(User);
             NewReceipt newReceipt = new NewReceipt
             {
-                Customer = new Yandex.Checkout.V3.Customer
+                Customer = new Customer
                 {
                     FullName = user.FullName,
                     Email = user.Email
@@ -105,7 +105,7 @@ namespace Store.Controllers
             }
             string url = "https://yookassa.ru/oauth/v2/token";
             var byteArray = Encoding
-                .ASCII.GetBytes($"{config["YooKassaApi:ClientId"]}:{config["YooKassaApi:ClientSecret"]}");
+                .ASCII.GetBytes($"{config["YooKassaApi:ClientId"]}:{Environment.GetEnvironmentVariable("YooKassaApi")}");
 
             httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
 
@@ -146,23 +146,24 @@ namespace Store.Controllers
         {
             Order? order = repo.Orders.FirstOrDefault(o => o.OrderID == orderId);
             decimal amount = Math.Round(cart.Lines.Sum(e => e.Product.Price * e.Quantity), 2);
+
+            var yooReceipt = await CreateYooReceipt();
             var newPayment = new NewPayment
             {
                 Amount = new Amount { Value = amount, Currency = "RUB" },
                 Confirmation = new Confirmation { Type = ConfirmationType.Embedded },
-                Receipt = await CreateYooReceipt(),
+                Receipt = yooReceipt,
                 Metadata = new Dictionary<string, string>
-            {
-                { "OrderID", orderId.ToString() },
-                { "AccessToken", accessToken }
-            },
+                {
+                    { "OrderID", orderId.ToString() },
+                    { "AccessToken", accessToken },
+                    { "EmailAddress", yooReceipt.Customer.Email }
+                },
             };
-            Console.WriteLine("access token: " + accessToken);
             Client yooClient = new Client(accessToken: accessToken);
             Payment payment = yooClient.CreatePayment(newPayment);
             //var user = await userManager.GetUserAsync(User);
             order.PaymentId = payment.Id;
-            Console.WriteLine($"Conf token: {payment.Confirmation.ConfirmationToken}");
             repo.SaveOrder(order);
             var confirmationToken = payment.Confirmation.ConfirmationToken;
             return confirmationToken;
@@ -190,25 +191,26 @@ namespace Store.Controllers
             if (notification is PaymentWaitingForCaptureNotification captureNote)
             {
                 Payment payment = captureNote.Object;
+                
                 Console.WriteLine("Waiting for capture");
                 if (payment.Paid)
                 {
                     Client yooClient = new Client(accessToken: payment.Metadata["AccessToken"]);
+                   
                     AsyncClient asyncClient = yooClient.MakeAsync();
 
                     Payment p = await asyncClient.CapturePaymentAsync(payment.Id);
                     int orderId = int.Parse(p.Metadata["OrderID"]);
                     Order? ord = repo.Orders.FirstOrDefault(o => o.OrderID == orderId);
                     ord.PaymentStatus = "Paid";
-
+                   
                     Product[] productIdsInOrder = ord.Lines.Select(cl => cl.Product).ToArray();
-                    Console.WriteLine("count: " + ord.Lines.Count());
                     foreach (Product prod in productIdsInOrder)
                     {
                         if (prod.Quantity > 0)
                         {
                             CartLine? line = ord.Lines
-                                .ToList<CartLine>()
+                                .ToList()
                                 .Find(cl => cl.Product.ProductId == prod.ProductId);
                             prod.Quantity -= line.Quantity;
                         }
@@ -219,17 +221,24 @@ namespace Store.Controllers
                         prodRepo.SaveProduct(prod);
                     }
                     repo.SaveOrder(ord);
-                    string? receiptId = null;
 
-                    await foreach (var receipt in asyncClient.GetReceiptsAsync())
-                    {
-                        if (receipt.PaymentId == p.Id)
-                        {
-                            receiptId = receipt.Id;
-                            break;
-                        }
-                    }
+                    string? receiptId = (await asyncClient
+                        .GetReceiptsAsync()
+                        .FirstOrDefaultAsync(r => r.PaymentId == p.Id))?
+                        .PaymentId;
+                    //{
+                    //    if (receipt.PaymentId == p.Id)
+                    //    {
+                    //        receiptId = receipt.Id;
+                    //        break;
+                    //    }
+                    //}
                     Receipt? r = await asyncClient.GetReceiptAsync(receiptId);
+
+                    string htmlContent = await razorView
+                        .RenderViewToStringAsync<Order>("EmailOrderNotification", ord);
+                    
+                    await sendEmail.SendEmailAsync(payment.Metadata["EmailAddress"], "ILoveParts order created", htmlContent);
                     return Ok();
                 }
             }

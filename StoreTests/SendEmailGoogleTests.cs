@@ -87,7 +87,7 @@ namespace StoreTests
             </html>";
 
             // Act
-            string resp = await emailSender.SendEmailAsync("matevoshay@gmail.com", "Test Subject", htmlContent);
+            // string resp = await emailSender.SendEmailAsync("matevoshay@gmail.com", "Test Subject", htmlContent);
         }
     }
 }

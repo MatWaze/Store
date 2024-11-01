@@ -2,12 +2,11 @@
 using Microsoft.EntityFrameworkCore;
 using Store.Infrastructure;
 using System.Linq;
-using static Microsoft.AspNetCore.Mvc.ControllerBase;
+
 namespace Store.Models
 {
     public class EFProductRepository : IProductRepository
     {
-
         private DataContext context;
         private UserManager<ApplicationUser> userManager;
         public EFProductRepository(DataContext dataContext, UserManager<ApplicationUser> usrMgr)
