@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using System.ComponentModel.DataAnnotations;
-using Microsoft.AspNetCore.Identity;
+using Store.Resources.Models;
 
 namespace Store.Models;
 
@@ -14,25 +14,32 @@ public class Order
         = new List<CartLine>();
 
     public string? UserId { get; set; }
- 
+
     // public IdentityUser? User { get; set; }
-    
-    [Required(ErrorMessage = "Please enter a name")]
+
+    [Required(ErrorMessageResourceName = "Required",
+        ErrorMessageResourceType = typeof(ValidationMessages))]
     public string? Name { get; set; }
 
-    [Required(ErrorMessage = "Please enter the first address line")]
+    [Required(ErrorMessageResourceName = "Required",
+        ErrorMessageResourceType = typeof(ValidationMessages))]
     public string? Line1 { get; set; }
     public string? Line2 { get; set; }
     public string? Line3 { get; set; }
 
-    [Required(ErrorMessage = "Please enter a city name")]
+    [Required(ErrorMessageResourceName = "Required",
+        ErrorMessageResourceType = typeof(ValidationMessages))]
     public string? City { get; set; }
-    
-    [Required(ErrorMessage = "Please enter a state name")]
+
+    [Required(ErrorMessageResourceName = "Required",
+        ErrorMessageResourceType = typeof(ValidationMessages))]
     public string? State { get; set; }
+    [Required(ErrorMessageResourceName = "Required",
+        ErrorMessageResourceType = typeof(ValidationMessages))]
     public string? Zip { get; set; }
-    
-    [Required(ErrorMessage = "Please enter a country name")]
+
+    [Required(ErrorMessageResourceName = "Required",
+        ErrorMessageResourceType = typeof(ValidationMessages))]
     public string? Country { get; set; }
 
     public string Nonce { get; set; } = "";
