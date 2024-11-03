@@ -1,7 +1,7 @@
 ﻿@page
 @model DetailsModel
 
-<table class="table table-sm table-bordered"> 
+<table class="product-store padding-large table table-sm table-bordered"> 
 	<tbody>
 		@if (Model.ApplicationUser == null)
 		{
@@ -22,7 +22,6 @@
 </table>
 
 @functions{
-	[Authorize(Roles = "Admins")]
 	public class DetailsModel : PageModel
 	{
 		private UserManager<ApplicationUser> userManager;
