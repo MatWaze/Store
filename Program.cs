@@ -18,9 +18,16 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using System.Security.Claims;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom
+    .Configuration(builder.Configuration)
+    .CreateLogger();
+
+builder.Services.AddSerilog();
 
 builder.Services.AddViteServices(opts =>
 {
@@ -35,7 +42,8 @@ builder.Services.AddDbContext<DataContext>(opts =>
     opts.UseNpgsql(Environment.GetEnvironmentVariable("HerokuConnection"));
 });
 
-builder.Services.AddSingleton<IRedisClientAsync>(c =>
+builder.Services.AddSingleton<IRedisClientAsync,
+    RedisClient>(c =>
 {
     var client = new RedisClient(
         builder.Configuration["RedisConnection:Host"],
@@ -45,10 +53,8 @@ builder.Services.AddSingleton<IRedisClientAsync>(c =>
     return client;
 });
 
-
 builder.Services.AddSingleton<IOutputCacheStore,
     CacheService>();
-
 
 builder.Services.AddSingleton<BlobStorageService>();
 builder.Services.AddSingleton<GetLocation>();
@@ -73,10 +79,10 @@ builder.Services.AddScoped<ISendEmail,
 builder.Services.AddTransient<IRazorViewToStringRenderer, 
     RazorViewToStringRenderer>();
 
-builder.Services.AddSingleton<TextTranslationClient>(opts =>
+builder.Services.AddSingleton(opts =>
 {
     return new TextTranslationClient(
-        new AzureKeyCredential(Environment.GetEnvironmentVariable("AzureTranslation"))
+        new AzureKeyCredential(Environment.GetEnvironmentVariable("AzureTranslation")!)
     );
 });
 
@@ -220,14 +226,15 @@ var app = builder.Build();
 app.UseOutputCache();
 
 app.UseStaticFiles();
+
+app.UseSerilogRequestLogging();
+
 app.UseSession();
 
 app.UseRequestLocalization();
 
-
 app.UseAuthentication();
 app.UseAuthorization();
-
 
 app.MapControllerRoute("catpage",
     "{categoryId}/Page{productPage:int}",

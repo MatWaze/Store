@@ -29,8 +29,7 @@ namespace Store.Infrastructure
 
             var response = await httpClient.GetAsync(apiUrl);
 
-            string responseBody = await response.Content.ReadAsStringAsync();
-            //Console.WriteLine("resp:" + responseBody);
+            string responseBody = await response.Content.ReadAsStringAsync();       
             var jsonObject = JObject.Parse(responseBody);
             return jsonObject;
         }

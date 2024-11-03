@@ -8,7 +8,6 @@ namespace Store.Infrastructure
     {
         private TextTranslationClient client;
 
-
         public AzureTranslation(TextTranslationClient clnt)
         {
             client = clnt;

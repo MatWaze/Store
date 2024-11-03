@@ -38,10 +38,13 @@
 	public class LoginModel : PageModel
 	{
 		private SignInManager<ApplicationUser> signInManager;
+		private ILogger<LoginModel> logger;
 
-		public LoginModel(SignInManager<ApplicationUser> signInMgr)
+		public LoginModel(SignInManager<ApplicationUser> signInMgr,
+			ILogger<LoginModel> log)
 		{
 			signInManager = signInMgr;
+			logger = log;
 		}
 
 		[Required(ErrorMessageResourceName = "Required",
@@ -66,6 +69,7 @@
 						Password, false, false);
 				if (result.Succeeded)
 				{
+					logger.LogInformation("User {userName} logged in", UserName);
 					return Redirect(ReturnUrl ?? "/");
 				}
 				ModelState.AddModelError("",
