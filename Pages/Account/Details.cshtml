@@ -22,6 +22,7 @@
 </table>
 
 @functions{
+	[Authorize(Roles = "Admins")]
 	public class DetailsModel : PageModel
 	{
 		private UserManager<ApplicationUser> userManager;

@@ -31,7 +31,8 @@
 </form>
 
 @functions{
-	public class CreateModel : AdminPageModel
+	[Authorize(Roles = "Admins")]
+	public class CreateModel
 	{
 		public UserManager<ApplicationUser> UserManager;
 

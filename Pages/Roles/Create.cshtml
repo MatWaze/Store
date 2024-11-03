@@ -17,7 +17,8 @@
 </form>
 
 @functions{
-	public class CreateModel : AdminPageModel
+	[Authorize(Roles = "Admins")]
+	public class CreateModel : PageModel
 	{
 		public RoleManager<IdentityRole> RoleManager;
 
@@ -53,7 +54,7 @@
 					ModelState.AddModelError("", err.Description);
 				}
 			}
-			return Page();
+			return RedirectToPage();
 		}
 	}
 }

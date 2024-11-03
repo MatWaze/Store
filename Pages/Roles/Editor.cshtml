@@ -68,7 +68,8 @@
 <a class="btn btn-secondary" asp-page="list">Back</a>
 
 @functions{
-	public class EditorModel : AdminPageModel
+	[Authorize(Roles = "Admins")]
+	public class EditorModel : PageModel
 	{
 		public UserManager<ApplicationUser> UserManager;
 		public RoleManager<IdentityRole> RoleManager;
@@ -128,10 +129,10 @@
 					{
 						ModelState.AddModelError("", err.Description);
 					}
-					return Page();
+					return RedirectToPage();
 				}
 			}
-			return Page();
+			return RedirectToPage();
 		}
 	}
 }

@@ -43,7 +43,8 @@
 </table>
 
 @functions{
-	public class ProductsModel : AdminPageModel
+	[Authorize(Roles = "Admins")]
+	public class ProductsModel : PageModel
 	{
 		private IProductRepository productRepository;
 

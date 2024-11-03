@@ -48,7 +48,8 @@
 <a class="btn btn-primary" asp-page="create">Create</a>
 
 @functions{
-	public class ListModel : AdminPageModel
+	[Authorize(Roles = "Admins")]
+	public class ListModel
 	{
 		public UserManager<ApplicationUser> UserManager;
 		public ListModel(UserManager<ApplicationUser> userManager)

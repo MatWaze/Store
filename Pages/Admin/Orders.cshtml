@@ -87,44 +87,47 @@
     
     
 @functions{
-    public class OrdersModel : AdminPageModel
-    {
-        private IOrderRepository orderRepository;
+	[Authorize(Roles = "Admins")]
+	public class OrdersModel : PageModel
+	{
+		private IOrderRepository orderRepository;
 
-        public OrdersModel(IOrderRepository repository)
-        {
-            orderRepository = repository;	
-        }
+		public OrdersModel(IOrderRepository repository)
+		{
+			orderRepository = repository;	
+		}
 
-        public IQueryable<Order> AllOrders { get; set; }
+		public IQueryable<Order> AllOrders { get; set; }
 
-        public IQueryable<Order> ShippedOrders { get; set; }
+		public IQueryable<Order> ShippedOrders { get; set; }
 
-        public IQueryable<Order> UnshippedOrders { get; set; }
+		public IQueryable<Order> UnshippedOrders { get; set; }
 
-        public void OnGet()
-        {
-            UpdateData(0);
-        }
+		public void OnGet()
+		{
+			UpdateData(0);
+		}
 
-        public void UpdateData(int i)
-        {
-            if (i == 0)
-            {
-                AllOrders = orderRepository.Orders;
-                UnshippedOrders = AllOrders.Where(o => !o.Shipped);
-                ShippedOrders = AllOrders.Where(o => o.Shipped);
-            }
-            else if (i == 1)
-            {
-                AllOrders = orderRepository.Orders;
-                ShippedOrders = AllOrders.Where(o => o.Shipped);
-            }
-            else if (i == 2)
-            {
-                AllOrders = orderRepository.Orders;
-                UnshippedOrders = AllOrders.Where(o => !o.Shipped);
-            }
+		public void UpdateData(int i)
+		{
+			switch (i)
+			{
+				case (0):
+					AllOrders = orderRepository.Orders;
+					UnshippedOrders = AllOrders.Where(o => !o.Shipped);
+					ShippedOrders = AllOrders.Where(o => o.Shipped);
+					break;
+				case (1):
+					AllOrders = orderRepository.Orders;
+					ShippedOrders = AllOrders.Where(o => o.Shipped);
+					break;
+				case (2):
+					AllOrders = orderRepository.Orders;
+					UnshippedOrders = AllOrders.Where(o => !o.Shipped);
+					break;
+				default:
+					break;
+			}
         }
 
         public Task ShipOrder(int id) => UpdateOrder(id, true);
@@ -145,7 +148,7 @@
             UpdateData(0);
             Order? ord = ShippedOrders.FirstOrDefault(o => o.OrderID == OrderID);
             await ShipOrder(OrderID);
-            return Page();
+            return RedirectToPage();
         }
 
         public async Task<IActionResult> OnPostUnship(int OrderID)
@@ -153,7 +156,7 @@
             UpdateData(0);
             Order? ord = await UnshippedOrders.FirstOrDefaultAsync(o => o.OrderID == OrderID);
             await ResetOrder(OrderID);
-            return Page();
+            return RedirectToPage();
         }
     }
 }
