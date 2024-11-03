@@ -21,18 +21,15 @@ namespace Store.Controllers
     [AutoValidateAntiforgeryToken]
     public class EbayController : Controller
     {
-        private IProductRepository context;
-        private OAuth2Api oauth;
-        private GetLocation location;
-        private IEbayService ebayService;
-        private string? token;
+        private readonly IProductRepository context;
+        private readonly OAuth2Api oauth;
+        private readonly IEbayService ebayService;
 		private UserManager<ApplicationUser> userManager;
         private readonly IOutputCacheStore _memoryCache;
         private IAzureTranslation azureTranslate;
 
         public EbayController(
             OAuth2Api oauthApi, 
-            GetLocation loc,
             IEbayService ebaySrv, 
             IProductRepository dataContext,
 			UserManager<ApplicationUser> usrManager,
@@ -40,7 +37,6 @@ namespace Store.Controllers
             IAzureTranslation azureTranslation)
         {
             oauth = oauthApi;
-            location = loc;
             ebayService = ebaySrv;
             context = dataContext;
             userManager = usrManager;
@@ -66,17 +62,6 @@ namespace Store.Controllers
         public IActionResult Policy()
         {
             return View();
-        }
-
-        public async Task<IActionResult> Callback(string code)
-        {
-            if (string.IsNullOrEmpty(code))
-            {
-                return RedirectToAction("Error");
-            }
-
-            token = oauth.ExchangeCodeForAccessToken(OAuthEnvironment.PRODUCTION, code).AccessToken.Token;
-            return RedirectToAction("Index", "Home"); // Redirect to a secure page or home page
         }
 
         public async Task<IActionResult> GetItem(string id, string returnUrl = "/")
