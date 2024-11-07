@@ -13,7 +13,6 @@ public class EFOrderRepository : IOrderRepository
     }
 
     public IQueryable<Order> Orders => ctx.Orders
-        // .Include(u => u.User)
         .Include(o => o.Lines)
         .ThenInclude(l => l.Product);
 
@@ -25,6 +24,12 @@ public class EFOrderRepository : IOrderRepository
             Console.WriteLine("adding new order");
             ctx.Orders.Add(order);
         }
+        ctx.SaveChanges();
+    }
+
+    public void DeleteOrder(Order order)
+    {
+        ctx.Remove(order);
         ctx.SaveChanges();
     }
 }

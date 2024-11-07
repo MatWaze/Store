@@ -13,9 +13,10 @@ export default function SpeechToText() {
     async function sttFromMic() {
         
         const speechConfig = SpeechConfig.fromSubscription(
-            getRequiredEnvVar("AzureSpeech"), 
-            getRequiredEnvVar("AzureSpeechRegion")
+            getRequiredEnvVar("AzureSpeech") ?? "1UFKL0cnbN2D6Fu5ZyLatbJLvpkZmG2DLrqotnVWGkmedKUcbie4JQQJ99AJAC5RqLJXJ3w3AAAYACOG9cwP", 
+            getRequiredEnvVar("AzureSpeechRegion") ?? "westeurope"
         );
+        console.log("AzureSpeech");
         speechConfig.speechRecognitionLanguage = 'en-US';
 
         const audioConfig = AudioConfig.fromDefaultMicrophoneInput();

@@ -30,7 +30,7 @@ namespace Store.Controllers
             HttpClient client,
             IRazorViewToStringRenderer razorViewToString,
             ISendEmail send
-         )
+        )
         {
             repo = repository;
             prodRepo = productRepository;
@@ -45,6 +45,7 @@ namespace Store.Controllers
         public async Task<IActionResult> YooKassaPayment(int orderId, string accessToken)
         {
             CreateYooWebHook("waiting_for_capture", accessToken);
+            CreateYooWebHook("canceled", accessToken);
             ViewBag.ConfirmationToken = await YooToken(orderId, accessToken);
             Console.WriteLine("Confirmation token: " + ViewBag.ConfirmationToken);
             return View("Views/Order/YooKassaCheckout.cshtml", orderId);
@@ -98,11 +99,6 @@ namespace Store.Controllers
 
         public async Task<IActionResult> Callback2(string code)
         {
-            if (string.IsNullOrEmpty(code))
-            {
-                Console.WriteLine("error");
-                return RedirectToAction("Index", "Home");
-            }
             string url = "https://yookassa.ru/oauth/v2/token";
             var byteArray = Encoding
                 .ASCII.GetBytes($"{config["YooKassaApi:ClientId"]}:{Environment.GetEnvironmentVariable("YooKassaApi")}");
@@ -169,80 +165,94 @@ namespace Store.Controllers
             return confirmationToken;
         }
 
+        public async Task HandleUnsuccessfullPayment(PaymentCanceledNotification cancelNote)
+        {
+            Payment payment = cancelNote.Object;
+
+            Client yooClient = new Client(accessToken: payment.Metadata["AccessToken"]);
+            AsyncClient asyncClient = yooClient.MakeAsync();
+
+            Payment p = await asyncClient.CancelPaymentAsync(payment.Id);
+            int orderId = int.Parse(p.Metadata["OrderID"]);
+            Order? order = repo.Orders.FirstOrDefault(o => o.OrderID == orderId);
+
+            repo.DeleteOrder(order);
+        }
+
+        public async Task HandleSuccessfullPayment(PaymentWaitingForCaptureNotification captureNote)
+        {
+            Payment payment = captureNote.Object;
+
+            if (payment.Paid)
+            {
+                Client yooClient = new Client(accessToken: payment.Metadata["AccessToken"]);
+                AsyncClient asyncClient = yooClient.MakeAsync();
+
+                Payment p = await asyncClient.CapturePaymentAsync(payment.Id);
+                int orderId = int.Parse(p.Metadata["OrderID"]);
+                Order? ord = repo.Orders.FirstOrDefault(o => o.OrderID == orderId);
+                ord.PaymentStatus = "Paid";
+
+                List<Product> productIdsInOrder = ord.Lines.Select(cl => cl.Product).ToList();
+                foreach (Product prod in productIdsInOrder)
+                {
+                    if (prod.Quantity > 0)
+                    {
+                        CartLine? line = ord.Lines
+                            .ToList()
+                            .Find(cl => cl.Product.ProductId == prod.ProductId);
+                        prod.Quantity -= line.Quantity;
+                    }
+                    else if (prod.Quantity == 0)
+                    {
+                        prod.Deleted = true;
+                    }
+                    prodRepo.SaveProduct(prod);
+                }
+                repo.SaveOrder(ord);
+                    
+                string? receiptId = (await asyncClient
+                    .GetReceiptsAsync()
+                    .FirstOrDefaultAsync(r => r.PaymentId == p.Id))?
+                    .PaymentId;
+                Receipt? r = await asyncClient.GetReceiptAsync(receiptId);
+
+                string htmlContent = await razorView
+                    .RenderViewToStringAsync<Order>("EmailOrderNotification", ord);
+                await sendEmail.SendEmailAsync(payment.Metadata["EmailAddress"], "ILoveParts order created", htmlContent);
+            }
+        }
+
         [HttpPost]
         [AllowAnonymous]
         [IgnoreAntiforgeryToken]
         [Route("YooKassa/Notification")]
         public async Task<IActionResult> Notification()
         {
-            // Enable buffering to allow multiple reads of the request body
             Request.EnableBuffering();
 
-            // Read the request body
-            string body;
+            StringBuilder body = new ();
             using (var reader = new StreamReader(Request.Body, Encoding.UTF8, leaveOpen: true))
             {
-                body = await reader.ReadToEndAsync();
-                // Reset the stream position to allow further reading if necessary
+                body.Append(await reader.ReadToEndAsync());
                 Request.Body.Position = 0;
                 reader.Close();
             }
-            var notification = Client.ParseMessage(Request.Method, Request.ContentType, body);
-            if (notification is PaymentWaitingForCaptureNotification captureNote)
+            var notification = Client.ParseMessage(Request.Method, 
+                Request.ContentType, body.ToString());
+            
+            switch (notification)
             {
-                Payment payment = captureNote.Object;
-                
-                Console.WriteLine("Waiting for capture");
-                if (payment.Paid)
-                {
-                    Client yooClient = new Client(accessToken: payment.Metadata["AccessToken"]);
-                   
-                    AsyncClient asyncClient = yooClient.MakeAsync();
-
-                    Payment p = await asyncClient.CapturePaymentAsync(payment.Id);
-                    int orderId = int.Parse(p.Metadata["OrderID"]);
-                    Order? ord = repo.Orders.FirstOrDefault(o => o.OrderID == orderId);
-                    ord.PaymentStatus = "Paid";
-                   
-                    Product[] productIdsInOrder = ord.Lines.Select(cl => cl.Product).ToArray();
-                    foreach (Product prod in productIdsInOrder)
-                    {
-                        if (prod.Quantity > 0)
-                        {
-                            CartLine? line = ord.Lines
-                                .ToList()
-                                .Find(cl => cl.Product.ProductId == prod.ProductId);
-                            prod.Quantity -= line.Quantity;
-                        }
-                        if (prod.Quantity == 0)
-                        {
-                            prod.Deleted = true;
-                        }
-                        prodRepo.SaveProduct(prod);
-                    }
-                    repo.SaveOrder(ord);
-
-                    string? receiptId = (await asyncClient
-                        .GetReceiptsAsync()
-                        .FirstOrDefaultAsync(r => r.PaymentId == p.Id))?
-                        .PaymentId;
-                    //{
-                    //    if (receipt.PaymentId == p.Id)
-                    //    {
-                    //        receiptId = receipt.Id;
-                    //        break;
-                    //    }
-                    //}
-                    Receipt? r = await asyncClient.GetReceiptAsync(receiptId);
-
-                    string htmlContent = await razorView
-                        .RenderViewToStringAsync<Order>("EmailOrderNotification", ord);
-                    
-                    await sendEmail.SendEmailAsync(payment.Metadata["EmailAddress"], "ILoveParts order created", htmlContent);
-                    return Ok();
-                }
+                case (PaymentWaitingForCaptureNotification captureNote):
+                    await HandleSuccessfullPayment(captureNote);
+                    break;
+                case (PaymentCanceledNotification cancelNotification):
+                    await HandleUnsuccessfullPayment(cancelNotification);
+                    break;
+                default:
+                    break;
             }
-            return BadRequest();
+            return Ok(); // yookassa will send notes untill status code 200 is sent
         }
 
         public async void CreateYooWebHook(string notificationEvent, string accessToken)

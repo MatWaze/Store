@@ -49,7 +49,7 @@
 
 @functions{
 	[Authorize(Roles = "Admins")]
-	public class ListModel
+	public class ListModel : PageModel
 	{
 		public UserManager<ApplicationUser> UserManager;
 		public ListModel(UserManager<ApplicationUser> userManager)

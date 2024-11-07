@@ -42,13 +42,6 @@ public class OrderController : Controller
         sendEmail = send;
     }
 
-    public async Task<string?> GetUserYooAccessToken()
-    {
-        var user = await userManager.GetUserAsync(User);
-        string? tok = user?.YooKassaAccessToken;
-        return tok;
-    }
-
     public async Task<IActionResult> New()
     {
         ViewBag.User = await userManager.GetUserAsync(User);

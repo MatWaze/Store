@@ -19,6 +19,7 @@ using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using System.Security.Claims;
 using Serilog;
+using static System.Formats.Asn1.AsnWriter;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -53,7 +54,7 @@ builder.Services.AddSingleton<IRedisClientAsync,
     return client;
 });
 
-builder.Services.AddSingleton<IOutputCacheStore,
+builder.Services.AddSingleton<IMyCacheStore,
     CacheService>();
 
 builder.Services.AddSingleton<BlobStorageService>();
@@ -86,9 +87,12 @@ builder.Services.AddSingleton(opts =>
     );
 });
 
-builder.Services.AddSingleton<IAzureTranslation,
+builder.Services.AddScoped<IAzureTranslation,
     AzureTranslation>();
 
+// make SeedData scoped instead of singleton
+// since it depends on scoped services like IAzureTranslation
+builder.Services.AddScoped<SeedData>();
 
 builder.Services.AddScoped(provider => provider.GetRequiredService<IBraintreeService>().CreateGateway());
 
@@ -266,10 +270,11 @@ using (Stream fileStream = await blob.GetFileStreamAsync("ebay.yml"))
     }
 }
 
-var ebaySrv = app.Services.CreateScope()
-    .ServiceProvider.GetRequiredService<IEbayService>();
+var seedData = app.Services
+    .CreateScope()
+    .ServiceProvider
+    .GetRequiredService<SeedData>();
 
-await SeedData.SeedDatabase(ebaySrv, context, userManager);
-
+await seedData.SeedDatabase();
 
 app.Run(); 

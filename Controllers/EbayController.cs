@@ -1,7 +1,6 @@
 ﻿using eBay.ApiClient.Auth.OAuth2.Model;
 using eBay.ApiClient.Auth.OAuth2;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json.Linq;
 using Store.Models;
 using Store.Models.ViewModels;
 using Store.Infrastructure;
@@ -14,6 +13,8 @@ using Azure.Core;
 using Azure.AI.Translation.Text;
 using System.Text;
 using System.Threading;
+using Newtonsoft.Json.Linq;
+using NuGet.Protocol;
 
 namespace Store.Controllers
 {
@@ -24,23 +25,23 @@ namespace Store.Controllers
         private readonly IProductRepository context;
         private readonly OAuth2Api oauth;
         private readonly IEbayService ebayService;
-		private UserManager<ApplicationUser> userManager;
-        private readonly IOutputCacheStore _memoryCache;
-        private IAzureTranslation azureTranslate;
+		private readonly UserManager<ApplicationUser> userManager;
+        private readonly IMyCacheStore cacheService;
+        private readonly IAzureTranslation azureTranslate;
 
         public EbayController(
             OAuth2Api oauthApi, 
             IEbayService ebaySrv, 
             IProductRepository dataContext,
 			UserManager<ApplicationUser> usrManager,
-            IOutputCacheStore memoryCache,
+            IMyCacheStore memoryCache,
             IAzureTranslation azureTranslation)
         {
             oauth = oauthApi;
             ebayService = ebaySrv;
             context = dataContext;
             userManager = usrManager;
-            _memoryCache = memoryCache;
+            cacheService = memoryCache;
             azureTranslate = azureTranslation;
         }
 
@@ -141,7 +142,7 @@ namespace Store.Controllers
         {
             string? accessToken = null;
             CancellationToken cancellationToken = new();
-            byte[]? bytes = await _memoryCache.GetAsync("EbayApplicationToken", cancellationToken);
+            byte[]? bytes = await cacheService.GetAsync("EbayApplicationToken", cancellationToken);
 
             if (bytes != null)
             {
@@ -153,7 +154,7 @@ namespace Store.Controllers
                     .GetApplicationToken(OAuthEnvironment.PRODUCTION, Scopes)
                     .AccessToken.Token;
 
-                await _memoryCache.SetAsync(
+                await cacheService.SetAsync(
                     "EbayApplicationToken", 
                     Encoding.ASCII.GetBytes(accessToken),
                     new string[] { "tag" }, 
@@ -164,14 +165,14 @@ namespace Store.Controllers
             return accessToken!;
         }
 
-        public async Task TranslateTitles(JObject json, CancellationToken cancellationToken)
+        public async Task TranslateTitles(List<JToken> items, CancellationToken cancellationToken)
         {
-            foreach (var item in json["itemSummaries"])
+            foreach (var item in items)
             {
                 string? transText = await ebayService
                     .TranslateFromToAsync(
                     await GetTokenFromCacheOrDefault(), 
-                    item["title"].ToString(), 
+                    item["title"]!.ToString(), 
                     "ru"
                 );
                     
@@ -199,10 +200,8 @@ namespace Store.Controllers
 
             string cacheKey = $"{queryName}_{categoryNumber}_{priceLow}_{priceHigh}";
             CancellationToken cancellationToken = new();
-            JObject? keyValuePairs = null;
-            byte[]? array = await _memoryCache.GetAsync(cacheKey, cancellationToken);
 
-            if (array == null)
+            if (!cacheService.TryGetValue<JObject>(cacheKey, out JObject? keyValuePairs, cancellationToken))
             {
                 string accessToken = await GetTokenFromCacheOrDefault();
 
@@ -211,13 +210,9 @@ namespace Store.Controllers
 
                 if (keyValuePairs.ContainsKey("itemSummaries"))
                 {
-                    if (currentCulture == "ru-RU")
-                    {
-                       await TranslateTitles(keyValuePairs, cancellationToken);
-                    }
                     string json = JsonConvert.SerializeObject(keyValuePairs);
 
-                    await _memoryCache.SetAsync(
+                    await cacheService.SetAsync(
                         cacheKey,
                         Encoding.UTF8.GetBytes(json),
                         new string[] { "tag" },
@@ -226,19 +221,29 @@ namespace Store.Controllers
                     );
                 }
             }
-            else
-            {
-                string byteString = Encoding.UTF8.GetString(array);
-                keyValuePairs = JObject.Parse(byteString);
-            }
+
             JToken? itemSummaries = keyValuePairs?["itemSummaries"];
             
             if (itemSummaries != null)
             {
-                var items = itemSummaries
-                    .Skip((itemPage - 1) * PageSize)
-                    .Take(PageSize)
-                    .ToArray();
+                string cacheTranslated = $"{itemPage}_{queryName}_{categoryNumber}_{priceLow}_{priceHigh}";
+                if (!cacheService.TryGetValue(cacheTranslated, out List<JToken>? items, cancellationToken)
+                    && currentCulture == "ru-RU")
+                {
+                    items = itemSummaries
+                        .Skip((itemPage - 1) * PageSize)
+                        .Take(PageSize)
+                        .ToList();
+
+                    await TranslateTitles(items, cancellationToken);
+                    await cacheService.SetAsync(
+                        cacheTranslated,
+                        Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(items)),
+                        new string[] { "tag" },
+                        TimeSpan.FromMinutes(90),
+                        cancellationToken
+                    );
+                }
 
                 return View("Results", new ProductTarget<JToken>
                 {

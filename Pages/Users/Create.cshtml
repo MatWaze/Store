@@ -32,7 +32,7 @@
 
 @functions{
 	[Authorize(Roles = "Admins")]
-	public class CreateModel
+	public class CreateModel : PageModel
 	{
 		public UserManager<ApplicationUser> UserManager;
 

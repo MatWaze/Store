@@ -12,17 +12,35 @@ using static System.Formats.Asn1.AsnWriter;
 
 namespace Store.Models
 {
-	public static class SeedData
+	public class SeedData
 	{
-        private static async Task SeedProductsAsync(IEbayService client, string token, DataContext context,
-	        JToken items2, Category cat, string adminId)
+        private readonly IAzureTranslation azureTranslate;
+        private readonly IEbayService ebayService;
+        private readonly DataContext context;
+        private readonly OAuth2Api ebayOauth;
+
+        public SeedData(
+            IAzureTranslation azureTrans,
+            IEbayService ebaySrv,
+            DataContext ctx,
+            OAuth2Api ebayOa
+        )
+        {
+            azureTranslate = azureTrans;
+            ebayService = ebaySrv;
+            context = ctx;
+            ebayOauth = ebayOa;
+        }
+
+        private async Task SeedProductsAsync(string token, DataContext context,
+	        JToken items2, Category cat)
         {
 			var items = items2["itemSummaries"];
             foreach (var item in items)
             {
                 string ebayId = item["itemId"].ToString();
 
-                var itemAsync = await client.GetItemInfoAsync(token, ebayId);
+                var itemAsync = await ebayService.GetItemInfoAsync(token, ebayId);
                 var existingProduct = await context.Products
                     .FirstOrDefaultAsync(p => p.EbayProductId == ebayId);
 
@@ -51,6 +69,11 @@ namespace Store.Models
 						var newProduct = new Product
                         {
                             Name = item["title"]!.ToString(),
+                            NameRu = (await azureTranslate
+                                .TranslateTextAsync(item["title"].ToString()))?
+                                .Translations
+                                .FirstOrDefault()?
+                                .Text,
                             Category = cat,
                             Quantity = int.Parse(quan, culture),
                             EbayProductId = ebayId,
@@ -59,7 +82,6 @@ namespace Store.Models
                             ImageLink = item["image"]["imageUrl"].ToString().Replace("225.", "500."),
                             Price = decimal.Parse(item["price"]["value"].ToString(), culture),
                             ShippingPrice = decimal.Parse(ship, culture),
-                            UserId = adminId,
 							ImageUrls = imageUrls,
 						};
                         context.Products.Add(newProduct);
@@ -69,8 +91,7 @@ namespace Store.Models
             await context.SaveChangesAsync();
         }
 
-        public static async Task SeedDatabase(IEbayService httpClient,
-			DataContext context, UserManager<ApplicationUser> userManager)
+        public async Task SeedDatabase()
 		{
 			await context.Database.MigrateAsync();
 			
@@ -82,10 +103,10 @@ namespace Store.Models
 					"https://api.ebay.com/oauth/api_scope"
 				};
 
-                var o = new OAuth2Api();
-				string access = o.GetApplicationToken(OAuthEnvironment.PRODUCTION, Scopes)
-					.AccessToken.Token;
-                ApplicationUser? admin = await userManager.FindByNameAsync("admin");
+				string access = ebayOauth
+                    .GetApplicationToken(OAuthEnvironment.PRODUCTION, Scopes)
+					.AccessToken
+                    .Token;
                 
 				Category c1 = new() { Name = "All Store Parts", EbayCategoryId = 6000 };
 				Category c2 = new() { Name = "Parts & Accessories", EbayCategoryId = 6028 };
@@ -93,18 +114,18 @@ namespace Store.Models
 				Category c4 = new() { Name = "Car & Truck Parts & Accessories", EbayCategoryId = 6030 };
 				Category c5 = new() { Name = "Motorcycle & Scooter Parts & Accessories", EbayCategoryId = 10063 };
 
-				JObject items1 = await httpClient.SearchItemsAsync(access, "dt parts", 1, 1000, 4, "6000");
-                JObject items2 = await httpClient.SearchItemsAsync(access, "parts", 1, 1000, 4, "6028");
-                JObject items3 = await httpClient.SearchItemsAsync(access, "exterior parts", 1, 1000, 5, "33637");
-				JObject items4 = await httpClient.SearchItemsAsync(access, "car parts", 1, 1000, 4, "6030");
-				JObject items5 = await httpClient.SearchItemsAsync( access, "motorcycle parts", 1, 1000, 3, "10063");
+				JObject items1 = await ebayService.SearchItemsAsync(access, "dt parts", 1, 1000, 4, "6000");
+                JObject items2 = await ebayService.SearchItemsAsync(access, "parts", 1, 1000, 4, "6028");
+                JObject items3 = await ebayService.SearchItemsAsync(access, "exterior parts", 1, 1000, 5, "33637");
+				JObject items4 = await ebayService.SearchItemsAsync(access, "car parts", 1, 1000, 4, "6030");
+				JObject items5 = await ebayService.SearchItemsAsync(access, "motorcycle parts", 1, 1000, 3, "10063");
 
-				await SeedData.SeedProductsAsync(httpClient, access, context, items1, c1, admin.Id);
-				await SeedData.SeedProductsAsync(httpClient, access, context, items2, c2, admin.Id);
-				await SeedData.SeedProductsAsync(httpClient, access, context, items3, c3, admin.Id);
-				await SeedData.SeedProductsAsync(httpClient, access, context, items4, c4, admin.Id);
-				await SeedData.SeedProductsAsync(httpClient, access, context, items5, c5, admin.Id);
-			}
+				await SeedProductsAsync(access, context, items1, c1);
+				await SeedProductsAsync(access, context, items2, c2);
+				await SeedProductsAsync(access, context, items3, c3);
+				await SeedProductsAsync(access, context, items4, c4);
+				await SeedProductsAsync(access, context, items5, c5);
+			}   
 		}
 	}
 }
