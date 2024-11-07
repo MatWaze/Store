@@ -270,7 +270,7 @@ namespace Store.Controllers
                     var content = new
                     {
                         @event = "payment." + notificationEvent,
-                        url = "https://iparts.me/Braintree/Notification"
+                        url = "https://iparts.me/YooKassa/Notification"
                     };
                     Console.WriteLine($"Creating WebHook for {notificationEvent}");
                     httpClient.DefaultRequestHeaders.Add("Idempotence-Key", Guid.NewGuid().ToString());
