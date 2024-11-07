@@ -92,7 +92,6 @@ namespace Store.Controllers
                     prodRepo.SaveProduct(prod);
                 }
                 repo.SaveOrder(order);
-                repo.SaveOrder(order);
                 ApplicationUser? user = await userManager.GetUserAsync(User);
                 string htmlContent = await razorView
                   .RenderViewToStringAsync<Order>("EmailOrderNotification", order);
