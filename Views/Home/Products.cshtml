@@ -1,7 +1,8 @@
 ﻿@model ProductTarget<Product>
 
 @{
-    Layout = "_Layout";
+	Layout = "_Layout";
+	var currentCulture = CultureInfo.CurrentCulture.Name;
 }
 
 <section class="product-store position-relative padding-large">
@@ -17,35 +18,25 @@
                         }
                         <div class="card-body">
                             <h5 class="card-title">
-                                        @p.Name
+                                @if (currentCulture == "ru-RU")
+								{
+									@p.NameRu
+								}
+								else
+								{
+									@p.Name
+								}
                             </h5>
                             <p class="card-text">
-                                        @p.Price.ToString("c", new CultureInfo("en-US"))
+                                @p.Price.ToString("c", new CultureInfo("en-US"))
                             </p>
-                            <a href="@Url.Action("GetItem", "Ebay", new { id = @p.EbayProductId })" class="btn btn-primary mt-2">View Product</a>
-                                    @if (ViewBag.CurrentUser.UserName == "admin")
-                                    {
-                                        <a href="@Url.Action("Delete", "Home", new { id = @p.ProductId })" class="btn btn-danger mt-2">Delete Product</a>
-                                    }
-                                    @* @if (p.UserId != ViewBag.CurrentUser.Id || ViewBag.CurrentUser.UserName == "admin") *@
-                                    @* { *@
-                                    @*     <form id="@p.ProductId" asp-page="/Cart/Cart" method="post"> *@
-                                    @*         <input type="hidden" name="productId" value="@p.ProductId" /> *@
-                                    @*         <input type="hidden" name="returnUrl" value="@ViewContext.HttpContext.Request.PathAndQuery()" /> *@
-                                    @*         @if (p.Quantity > 0) *@
-                                    @*         { *@
-                                    @*             <button type="submit" class="btn btn-success pull-right mt-2"> *@
-                                    @*                 Add To Cart *@
-                                    @*             </button> *@
-                                    @*         } *@
-                                    @*         else *@
-                                    @*         { *@
-                                    @*             <button disabled class="btn btn-success pull-right mt-2"> *@
-                                    @*                 Add To Cart *@
-                                    @*             </button> *@
-                                    @*         } *@
-                                    @*     </form> *@
-                                    @* } *@
+                            <a href="@Url.Action("GetItem", "Ebay", new { id = @p.EbayProductId })" class="btn btn-primary mt-2">
+								@(currentCulture != "en-US" ? "View Product" : "Узнать детали")
+							</a>
+							@if (ViewBag.CurrentUser.UserName == "admin")
+							{
+								<a href="@Url.Action("Delete", "Home", new { id = @p.ProductId })" class="btn btn-danger mt-2">Delete Product</a>
+							}
                         </div>
                     </div>
                 </div>
@@ -63,61 +54,3 @@
         }
     </div>
 </section>
-
-@* <div class="container mt-2">
-    <div class="row">
-        @foreach (var p in Model.Products)
-        {
-            <div class="col-md-4"> 
-                <div class="card mt-3">
-                    @if (p.ImageLink != "") 
-                    {
-                        <img class="card-img-top" src="@p.ImageLink" style="width: 100%; height: 15vw; object-fit: cover;" />
-                    }
-                    <div class="card-body">
-                        <h5 class="card-title">
-                            @p.Name
-                        </h5>
-                        <p class="card-text">
-                            @p.Price.ToString("c", new CultureInfo("en-US"))
-                        </p>
-                        <a href="@Url.Action("GetItem", "Ebay", new { id = @p.EbayProductId })" class="btn btn-primary mt-2">View Product</a>
-                        @if (p.UserId.Equals(ViewBag.CurrentUser.Id) || ViewBag.CurrentUser.UserName == "admin")
-                        {
-                            <a href="@Url.Action("Delete", "Home", new { id = @p.ProductId })" class="btn btn-danger mt-2">Delete Product</a>
-                        }
-                        @* @if (p.UserId != ViewBag.CurrentUser.Id || ViewBag.CurrentUser.UserName == "admin") *@
-                        @* { *@
-                        @*     <form id="@p.ProductId" asp-page="/Cart/Cart" method="post"> *@
-                        @*         <input type="hidden" name="productId" value="@p.ProductId" /> *@
-                        @*         <input type="hidden" name="returnUrl" value="@ViewContext.HttpContext.Request.PathAndQuery()" /> *@
-                        @*         @if (p.Quantity > 0) *@
-                        @*         { *@
-                        @*             <button type="submit" class="btn btn-success pull-right mt-2"> *@
-                        @*                 Add To Cart *@
-                        @*             </button> *@
-                        @*         } *@
-                        @*         else *@
-                        @*         { *@
-                        @*             <button disabled class="btn btn-success pull-right mt-2"> *@
-                        @*                 Add To Cart *@
-                        @*             </button> *@
-                        @*         } *@
-                        @*     </form> *@
-                        @* } *@
- @*                    </div>
-                </div>
-            </div>
-        }
-    </div>
-    @if (Model.Products.Count() != 0)
-    {
-        <div>
-            <ul class="pagination justify-content-center mt-4"
-                page-model="@Model.PagingInfo" page-action="Products"
-                page-url-categoryId="@Model.PagingInfo.CurrentCategory"
-                page-classes-enabled="true">
-            </ul>
-        </div>
-    }
-</div> *@
