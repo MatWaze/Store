@@ -7,6 +7,7 @@ using System.Text;
 using Yandex.Checkout.V3;
 using Microsoft.AspNetCore.Identity;
 using Store.Infrastructure;
+using System.Security.Cryptography;
 
 namespace Store.Controllers
 {
@@ -44,8 +45,9 @@ namespace Store.Controllers
 
         public async Task<IActionResult> YooKassaPayment(int orderId, string accessToken)
         {
-            CreateYooWebHook("waiting_for_capture", accessToken);
-            CreateYooWebHook("canceled", accessToken);
+            await CreateYooWebHook("waiting_for_capture", accessToken);
+            await CreateYooWebHook("succeeded", accessToken);
+            await CreateYooWebHook("canceled", accessToken);
             
             ViewBag.ConfirmationToken = await YooToken(orderId, accessToken);
             Console.WriteLine("Confirmation token: " + ViewBag.ConfirmationToken);
@@ -59,8 +61,8 @@ namespace Store.Controllers
             {
                 ReceiptItem receiptItem = new ReceiptItem
                 {
-                    Amount = new Amount { Value = Math.Round(item.Quantity * item.Product.Price, 2), Currency = "RUB" },
-                    Description = item.Product.Description,
+                    Amount = new Amount { Value = Math.Round(item.Quantity * item.Product.Price, 2), Currency = "USD" },
+                    Description = item.Product.Name,
                     Quantity = item.Quantity,
                     VatCode = VatCode.Vat0,
                     PaymentMode = PaymentMode.FullPayment,
@@ -173,26 +175,26 @@ namespace Store.Controllers
             Client yooClient = new Client(accessToken: payment.Metadata["AccessToken"]);
             AsyncClient asyncClient = yooClient.MakeAsync();
 
-            Payment p = await asyncClient.CancelPaymentAsync(payment.Id);
-            int orderId = int.Parse(p.Metadata["OrderID"]);
+            await asyncClient.CancelPaymentAsync(payment.Id);
+            int orderId = int.Parse(payment.Metadata["OrderID"]);
             Order? order = repo.Orders.FirstOrDefault(o => o.OrderID == orderId);
 
-            string? receiptId = String.Empty;
+            //string? receiptId = String.Empty;
 
-            await foreach (var receipt in asyncClient.GetReceiptsAsync())
-            {
-                if (receipt.PaymentId == p.Id)
-                {
-                    receiptId = receipt.Id;
-                    break;
-                }
-            }
-            Receipt? r = await asyncClient.GetReceiptAsync(receiptId);
+            //await foreach (var receipt in asyncClient.GetReceiptsAsync())
+            //{
+            //    if (receipt.PaymentId == p.Id)
+            //    {
+            //        receiptId = receipt.Id;
+            //        break;
+            //    }
+            //}
+            //Receipt? r = await asyncClient.GetReceiptAsync(receiptId);
 
             repo.DeleteOrder(order);
         }
 
-        public async Task HandleSuccessfullPayment(PaymentWaitingForCaptureNotification captureNote)
+        public async Task HandleWaitingPayment(PaymentWaitingForCaptureNotification captureNote)
         {
             Payment payment = captureNote.Object;
 
@@ -201,10 +203,11 @@ namespace Store.Controllers
                 Client yooClient = new Client(accessToken: payment.Metadata["AccessToken"]);
                 AsyncClient asyncClient = yooClient.MakeAsync();
 
-                Payment p = await asyncClient.CapturePaymentAsync(payment.Id);
-                int orderId = int.Parse(p.Metadata["OrderID"]);
+                await asyncClient.CapturePaymentAsync(payment.Id);
+
+                int orderId = int.Parse(payment.Metadata["OrderID"]);
                 Order? ord = repo.Orders.FirstOrDefault(o => o.OrderID == orderId);
-                ord.PaymentStatus = "Paid";
+                ord.PaymentStatus = "Captured";
 
                 List<Product> productIdsInOrder = ord.Lines.Select(cl => cl.Product).ToList();
                 foreach (Product prod in productIdsInOrder)
@@ -223,23 +226,20 @@ namespace Store.Controllers
                     prodRepo.SaveProduct(prod);
                 }
                 repo.SaveOrder(ord);
-
-                string? receiptId = String.Empty;
-
-                await foreach (var receipt in asyncClient.GetReceiptsAsync())
-                {
-                    if (receipt.PaymentId == p.Id)
-                    {
-                        receiptId = receipt.Id;
-                        break;
-                    }
-                }
-                Receipt? r = await asyncClient.GetReceiptAsync(receiptId);
-
-                string htmlContent = await razorView
-                    .RenderViewToStringAsync<Order>("EmailOrderNotification", ord);
-                await sendEmail.SendEmailAsync(payment.Metadata["EmailAddress"], "ILoveParts order created", htmlContent);
             }
+        }
+
+        public async Task HandleSuccessfullPayment(PaymentSucceededNotification successNote)
+        {
+            Payment payment = successNote.Object;
+
+            int orderId = int.Parse(payment.Metadata["OrderID"]);
+            Order? ord = repo.Orders.FirstOrDefault(o => o.OrderID == orderId);
+            ord.PaymentStatus = "Paid";
+
+            string htmlContent = await razorView
+                .RenderViewToStringAsync<Order>("EmailOrderNotification", ord);
+            await sendEmail.SendEmailAsync(payment.Metadata["EmailAddress"], "ILoveParts order created", htmlContent);
         }
 
         [HttpPost]
@@ -259,18 +259,15 @@ namespace Store.Controllers
             }
             var notification = Client.ParseMessage(Request.Method, 
                 Request.ContentType, body.ToString());
+            Console.WriteLine(notification.ToString());
+
+            if (notification is PaymentWaitingForCaptureNotification captureNote)
+                await HandleWaitingPayment(captureNote);
+            else if (notification is PaymentSucceededNotification successNote)
+                await HandleSuccessfullPayment(successNote);
+            else if (notification is PaymentCanceledNotification cancelNotification)
+                await HandleUnsuccessfullPayment(cancelNotification);
             
-            switch (notification)
-            {
-                case (PaymentWaitingForCaptureNotification captureNote):
-                    await HandleSuccessfullPayment(captureNote);
-                    break;
-                case (PaymentCanceledNotification cancelNotification):
-                    await HandleUnsuccessfullPayment(cancelNotification);
-                    break;
-                default:
-                    break;
-            }
             return Ok(); // yookassa will send notes untill status code 200 is sent
         }
 
@@ -285,7 +282,7 @@ namespace Store.Controllers
                 string responseString = await getResponse.Content.ReadAsStringAsync();
                 JObject? responseJson = JObject.Parse(responseString);
 
-                if (responseJson["items"]?.Count() < 2)
+                if (responseJson["items"]?.Count() < 3)
                 {
                     var content = new
                     {
