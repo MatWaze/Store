@@ -8,6 +8,7 @@ using Yandex.Checkout.V3;
 using Microsoft.AspNetCore.Identity;
 using Store.Infrastructure;
 using System.Security.Cryptography;
+using Braintree;
 
 namespace Store.Controllers
 {
@@ -45,9 +46,9 @@ namespace Store.Controllers
 
         public async Task<IActionResult> YooKassaPayment(int orderId, string accessToken)
         {
-            await CreateYooWebHook("waiting_for_capture", accessToken);
-            await CreateYooWebHook("succeeded", accessToken);
-            await CreateYooWebHook("canceled", accessToken);
+            await CreateYooWebHook("waiting_for_capture", "Notification", accessToken);
+            //await CreateYooWebHook("succeeded", accessToken);
+            await CreateYooWebHook("canceled", "Canceled", accessToken);
             
             ViewBag.ConfirmationToken = await YooToken(orderId, accessToken);
             Console.WriteLine("Confirmation token: " + ViewBag.ConfirmationToken);
@@ -62,7 +63,7 @@ namespace Store.Controllers
                 ReceiptItem receiptItem = new ReceiptItem
                 {
                     Amount = new Amount { Value = Math.Round(item.Quantity * item.Product.Price, 2), Currency = "RUB" },
-                    Description = item.Product.Name,
+                    Description = item.Product.Description,
                     Quantity = item.Quantity,
                     VatCode = VatCode.Vat0,
                     PaymentMode = PaymentMode.FullPayment,
@@ -145,7 +146,7 @@ namespace Store.Controllers
         {
             Order? order = repo.Orders.FirstOrDefault(o => o.OrderID == orderId);
             decimal amount = Math.Round(cart.Lines.Sum(e => e.Product.Price * e.Quantity), 2);
-
+            Console.WriteLine($"amount: {amount}");
             var yooReceipt = await CreateYooReceipt();
             var newPayment = new NewPayment
             {
@@ -168,78 +169,86 @@ namespace Store.Controllers
             return confirmationToken;
         }
 
-        public async Task HandleUnsuccessfullPayment(PaymentCanceledNotification cancelNote)
-        {
-            Payment payment = cancelNote.Object;
-
-            Client yooClient = new Client(accessToken: payment.Metadata["AccessToken"]);
-            AsyncClient asyncClient = yooClient.MakeAsync();
-
-            await asyncClient.CancelPaymentAsync(payment.Id);
-            int orderId = int.Parse(payment.Metadata["OrderID"]);
-            Order? order = repo.Orders.FirstOrDefault(o => o.OrderID == orderId);
-
-            //string? receiptId = String.Empty;
-
-            //await foreach (var receipt in asyncClient.GetReceiptsAsync())
-            //{
-            //    if (receipt.PaymentId == p.Id)
-            //    {
-            //        receiptId = receipt.Id;
-            //        break;
-            //    }
-            //}
-            //Receipt? r = await asyncClient.GetReceiptAsync(receiptId);
-
-            repo.DeleteOrder(order);
-        }
-
-        public async Task HandleWaitingPayment(PaymentWaitingForCaptureNotification captureNote)
+        public async Task<IActionResult> HandleWaitingPayment(PaymentWaitingForCaptureNotification captureNote)
         {
             Payment payment = captureNote.Object;
+            
+            Client yooClient = new Client(accessToken: payment.Metadata["AccessToken"]);
+            AsyncClient asyncClient = yooClient.MakeAsync();
+    
+            int orderId = int.Parse(payment.Metadata["OrderID"]);
+            Order? ord = repo.Orders.FirstOrDefault(o => o.OrderID == orderId);
 
             if (payment.Paid)
             {
-                Client yooClient = new Client(accessToken: payment.Metadata["AccessToken"]);
-                AsyncClient asyncClient = yooClient.MakeAsync();
-
                 await asyncClient.CapturePaymentAsync(payment.Id);
+                
+                Console.WriteLine("Inside waiting for capture");
+                if (ord.PaymentStatus != "Paid")
+                {
+                    ord.PaymentStatus = "Paid";
+
+                    List<Product> productIdsInOrder = ord.Lines.Select(cl => cl.Product).ToList();
+                    foreach (Product prod in productIdsInOrder)
+                    {
+                        if (prod.Quantity > 0)
+                        {
+                            CartLine? line = ord.Lines
+                                .ToList()
+                                .Find(cl => cl.Product.ProductId == prod.ProductId);
+                            prod.Quantity -= line.Quantity;
+                        }
+                        else if (prod.Quantity == 0)
+                        {
+                            prod.Deleted = true;
+                        }
+                        prodRepo.SaveProduct(prod);
+                    }
+                    repo.SaveOrder(ord);
+
+                    string htmlContent = await razorView
+                       .RenderViewToStringAsync<Order>("EmailOrderNotification", ord);
+                    await sendEmail.SendEmailAsync(payment.Metadata["EmailAddress"], "ILoveParts order created", htmlContent);
+                }
+            }
+            return Ok();
+        }
+
+        [HttpPost]
+        [AllowAnonymous]
+        [IgnoreAntiforgeryToken]
+        [Route("YooKassa/Canceled")]
+        public async Task<IActionResult> Canceled()
+        {
+            Request.EnableBuffering();
+
+            StringBuilder body = new();
+            using (var reader = new StreamReader(Request.Body, Encoding.UTF8, leaveOpen: true))
+            {
+                body.Append(await reader.ReadToEndAsync());
+                Request.Body.Position = 0;
+                reader.Close();
+            }
+            Console.WriteLine(body.ToString());
+
+            var notification = Client.ParseMessage(Request.Method,
+                Request.ContentType, body.ToString());
+
+            if (notification is PaymentWaitingForCaptureNotification captureNote)
+            {
+                Payment payment = captureNote.Object;
+                Console.WriteLine("Handling cancelation");
 
                 int orderId = int.Parse(payment.Metadata["OrderID"]);
                 Order? ord = repo.Orders.FirstOrDefault(o => o.OrderID == orderId);
-                ord.PaymentStatus = "Captured";
 
-                List<Product> productIdsInOrder = ord.Lines.Select(cl => cl.Product).ToList();
-                foreach (Product prod in productIdsInOrder)
-                {
-                    if (prod.Quantity > 0)
-                    {
-                        CartLine? line = ord.Lines
-                            .ToList()
-                            .Find(cl => cl.Product.ProductId == prod.ProductId);
-                        prod.Quantity -= line.Quantity;
-                    }
-                    else if (prod.Quantity == 0)
-                    {
-                        prod.Deleted = true;
-                    }
-                    prodRepo.SaveProduct(prod);
-                }
-                repo.SaveOrder(ord);
+                repo.DeleteOrder(ord);
+
+                ViewResult viewResult = View(payment);
+                viewResult.StatusCode = 200;
+                return viewResult;
             }
-        }
-
-        public async Task HandleSuccessfullPayment(PaymentSucceededNotification successNote)
-        {
-            Payment payment = successNote.Object;
-
-            int orderId = int.Parse(payment.Metadata["OrderID"]);
-            Order? ord = repo.Orders.FirstOrDefault(o => o.OrderID == orderId);
-            ord.PaymentStatus = "Paid";
-
-            string htmlContent = await razorView
-                .RenderViewToStringAsync<Order>("EmailOrderNotification", ord);
-            await sendEmail.SendEmailAsync(payment.Metadata["EmailAddress"], "ILoveParts order created", htmlContent);
+            return Ok();
         }
 
         [HttpPost]
@@ -257,21 +266,20 @@ namespace Store.Controllers
                 Request.Body.Position = 0;
                 reader.Close();
             }
+            Console.WriteLine(body.ToString());
+
             var notification = Client.ParseMessage(Request.Method, 
                 Request.ContentType, body.ToString());
-            Console.WriteLine(notification.ToString());
 
             if (notification is PaymentWaitingForCaptureNotification captureNote)
-                await HandleWaitingPayment(captureNote);
-            else if (notification is PaymentSucceededNotification successNote)
-                await HandleSuccessfullPayment(successNote);
-            else if (notification is PaymentCanceledNotification cancelNotification)
-                await HandleUnsuccessfullPayment(cancelNotification);
-            
+            {
+                Console.WriteLine("Handling capture");
+                return await HandleWaitingPayment(captureNote);
+            }
             return Ok(); // yookassa will send notes untill status code 200 is sent
         }
 
-        public async Task CreateYooWebHook(string notificationEvent, string accessToken)
+        public async Task CreateYooWebHook(string notificationEvent, string path, string accessToken)
         {
             string url = "https://api.yookassa.ru/v3/webhooks";
             httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
@@ -282,12 +290,12 @@ namespace Store.Controllers
                 string responseString = await getResponse.Content.ReadAsStringAsync();
                 JObject? responseJson = JObject.Parse(responseString);
 
-                if (responseJson["items"]?.Count() < 3)
+                if (responseJson["items"]?.Count() < 2)
                 {
                     var content = new
                     {
                         @event = "payment." + notificationEvent,
-                        url = "https://iparts.me/YooKassa/Notification"
+                        url = $"https://iparts.me/YooKassa/{path}"
                     };
                     Console.WriteLine($"Creating WebHook for {notificationEvent}");
                     httpClient.DefaultRequestHeaders.Add("Idempotence-Key", Guid.NewGuid().ToString());
