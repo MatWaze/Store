@@ -114,7 +114,7 @@ namespace Store.Models
 				Category c4 = new() { Name = "Car & Truck Parts & Accessories", EbayCategoryId = 6030 };
 				Category c5 = new() { Name = "Motorcycle & Scooter Parts & Accessories", EbayCategoryId = 10063 };
 
-				JObject items1 = await ebayService.SearchItemsAsync(access, "dt parts", 1, 1000, 4, "6000");
+				JObject items1 = await ebayService.SearchItemsAsync(access, "dt parts", 1, 1000, 4, "6000"); // probably will replace 6000 with some other value or remove it altogether
                 JObject items2 = await ebayService.SearchItemsAsync(access, "parts", 1, 1000, 4, "6028");
                 JObject items3 = await ebayService.SearchItemsAsync(access, "exterior parts", 1, 1000, 5, "33637");
 				JObject items4 = await ebayService.SearchItemsAsync(access, "car parts", 1, 1000, 4, "6030");
