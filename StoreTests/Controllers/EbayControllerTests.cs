@@ -16,12 +16,13 @@ using Microsoft.CognitiveServices.Speech.Transcription;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using ServiceStack.Redis;
+using Azure.Storage.Blobs;
 
 namespace StoreTests
 {
     public class EbayControllerTests
     {
-        public Mock<UserManager<ApplicationUser>> GetUserManager()
+        public static Mock<UserManager<ApplicationUser>> GetUserManager()
         {
             var mockUserManager = new Mock<UserManager<ApplicationUser>>(
                 new Mock<IUserStore<ApplicationUser>>().Object,
@@ -45,9 +46,19 @@ namespace StoreTests
             return mockUserManager;
         }
 
-        public Mock<OAuth2Api> GetEbayToken()
+        public async Task<Mock<OAuth2Api>> GetEbayToken()
         {
-            CredentialUtil.Load(@"..\..\ebay.yml");
+            var blob = new BlobStorageService(
+                new BlobServiceClient(Environment.GetEnvironmentVariable("BlobConnection"))
+            );
+
+            using (Stream fileStream = await blob.GetFileStreamAsync("ebay.yml"))
+            {
+                using (StreamReader streamReader = new StreamReader(fileStream))
+                {
+                    CredentialUtil.Load(streamReader);
+                }
+            }
 
             Mock<OAuth2Api> mockOauth = new Mock<OAuth2Api>();
             mockOauth
@@ -62,21 +73,34 @@ namespace StoreTests
             return mockOauth;
         }
 
-        public Mock<IProductRepository> GetRepo()
+        public static Mock<IProductRepository> GetRepo()
         {
             var mockRepo = new Mock<IProductRepository>();
 
+            var categories = new Category[]
+            {
+                new Category { EbayCategoryId = 0, Name = "c1"},
+                new Category { EbayCategoryId = 1, Name = "c2"},
+            };
+
             var products = new Product[]
             {
-                new() { Name = "P1", EbayProductId = "1", ProductId = 1, ItemCountry = "AM" },
-                new() { Name = "P2", EbayProductId = "2", ProductId = 2, ItemCountry = "AM" },
-                new() { Name = "P3", EbayProductId = "3", ProductId = 3, ItemCountry = "AM" },
-                new() { Name = "P4", EbayProductId = "4", ProductId = 4, ItemCountry = "AM" },
+                new() { Name = "P0", Category = categories[0], ProductId = 1, ItemCountry = "AM" },
+                new() { Name = "P1", Category = categories[0], ProductId = 2, ItemCountry = "AM" },
+                new() { Name = "P2", Category = categories[0], ProductId = 3, ItemCountry = "AM" },
+                new() { Name = "P3", Category = categories[1], ProductId = 4, ItemCountry = "AM" },
+                new() { Name = "P4", Category = categories[1], ProductId = 4, ItemCountry = "AM" },
+                new() { Name = "P5", Category = categories[1], ProductId = 4, ItemCountry = "AM" },
+                new() { Name = "P6", Category = categories[0], ProductId = 4, ItemCountry = "AM" },
             };
 
             mockRepo
                 .Setup(repo => repo.Products)
                 .Returns(products.AsQueryable());
+            
+            mockRepo
+                .Setup(repo => repo.Categories)
+                .Returns(categories.AsQueryable());
 
             return mockRepo;
         }

@@ -180,7 +180,13 @@ namespace Store.Controllers
             }
         }
 
-        public async Task<IActionResult> Results(string queryName, int? priceLow, int? priceHigh, int itemPage = 1, int? categoryNumber = 0)
+        public async Task<IActionResult> Results(
+            string queryName, 
+            int? priceLow, 
+            int? priceHigh, 
+            int itemPage = 1, 
+            int? categoryNumber = 0
+        )
         {
             if (queryName == null)
             {
