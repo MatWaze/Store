@@ -274,7 +274,7 @@ namespace Store.Controllers
             return Ok(); // yookassa will send notes untill status code 200 is sent
         }
 
-        public async void CreateYooWebHook(string notificationEvent, string accessToken)
+        public async Task CreateYooWebHook(string notificationEvent, string accessToken)
         {
             string url = "https://api.yookassa.ru/v3/webhooks";
             httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
