@@ -1,9 +1,8 @@
 ﻿@page "{id}"
 @model EditorModel
 
-@{
-	Layout = "_Layout";
-}
+
+<div class="padding-large container">
 
 <h5 class="bg-warning text-white text-center p-2">Edit User</h5>
 <form method="post">
@@ -34,6 +33,8 @@
 		<a class="btn btn-secondary" asp-page="list">Back</a>
 	</div>
 </form>
+
+</div>
 
 @functions{
 	[Authorize(Roles = "Admins")]

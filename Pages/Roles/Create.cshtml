@@ -1,20 +1,22 @@
 ﻿@page
 @model CreateModel
 
-<h5 class="bg-primary text-white text-center p-2">
-	Create Role
-</h5>
-<form method="post">
-	@Html.AntiForgeryToken()
-	<div asp-validation-summary="All" class="text-danger">
-		<label>Role Name</label>
-		<input name="Name" class="form-control" value="@Model.Name"/>
-	</div>
-	<div class="py-2">
-		<button type="submit" class="btn btn-primary">Submit</button>
-		<a class="btn btn-secondary" asp-page="list">Back</a>
-	</div>
-</form>
+<div class="padding-large container">
+	<h5 class="bg-primary text-white text-center p-2">
+		Create Role
+	</h5>
+	<form method="post">
+		@Html.AntiForgeryToken()
+		<div asp-validation-summary="All" class="text-danger">
+			<label>Role Name</label>
+			<input name="Name" class="form-control" value="@Model.Name"/>
+		</div>
+		<div class="py-2">
+			<button type="submit" class="btn btn-primary">Submit</button>
+			<a class="btn btn-secondary" asp-page="list">Back</a>
+		</div>
+	</form>
+</div>
 
 @functions{
 	[Authorize(Roles = "Admins")]

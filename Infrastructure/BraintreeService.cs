@@ -18,7 +18,7 @@ public class BraintreeService : IBraintreeService
             Environment = Braintree.Environment.SANDBOX,
             MerchantId = configuration["BraintreeGateway:MerchantId"],
             PublicKey = configuration["BraintreeGateway:PublicKey"],
-            PrivateKey = configuration["BraintreeGateway:PrivateKey"]
+            PrivateKey = System.Environment.GetEnvironmentVariable("BraintreePrivateKey")
         };
         return gateway;
     }

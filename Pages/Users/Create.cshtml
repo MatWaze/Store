@@ -1,6 +1,8 @@
 ﻿@page
 @model CreateModel
 
+<div class="padding-large container">
+
 <h5 class="bg-primary text-white p-2">Create User</h5>
 
 <form method="post">
@@ -29,6 +31,7 @@
 		<a class="btn btn-secondary" asp-page="list">Back</a>
 	</div>
 </form>
+</div>
 
 @functions{
 	[Authorize(Roles = "Admins")]
