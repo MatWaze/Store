@@ -61,7 +61,7 @@ namespace Store.Controllers
             {
                 ReceiptItem receiptItem = new ReceiptItem
                 {
-                    Amount = new Amount { Value = Math.Round(item.Quantity * item.Product.Price, 2), Currency = "USD" },
+                    Amount = new Amount { Value = Math.Round(item.Quantity * item.Product.Price, 2), Currency = "RUB" },
                     Description = item.Product.Name,
                     Quantity = item.Quantity,
                     VatCode = VatCode.Vat0,
