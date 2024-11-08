@@ -25,9 +25,9 @@ export default function SpeechToText() {
         recognizer.recognizeOnceAsync(result => {
                 const item = document.getElementById("query-field");
                 if (item) {
-                    item.value = result.text.replace(".", "") 
-                    ? result.text 
-                    != undefined : "";
+                    result.text != undefined
+                    ? item.value = result.text.replace(".", "")
+                    : "";
                 }
             }, 
         (err) => {

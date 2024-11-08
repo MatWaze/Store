@@ -126,6 +126,9 @@
   <data name="Home" xml:space="preserve">
     <value>Домашняя страница</value>
   </data>
+  <data name="Log Out" xml:space="preserve">
+    <value>Выйти</value>
+  </data>
   <data name="Privacy Policy" xml:space="preserve">
     <value>Политика конфиденциальности</value>
   </data>

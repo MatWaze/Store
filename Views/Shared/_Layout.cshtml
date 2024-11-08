@@ -2,6 +2,10 @@
 @inject Cart cart
 @inject IViteManifest Manifest
 
+@{
+    var currentPath = Context.Request.Path;
+}
+
 <html>
 <head>
     <meta charset="UTF-8">
@@ -18,7 +22,7 @@
 
 <body>
     <partial name="_Validation" />
-	<script type="module" src="/dir/assets/main-ClQZuypg.js"></script>
+    <script type="module" src="/dir/assets/main-DXVS-V6O.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.js"></script>
 
@@ -44,16 +48,19 @@
             <div class="offcanvas-body">
                 <ul id="navbar" class="navbar-nav text-uppercase justify-content-end align-items-center flex-grow-1 pe-3">
                 <li class="nav-item">
-                    <a class="nav-link me-4 active" href="/">@Localizer["Home"]</a>
+                    <a class="@(currentPath != "/" ? "nav-link me-4" : "nav-link me-4 active")" href="/">@Localizer["Home"]</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link me-4" href="/Ebay/Search">@Localizer["Search Form"]</a>
+                    <a class="@(currentPath != "/Ebay/Search" ? "nav-link me-4" : "nav-link me-4 active")" href="/Ebay/Search">@Localizer["Search Form"]</a>
                 </li>
                 <li class="nav-item">
-					<a class="nav-link me-4" href="/6000/Page1">@Localizer["Products"]</a>
+                    <a class="@(currentPath != "/6000/Page1" ? "nav-link me-4" : "nav-link me-4 active")" href="/6000/Page1">@Localizer["Products"]</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link me-4" href="/Profile">@Localizer["Profile"]</a>
+                    <a class="@(currentPath != "/Profile" ? "nav-link me-4" : "nav-link me-4 active")" href="/Profile">@Localizer["Profile"]</a>
+                </li>
+                <li class="nav-item">
+                    <a class="@(currentPath != "/Account/Logout" ? "nav-link me-4" : "nav-link me-4 active")" href="/Account/Logout">@Localizer["Log Out"]</a>
                 </li>
                 <li class="nav-item">
                     <div class="user-items ps-5">
