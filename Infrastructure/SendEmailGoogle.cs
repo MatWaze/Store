@@ -16,8 +16,8 @@ namespace Store.Infrastructure
         public async Task<string> SendEmailAsync(string emailName, string subject, string body)
         {
             var emailToSend = new MimeMessage();
-            string accountName = config["GmailAccount:Name"];
-            string appPassword = config["GmailAccount:AppPassword"];
+            string accountName = config["GmailAccount:Name"]!;
+            string appPassword = Environment.GetEnvironmentVariable("GmailAccount")!;
             
             emailToSend.From.Add(MailboxAddress.Parse(accountName));
             emailToSend.To.Add(MailboxAddress.Parse(emailName));
