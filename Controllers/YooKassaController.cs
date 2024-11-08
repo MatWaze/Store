@@ -177,6 +177,18 @@ namespace Store.Controllers
             int orderId = int.Parse(p.Metadata["OrderID"]);
             Order? order = repo.Orders.FirstOrDefault(o => o.OrderID == orderId);
 
+            string? receiptId = String.Empty;
+
+            await foreach (var receipt in asyncClient.GetReceiptsAsync())
+            {
+                if (receipt.PaymentId == p.Id)
+                {
+                    receiptId = receipt.Id;
+                    break;
+                }
+            }
+            Receipt? r = await asyncClient.GetReceiptAsync(receiptId);
+
             repo.DeleteOrder(order);
         }
 
@@ -211,11 +223,17 @@ namespace Store.Controllers
                     prodRepo.SaveProduct(prod);
                 }
                 repo.SaveOrder(ord);
-                    
-                string? receiptId = (await asyncClient
-                    .GetReceiptsAsync()
-                    .FirstOrDefaultAsync(r => r.PaymentId == p.Id))?
-                    .PaymentId;
+
+                string? receiptId = String.Empty;
+
+                await foreach (var receipt in asyncClient.GetReceiptsAsync())
+                {
+                    if (receipt.PaymentId == p.Id)
+                    {
+                        receiptId = receipt.Id;
+                        break;
+                    }
+                }
                 Receipt? r = await asyncClient.GetReceiptAsync(receiptId);
 
                 string htmlContent = await razorView
