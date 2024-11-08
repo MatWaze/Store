@@ -45,7 +45,8 @@ namespace Store.Controllers
         public async Task<IActionResult> YooKassaPayment(int orderId, string accessToken)
         {
             CreateYooWebHook("waiting_for_capture", accessToken);
-            //CreateYooWebHook("canceled", accessToken);
+            CreateYooWebHook("canceled", accessToken);
+            
             ViewBag.ConfirmationToken = await YooToken(orderId, accessToken);
             Console.WriteLine("Confirmation token: " + ViewBag.ConfirmationToken);
             return View("Views/Order/YooKassaCheckout.cshtml", orderId);
@@ -265,7 +266,8 @@ namespace Store.Controllers
             {
                 string responseString = await getResponse.Content.ReadAsStringAsync();
                 JObject? responseJson = JObject.Parse(responseString);
-                if (responseJson["items"].HasValues == false)
+
+                if (responseJson["items"]?.Count() < 2)
                 {
                     var content = new
                     {
