@@ -104,7 +104,8 @@ namespace Store.Controllers
         {
             string url = "https://yookassa.ru/oauth/v2/token";
             var byteArray = Encoding
-                .ASCII.GetBytes($"{config["YooKassaApi:ClientId"]}:{Environment.GetEnvironmentVariable("YooKassaApi")}");
+                .ASCII
+                .GetBytes($"{config["YooKassaApi:ClientId"]}:{Environment.GetEnvironmentVariable("YooKassaApi")}");
 
             httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
 
@@ -171,44 +172,12 @@ namespace Store.Controllers
         public async Task<IActionResult> HandleWaitingPayment(PaymentWaitingForCaptureNotification captureNote)
         {
             Payment payment = captureNote.Object;
-            
             Client yooClient = new Client(accessToken: payment.Metadata["AccessToken"]);
             AsyncClient asyncClient = yooClient.MakeAsync();
-    
-            int orderId = int.Parse(payment.Metadata["OrderID"]);
-            Order? ord = repo.Orders.FirstOrDefault(o => o.OrderID == orderId);
 
             if (payment.Paid)
             {
                 await asyncClient.CapturePaymentAsync(payment.Id);
-                
-                Console.WriteLine("Inside waiting for capture");
-                if (ord.PaymentStatus != "Paid")
-                {
-                    ord.PaymentStatus = "Paid";
-
-                    List<Product> productIdsInOrder = ord.Lines.Select(cl => cl.Product).ToList();
-                    foreach (Product prod in productIdsInOrder)
-                    {
-                        if (prod.Quantity > 0)
-                        {
-                            CartLine? line = ord.Lines
-                                .ToList()
-                                .Find(cl => cl.Product.ProductId == prod.ProductId);
-                            prod.Quantity -= line.Quantity;
-                        }
-                        else if (prod.Quantity == 0)
-                        {
-                            prod.Deleted = true;
-                        }
-                        prodRepo.SaveProduct(prod);
-                    }
-                    repo.SaveOrder(ord);
-
-                    string htmlContent = await razorView
-                       .RenderViewToStringAsync<Order>("EmailOrderNotification", ord);
-                    await sendEmail.SendEmailAsync(payment.Metadata["EmailAddress"], "ILoveParts order created", htmlContent);
-                }
             }
             return Ok();
         }
@@ -240,12 +209,16 @@ namespace Store.Controllers
 
                 int orderId = int.Parse(payment.Metadata["OrderID"]);
                 Order? ord = repo.Orders.FirstOrDefault(o => o.OrderID == orderId);
-                Console.WriteLine("canceled");
-                repo.DeleteOrder(ord);
+                
+                if (ord != null)
+                {
+                    Console.WriteLine("canceled");
+                    repo.DeleteOrder(ord);
 
-                ViewResult viewResult = View(payment);
-                viewResult.StatusCode = 200;
-                return viewResult;
+                    ViewResult viewResult = View(payment);
+                    viewResult.StatusCode = 200;
+                    return viewResult;
+                }
             }
             Console.WriteLine("someting else");
             return Ok();
@@ -255,21 +228,20 @@ namespace Store.Controllers
         [AllowAnonymous]
         [IgnoreAntiforgeryToken]
         [Route("YooKassa/Notification")]
-        public async Task<IActionResult> Notification()
+        public async Task<IActionResult> Notification([FromBody] string body)
         {
-            Request.EnableBuffering();
-
-            StringBuilder body = new ();
-            using (var reader = new StreamReader(Request.Body, Encoding.UTF8, leaveOpen: true))
-            {
-                body.Append(await reader.ReadToEndAsync());
-                Request.Body.Position = 0;
-                reader.Close();
-            }
-            Console.WriteLine(body.ToString());
+            //Request.EnableBuffering();
+            //StringBuilder body = new ();
+            //using (var reader = new StreamReader(Request.Body, Encoding.UTF8, leaveOpen: true))
+            //{
+            //    body.Append(await reader.ReadToEndAsync());
+            //    Request.Body.Position = 0;
+            //    reader.Close();
+            //}
+            Console.WriteLine(body);
 
             var notification = Client.ParseMessage(Request.Method, 
-                Request.ContentType, body.ToString());
+                Request.ContentType, body);
 
             if (notification is PaymentWaitingForCaptureNotification captureNote)
             {
