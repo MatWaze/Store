@@ -8,7 +8,6 @@ using Yandex.Checkout.V3;
 using Microsoft.AspNetCore.Identity;
 using Store.Infrastructure;
 using System.Security.Cryptography;
-using Braintree;
 
 namespace Store.Controllers
 {
@@ -241,13 +240,14 @@ namespace Store.Controllers
 
                 int orderId = int.Parse(payment.Metadata["OrderID"]);
                 Order? ord = repo.Orders.FirstOrDefault(o => o.OrderID == orderId);
-
+                Console.WriteLine("canceled");
                 repo.DeleteOrder(ord);
 
                 ViewResult viewResult = View(payment);
                 viewResult.StatusCode = 200;
                 return viewResult;
             }
+            Console.WriteLine("someting else");
             return Ok();
         }
 
@@ -276,6 +276,8 @@ namespace Store.Controllers
                 Console.WriteLine("Handling capture");
                 return await HandleWaitingPayment(captureNote);
             }
+            Console.WriteLine("something else");
+
             return Ok(); // yookassa will send notes untill status code 200 is sent
         }
 
