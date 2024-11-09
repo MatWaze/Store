@@ -185,72 +185,54 @@ namespace Store.Controllers
         [HttpPost]
         [AllowAnonymous]
         [IgnoreAntiforgeryToken]
-        [Route("YooKassa/Canceled")]
         public async Task<IActionResult> Canceled()
         {
-            Request.EnableBuffering();
-
-            StringBuilder body = new();
-            using (var reader = new StreamReader(Request.Body, Encoding.UTF8, leaveOpen: true))
+            using (var reader = new StreamReader(Request.Body, Encoding.UTF8))
             {
-                body.Append(await reader.ReadToEndAsync());
-                Request.Body.Position = 0;
-                reader.Close();
-            }
-            Console.WriteLine(body.ToString());
+                string body = await reader.ReadToEndAsync();
 
-            var notification = Client.ParseMessage(Request.Method,
-                Request.ContentType, body.ToString());
+                var notification = Client.ParseMessage(Request.Method,
+                    Request.ContentType, body);
 
-            if (notification is PaymentWaitingForCaptureNotification captureNote)
-            {
-                Payment payment = captureNote.Object;
-                Console.WriteLine("Handling cancelation");
-
-                int orderId = int.Parse(payment.Metadata["OrderID"]);
-                Order? ord = repo.Orders.FirstOrDefault(o => o.OrderID == orderId);
-                
-                if (ord != null)
+                if (notification is PaymentWaitingForCaptureNotification captureNote)
                 {
-                    Console.WriteLine("canceled");
-                    repo.DeleteOrder(ord);
+                    Payment payment = captureNote.Object;
 
-                    ViewResult viewResult = View(payment);
-                    viewResult.StatusCode = 200;
-                    return viewResult;
+                    int orderId = int.Parse(payment.Metadata["OrderID"]);
+                    Order? ord = repo.Orders.FirstOrDefault(o => o.OrderID == orderId);
+
+                    if (ord != null)
+                    {
+                        Console.WriteLine("Deleted order");
+                        repo.DeleteOrder(ord);
+
+                        ViewResult viewResult = View(payment);
+                        viewResult.StatusCode = 200;
+                        return viewResult;
+                    }
                 }
+                return Ok();
             }
-            Console.WriteLine("someting else");
-            return Ok();
         }
 
         [HttpPost]
         [AllowAnonymous]
         [IgnoreAntiforgeryToken]
-        [Route("YooKassa/Notification")]
-        public async Task<IActionResult> Notification([FromBody] string body)
+        public async Task<IActionResult> Notification()
         {
-            //Request.EnableBuffering();
-            //StringBuilder body = new ();
-            //using (var reader = new StreamReader(Request.Body, Encoding.UTF8, leaveOpen: true))
-            //{
-            //    body.Append(await reader.ReadToEndAsync());
-            //    Request.Body.Position = 0;
-            //    reader.Close();
-            //}
-            Console.WriteLine(body);
-
-            var notification = Client.ParseMessage(Request.Method, 
-                Request.ContentType, body);
-
-            if (notification is PaymentWaitingForCaptureNotification captureNote)
+            using (var reader = new StreamReader(Request.Body, Encoding.UTF8))
             {
-                Console.WriteLine("Handling capture");
-                return await HandleWaitingPayment(captureNote);
-            }
-            Console.WriteLine("something else");
+                string body = await reader.ReadToEndAsync();
 
-            return Ok(); // yookassa will send notes untill status code 200 is sent
+                var notification = Client.ParseMessage(Request.Method,
+                    Request.ContentType, body);
+
+                if (notification is PaymentWaitingForCaptureNotification captureNote)
+                {
+                    return await HandleWaitingPayment(captureNote);
+                }
+                return Ok(); // yookassa will send notes untill status code 200 is sent
+            }
         }
 
         public async Task CreateYooWebHook(string notificationEvent, string path, string accessToken)
