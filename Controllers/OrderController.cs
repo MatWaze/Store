@@ -72,7 +72,7 @@ public class OrderController : Controller
                 var user = await userManager.GetUserAsync(User);
                 order.UserId = user.Id;
                 order.Lines = cart.Lines;
-                order.PaymentStatus = "Pending";
+                order.PaymentStatus = "Initiated";
 
                 repo.SaveOrder(order);
 

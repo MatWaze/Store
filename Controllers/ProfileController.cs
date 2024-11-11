@@ -9,8 +9,9 @@ namespace Store.Controllers
     [Authorize]
     public class ProfileController : Controller
     {
-        private UserManager<ApplicationUser> usrMgr;
-        private IOrderRepository orderRepo;
+        private readonly UserManager<ApplicationUser> usrMgr;
+        private readonly IOrderRepository orderRepo;
+
 
         public ProfileController(
             UserManager<ApplicationUser> userManager,

@@ -13,14 +13,12 @@ namespace Store.Controllers
 {
     public class YooKassaController : Controller
     {
-        public IOrderRepository repo;
-        public HttpClient httpClient;
-        public IProductRepository prodRepo;
-        public Cart cart;
-        private IConfiguration config;
-        private UserManager<ApplicationUser> userManager;
-        private IRazorViewToStringRenderer razorView;
-        private ISendEmail sendEmail;
+        private readonly IOrderRepository repo;
+        private readonly HttpClient httpClient;
+        private readonly IProductRepository prodRepo;
+        private readonly Cart cart;
+        private readonly IConfiguration config;
+        private readonly UserManager<ApplicationUser> userManager;
 
         public YooKassaController(
             IOrderRepository repository,
@@ -28,9 +26,7 @@ namespace Store.Controllers
             Cart cartService,
             UserManager<ApplicationUser> usrMgr,
             IConfiguration configuration,
-            HttpClient client,
-            IRazorViewToStringRenderer razorViewToString,
-            ISendEmail send
+            HttpClient client
         )
         {
             repo = repository;
@@ -39,8 +35,6 @@ namespace Store.Controllers
             userManager = usrMgr;
             config = configuration;
             httpClient = client;
-            razorView = razorViewToString;
-            sendEmail = send;
         }
 
         public async Task<IActionResult> YooKassaPayment(int orderId, string accessToken)
@@ -50,8 +44,9 @@ namespace Store.Controllers
             await CreateYooWebHook("canceled", "Canceled", accessToken);
             
             ViewBag.ConfirmationToken = await YooToken(orderId, accessToken);
-            Console.WriteLine("Confirmation token: " + ViewBag.ConfirmationToken);
-            return View("Views/Order/YooKassaCheckout.cshtml", orderId);
+            string? orderNonce = repo.Orders.FirstOrDefault(o => o.OrderID == orderId)?.PaymentId;
+            
+            return View("Views/Order/YooKassaCheckout.cshtml", orderNonce);
         }
 
         public async Task<NewReceipt> CreateYooReceipt()
@@ -61,7 +56,7 @@ namespace Store.Controllers
             {
                 ReceiptItem receiptItem = new ReceiptItem
                 {
-                    Amount = new Amount { Value = Math.Round(item.Quantity * item.Product.Price, 2), Currency = "RUB" },
+                    Amount = new Amount { Value = Math.Round(cart.ComputeTotalValue()), Currency = "RUB" },
                     Description = item.Product.Description,
                     Quantity = item.Quantity,
                     VatCode = VatCode.Vat0,
@@ -137,15 +132,16 @@ namespace Store.Controllers
             }
         }
 
-        public IActionResult Error()
+        [HttpGet]
+        public IActionResult Canceled(string errorMsg)
         {
-            return RedirectToAction("Index", "Home");
+            return View(errorMsg);
         }
 
         private async Task<string> YooToken(int orderId, string accessToken)
         {
             Order? order = repo.Orders.FirstOrDefault(o => o.OrderID == orderId);
-            decimal amount = Math.Round(cart.Lines.Sum(e => e.Product.Price * e.Quantity), 2);
+            decimal amount = Math.Round(cart.ComputeTotalValue(), 2);
             Console.WriteLine($"amount: {amount}");
             var yooReceipt = await CreateYooReceipt();
             var newPayment = new NewPayment
@@ -164,6 +160,7 @@ namespace Store.Controllers
             Payment payment = yooClient.CreatePayment(newPayment);
             //var user = await userManager.GetUserAsync(User);
             order.PaymentId = payment.Id;
+            order.PaymentStatus = "Pending";
             repo.SaveOrder(order);
             var confirmationToken = payment.Confirmation.ConfirmationToken;
             return confirmationToken;
@@ -177,7 +174,8 @@ namespace Store.Controllers
 
             if (payment.Paid)
             {
-                await asyncClient.CapturePaymentAsync(payment.Id);
+                await asyncClient.CapturePaymentAsync(payment.Id, 
+                    idempotenceKey: Guid.NewGuid().ToString());
             }
             return Ok();
         }
@@ -206,7 +204,7 @@ namespace Store.Controllers
                         Console.WriteLine("Deleted order");
                         repo.DeleteOrder(ord);
 
-                        ViewResult viewResult = View(payment);
+                        ViewResult viewResult = View(payment.CancellationDetails.Reason);
                         viewResult.StatusCode = 200;
                         return viewResult;
                     }
