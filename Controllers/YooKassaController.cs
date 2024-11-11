@@ -151,8 +151,8 @@ namespace Store.Controllers
                 Receipt = yooReceipt,
                 Metadata = new Dictionary<string, string>
                 {
+                    { "UserId",  order.UserId! },
                     { "OrderID", orderId.ToString() },
-                    { "AccessToken", accessToken },
                     { "EmailAddress", yooReceipt.Customer.Email }
                 },
             };
@@ -161,6 +161,7 @@ namespace Store.Controllers
             //var user = await userManager.GetUserAsync(User);
             order.PaymentId = payment.Id;
             order.PaymentStatus = "Pending";
+            
             repo.SaveOrder(order);
             var confirmationToken = payment.Confirmation.ConfirmationToken;
             return confirmationToken;
@@ -169,7 +170,10 @@ namespace Store.Controllers
         public async Task<IActionResult> HandleWaitingPayment(PaymentWaitingForCaptureNotification captureNote)
         {
             Payment payment = captureNote.Object;
-            Client yooClient = new Client(accessToken: payment.Metadata["AccessToken"]);
+            ApplicationUser user = await userManager.FindByIdAsync(payment.Metadata["UserId"]);
+
+            Client yooClient = new Client(accessToken: user.YooKassaAccessToken!);
+            
             AsyncClient asyncClient = yooClient.MakeAsync();
 
             if (payment.Paid)

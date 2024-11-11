@@ -17,10 +17,7 @@ public class OrderController : Controller
     public HttpClient httpClient;
     public IProductRepository prodRepo;
     public Cart cart;
-    private IConfiguration config;
     private UserManager<ApplicationUser> userManager;
-    private IRazorViewToStringRenderer razorView;
-    private ISendEmail sendEmail;
 
     public OrderController(IBraintreeGateway braintreeService,
         IOrderRepository repository,
@@ -28,8 +25,6 @@ public class OrderController : Controller
         Cart cartService,
         UserManager<ApplicationUser> usrMgr,
         HttpClient client,
-        IRazorViewToStringRenderer razorViewToString,
-        ISendEmail send
         )
     {   
         brainGateway = braintreeService;
@@ -38,8 +33,6 @@ public class OrderController : Controller
         cart = cartService;
         userManager = usrMgr;
         httpClient = client;
-        razorView = razorViewToString;
-        sendEmail = send;
     }
 
     public async Task<IActionResult> New()
