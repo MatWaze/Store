@@ -19,6 +19,7 @@ namespace Store.Controllers
         private readonly Cart cart;
         private readonly IConfiguration config;
         private readonly UserManager<ApplicationUser> userManager;
+        private readonly ILogger<YooKassaController> logger;
 
         public YooKassaController(
             IOrderRepository repository,
@@ -26,7 +27,8 @@ namespace Store.Controllers
             Cart cartService,
             UserManager<ApplicationUser> usrMgr,
             IConfiguration configuration,
-            HttpClient client
+            HttpClient client,
+            ILogger<YooKassaController> log
         )
         {
             repo = repository;
@@ -35,6 +37,7 @@ namespace Store.Controllers
             userManager = usrMgr;
             config = configuration;
             httpClient = client;
+            logger = log;
         }
 
         public async Task<IActionResult> YooKassaPayment(int orderId, string accessToken)
@@ -84,12 +87,15 @@ namespace Store.Controllers
             ApplicationUser? user = await userManager.GetUserAsync(User);
             if (user?.YooKassaAccessToken == null /* or expired */)
             {
+                logger.LogInformation("Redirecting {userName} to yookassa",
+                    user.UserName);
                 string apiUrl = $"https://yookassa.ru/oauth/v2/authorize?response_type=code&client_id={config["YooKassaApi:ClientId"]}&state=test-user";
                 return Redirect(apiUrl);
             }
             else
             {
-                Console.WriteLine("user already authenticated");
+				logger.LogInformation("{userName} has fresh token",
+				    user.UserName);
                 return RedirectToAction("YooKassaPayment",
                     new { orderId = orderId, accessToken = user.YooKassaAccessToken });
             }
@@ -111,12 +117,17 @@ namespace Store.Controllers
             };
             var content = new FormUrlEncodedContent(requestData);
             HttpResponseMessage response = await httpClient.PostAsync(url, content);
+            
             if (response.IsSuccessStatusCode)
             {
                 var responseString = await response.Content.ReadAsStringAsync();
                 var responseData = JObject.Parse(responseString);
 
                 ApplicationUser? user = await userManager.GetUserAsync(User);
+                
+                logger.LogInformation("Getting access token for {userName} and redirecting to payment form",
+                    user.UserName);
+
                 user.YooKassaAccessToken = responseData["access_token"]?.ToString();
                 await userManager.UpdateAsync(user);
 
@@ -127,7 +138,9 @@ namespace Store.Controllers
             else
             {
                 string errorResponse = await response.Content.ReadAsStringAsync();
-                Console.WriteLine($"Error: {errorResponse}");
+
+                logger.LogCritical("Error getting access token: {errorResponse}",
+                    errorResponse);
                 return RedirectToAction("Index", "Home");
             }
         }
@@ -142,7 +155,7 @@ namespace Store.Controllers
         {
             Order? order = repo.Orders.FirstOrDefault(o => o.OrderID == orderId);
             decimal amount = Math.Round(cart.ComputeTotalValue(), 2);
-            Console.WriteLine($"amount: {amount}");
+            
             var yooReceipt = await CreateYooReceipt();
             var newPayment = new NewPayment
             {
@@ -178,6 +191,8 @@ namespace Store.Controllers
 
             if (payment.Paid)
             {
+                logger.LogInformation("Confirming payment for order {orderId} of {userName}",
+                    payment.Metadata["OrderID"], user.UserName);
                 await asyncClient.CapturePaymentAsync(payment.Id, 
                     idempotenceKey: Guid.NewGuid().ToString());
             }
@@ -205,7 +220,9 @@ namespace Store.Controllers
 
                     if (ord != null)
                     {
-                        Console.WriteLine("Deleted order");
+                        logger.LogCritical("Deleting canceled order {orderId}",
+                            orderId);
+
                         repo.DeleteOrder(ord);
 
                         ViewResult viewResult = View(payment.CancellationDetails.Reason);
@@ -255,13 +272,17 @@ namespace Store.Controllers
                         @event = "payment." + notificationEvent,
                         url = $"https://iparts.me/YooKassa/{path}"
                     };
-                    Console.WriteLine($"Creating WebHook for {notificationEvent}");
+                    logger.LogInformation("Creating WebHook for {notificationEvent}",
+                        notificationEvent);
                     httpClient.DefaultRequestHeaders.Add("Idempotence-Key", Guid.NewGuid().ToString());
                     var resp = await httpClient.PostAsJsonAsync(url, content);
                     httpClient.DefaultRequestHeaders.Remove("Idempotence-Key");
                 }
                 else
-                    Console.WriteLine($"WebHook for {notificationEvent} already exists");
+                {
+                    logger.LogInformation("WebHook for {notificationEvent} already exists",
+                        notificationEvent);
+                }
             }
         }
     }

@@ -14,20 +14,22 @@ namespace Store.Controllers;
 [AutoValidateAntiforgeryToken]
 public class OrderController : Controller
 {
-    public IBraintreeGateway brainGateway;
-    public IOrderRepository repo;
-    public HttpClient httpClient;
-    public IProductRepository prodRepo;
-    public Cart cart;
-    private UserManager<ApplicationUser> userManager;
+    public readonly IBraintreeGateway brainGateway;
+    public readonly IOrderRepository repo;
+    public readonly HttpClient httpClient;
+    public readonly IProductRepository prodRepo;
+    public readonly Cart cart;
+    private readonly UserManager<ApplicationUser> userManager;
+    private readonly ILogger<OrderController> logger;
 
     public OrderController(IBraintreeGateway braintreeService,
         IOrderRepository repository,
         IProductRepository productRepository,
         Cart cartService,
         UserManager<ApplicationUser> usrMgr,
-        HttpClient client
-        )
+        HttpClient client,
+        ILogger<OrderController> log
+    )
     {   
         brainGateway = braintreeService;
         repo = repository;
@@ -35,6 +37,7 @@ public class OrderController : Controller
         cart = cartService;
         userManager = usrMgr;
         httpClient = client;
+        logger = log;
     }
 
     public async Task<IActionResult> New()
@@ -78,6 +81,9 @@ public class OrderController : Controller
                 order.PaymentStatus = "Initiated";
 
                 repo.SaveOrder(order);
+
+                logger.LogInformation("Order with {orderId} created for user {userName}",
+                    order.OrderID, user.UserName);
 
                 if (order.PaymentMethod == "Braintree")
                 {

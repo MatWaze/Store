@@ -55,13 +55,15 @@
 		private RoleManager<IdentityRole> roleManager;
 		private ISendEmail emailManager;
 		private IRazorViewToStringRenderer razorView;
+		private readonly ILogger<SignupModel> logger;
 		private readonly IStringLocalizer<Store.Models.LoginModel> localizer;
 
 		public SignupModel(UserManager<ApplicationUser> userMgr,
 			RoleManager<IdentityRole> roleMgr,
 			ISendEmail emailMgr,
 			IRazorViewToStringRenderer razorViewToString,
-			IStringLocalizer<Store.Models.LoginModel> loc
+			IStringLocalizer<Store.Models.LoginModel> loc,
+			ILogger<SignupModel> log
 		)
 		{
 			userManager = userMgr;
@@ -69,6 +71,7 @@
 			emailManager = emailMgr;
 			razorView = razorViewToString;
 			localizer = loc;
+			logger = log;
 		}
 
 		[Required(ErrorMessageResourceName = "Required",
@@ -145,6 +148,7 @@
 					string htmlContext = await razorView.RenderViewToStringAsync<int>("EmailSignupNotification", 4);
 					await userManager.AddToRoleAsync(user, role);
 					await emailManager.SendEmailAsync(this.Email, "ILoveParts Registration", htmlContext);
+					logger.LogInformation("User {userName} signed up", user.UserName);
 					return Redirect(ReturnUrl ?? "/");
 				}
 				ModelState.AddModelError("", localizer["RegistrationError"]);
