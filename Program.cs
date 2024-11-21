@@ -187,7 +187,12 @@ builder.Services.AddScoped<IOrderRepository, EFOrderRepository>();
 builder.Services.AddHttpClient();
 
 builder.Services.AddDistributedMemoryCache();
-builder.Services.AddSession();
+
+builder.Services.AddSession(opts =>
+{
+    opts.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    opts.Cookie.Name = Guid.NewGuid().ToString();
+});
 
 builder.Services.AddAuthentication(opts =>
 {

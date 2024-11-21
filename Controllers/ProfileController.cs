@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Store.Models;
 using Store.Models.ViewModels;
 
@@ -26,30 +27,28 @@ namespace Store.Controllers
 
         public async Task<IActionResult> Index()
         {
-            ApplicationUser? applicationUser = await usrMgr.GetUserAsync(User);
-
-            var addr = context
-                .Addresses
-                .FirstOrDefault(a => a.Id == applicationUser.AddressId);
+            var appUser = await usrMgr.Users
+                .Include(u => u.Address)
+                .FirstOrDefaultAsync(u => u.Id == usrMgr.GetUserId(User));
 
             ProfileViewModel profile = new ProfileViewModel()
             {
                 Address = new AddressViewModel
                 {
-                    City = addr?.City ?? null,
-                    Country = addr?.Country ?? null,
-                    Region = addr?.Region ?? null,
-                    Street = addr?.Street ?? null,
-                    PostalCode = addr?.PostalCode ?? null
+                    City = appUser?.Address?.City ?? null,
+                    Country = appUser?.Address?.Country ?? null,
+                    Region = appUser?.Address?.Region ?? null,
+                    Street = appUser?.Address?.Street ?? null,
+                    PostalCode = appUser?.Address?.PostalCode ?? null
                 },
                 BasicInfo = new BasicInfoViewModel
                 {
-                    FullName = applicationUser?.FullName,
-                    UserName = applicationUser?.UserName,
-                    Email = applicationUser?.Email
+                    FullName = appUser?.FullName,
+                    UserName = appUser?.UserName,
+                    Email = appUser?.Email
                 },
                 Orders = orderRepo.Orders
-                    .Where(o => o.UserId == applicationUser.Id)
+                    .Where(o => o.UserId == appUser.Id)
                     .ToList()
             };
             ViewBag.dataSource = profile.Orders;
