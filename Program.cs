@@ -19,6 +19,12 @@ using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using System.Security.Claims;
 using Serilog;
+using FluentValidation.AspNetCore;
+using Store.Pages.Account;
+using Store.Validation;
+using FluentValidation;
+using Microsoft.Extensions.Localization;
+using Microsoft.AspNetCore.Mvc;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -103,11 +109,27 @@ builder.Services.AddRazorPages()
     .AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix)
     .AddDataAnnotationsLocalization();
 
-
 builder.Services.AddControllersWithViews()
     .AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix)
     .AddDataAnnotationsLocalization();
 
+builder.Services.AddFluentValidationClientsideAdapters();
+builder.Services.AddFluentValidationAutoValidation();
+
+
+builder.Services.Configure<MvcOptions>(options =>
+{
+	// Disable the default DataAnnotations messages
+
+	// Optionally, set a custom message for other validation scenarios
+	options.ModelBindingMessageProvider.SetValueMustNotBeNullAccessor(
+		_ => "");
+
+	options.ModelBindingMessageProvider.SetMissingBindRequiredValueAccessor(
+		_ => "");
+    
+	// You can add more customizations here for other DataAnnotations or validation errors
+});
 
 builder.Services.Configure<RequestLocalizationOptions>(options =>
 {
@@ -148,11 +170,9 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
 
 builder.Services.Configure<IdentityOptions>(opts =>
 {
-    opts.Password.RequiredLength = 6;
+    opts.Password.RequiredLength = 10;
     opts.Password.RequireNonAlphanumeric = false;
-    opts.Password.RequireLowercase = false;
-    opts.Password.RequireUppercase = false;
-    opts.Password.RequireDigit = false;
+    opts.Password.RequiredUniqueChars = 0;
     opts.User.RequireUniqueEmail = true;
 });
 

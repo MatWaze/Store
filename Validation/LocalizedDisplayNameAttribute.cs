@@ -1,9 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Reflection;
-using Humanizer.Localisation;
-using Microsoft.Extensions.Localization;
-using YamlDotNet.Core.Tokens;
 
 namespace Store.Validation
 {
