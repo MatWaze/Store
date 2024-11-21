@@ -2,9 +2,76 @@
 @model Completed
 
 <div class="product-store padding-large ps-3 text-center">
-    <h2>Thanks!</h2>
-    <p>Thanks for placing order #@Model.OrderId</p>
+    <h2>Order created!</h2>
+    <p>Thanks for placing order!</p>
     <p>We'll ship your goods as soon as possible.</p>
     <a class="btn btn-primary" asp-controller="Home">Return to Store</a>
 </div>
 
+@functions {
+    public class Completed : PageModel
+    {
+        [BindProperty(SupportsGet = true)]
+        public string? OrderNonce { get; set; }
+
+        private readonly IOrderRepository orderRepo;
+        private readonly IProductRepository prodRepo;
+        private readonly Cart cart;
+        private IRazorViewToStringRenderer razorView;
+        private ISendEmail sendEmail;
+        private UserManager<ApplicationUser> userManager;
+
+        public Completed(
+            IOrderRepository ordRepo,
+            IProductRepository productRepo,
+            Cart cartObj,
+            IRazorViewToStringRenderer razor,
+            ISendEmail send,
+            UserManager<ApplicationUser> usrMgr
+        )
+        {
+            orderRepo = ordRepo;
+            prodRepo = productRepo;
+            cart = cartObj;
+            razorView = razor;
+            sendEmail = send;
+            userManager = usrMgr;
+        }
+
+        public async Task OnGet()
+        {
+            Order? ord = orderRepo
+                .Orders
+                .FirstOrDefault(o => OrderNonce != null && o.PaymentId == OrderNonce);
+
+            if (ord != null && ord.PaymentStatus != "Paid")
+            {
+                ord.PaymentStatus = "Paid";
+
+                List<Product> productIdsInOrder = ord.Lines.Select(cl => cl.Product).ToList();
+                foreach (Product prod in productIdsInOrder)
+                {
+                    if (prod.Quantity > 0)
+                    {
+                        CartLine? line = ord.Lines
+                            .ToList()
+                            .Find(cl => cl.Product.ProductId == prod.ProductId);
+                        prod.Quantity -= line.Quantity;
+                    }
+                    else if (prod.Quantity == 0)
+                    {
+                        prod.Deleted = true;
+                    }
+                    prodRepo.SaveProduct(prod);
+                }
+                orderRepo.SaveOrder(ord);
+                cart.Clear();
+                string htmlContent = await razorView
+                   .RenderViewToStringAsync<Order>("EmailOrderNotification", ord);
+
+                var user = await userManager.GetUserAsync(User);
+                await sendEmail.SendEmailAsync(user!.Email!, "ILoveParts order created", htmlContent);
+            }
+        }
+    }
+}

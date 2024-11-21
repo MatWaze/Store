@@ -19,26 +19,26 @@
 				@foreach (var line in Model.Cart?.Lines
 						?? Enumerable.Empty<CartLine>())
 				{
-							<tr>
-								<td class="text-center">@line.Quantity</td>
-								<td class="text-left">@line.Product.Name</td>
-								<td class="text-right">
-							@line.Product.Price.ToString("c")
-								</td>
-								<td class="text-right">
-							@((line.Quantity * line.Product.Price).ToString("c"))
-								</td>
-								<td>
-									<form asp-page-handler="Remove">
-								@Html.AntiForgeryToken()
-										<input type="hidden" name="ProductId" value="@line.Product.ProductId"/>
-										<input type="hidden" name="returnUrl" value="@Model.ReturnUrl"/>
-										<button type="submit" class="btn btn-sm btn-danger">
-									@Localizer["Remove"]
-										</button>
-									</form>
-								</td>
-							</tr>
+					<tr>
+						<td class="text-center">@line.Quantity</td>
+						<td class="text-left">@line.Product.Name</td>
+						<td class="text-right">
+					$@line.Product.Price.ToString()
+						</td>
+						<td class="text-right">
+					$@((line.Quantity * line.Product.Price).ToString())
+						</td>
+						<td>
+							<form asp-page-handler="Remove">
+						@Html.AntiForgeryToken()
+								<input type="hidden" name="ProductId" value="@line.Product.ProductId"/>
+								<input type="hidden" name="returnUrl" value="@Model.ReturnUrl"/>
+								<button type="submit" class="btn btn-sm btn-danger">
+							@Localizer["Remove"]
+								</button>
+							</form>
+						</td>
+					</tr>
 				}
 			</tbody>
 			<tfoot>

@@ -14,27 +14,27 @@
 			@Html.AntiForgeryToken()
 			<input type="hidden" name="returnUrl" value="@Model.ReturnUrl"/>
 			<div class="form-group">
-				<label style="font-size: 20px;">@Localizer["UserName"]</label>
+				<label style="font-size: 20px;" asp-for="UserName"></label>
 				<input class="form-control form-control-lg" asp-for="UserName" />
 				<span asp-validation-for="UserName" class="text-danger"></span>
 			</div>
 			<div class="form-group">
-				<label style="font-size: 20px;">@Localizer["FullName"]</label>
+				<label style="font-size: 20px;" asp-for="FullName"></label>
 				<input class="form-control form-control-lg" asp-for="FullName" />
 				<span asp-validation-for="FullName" class="text-danger"></span>
 			</div>
 			<div class="form-group">
-				<label style="font-size: 20px;">@Localizer["Email"]</label>
+				<label style="font-size: 20px;" asp-for="Email"></label>
 				<input class="form-control form-control-lg" asp-for="Email" />
 				<span asp-validation-for="Email" class="text-danger"></span>
 			</div>
 			<div class="form-group">
-				<label style="font-size: 20px;">@Localizer["Password"]</label>
+				<label style="font-size: 20px;" asp-for="Password"></label>
 				<input asp-for="Password" type="password" class="form-control form-control-lg" />
 				<span asp-validation-for="Password" class="text-danger"></span>
 			</div>
 			<div class="form-group">
-				<label style="font-size: 20px;">@Localizer["ConfirmPassword"]</label>
+				<label style="font-size: 20px;" asp-for="ConfirmPassword"></label>
 				<input asp-for="ConfirmPassword" type="password" class="form-control form-control-lg" />
 				<span asp-validation-for="ConfirmPassword" class="text-danger"></span>
 			</div>
@@ -48,43 +48,61 @@
   </div>
 </div>
 
-
-@functions{
+@functions {
 	public class SignupModel : PageModel
 	{
 		private UserManager<ApplicationUser> userManager;
 		private RoleManager<IdentityRole> roleManager;
 		private ISendEmail emailManager;
 		private IRazorViewToStringRenderer razorView;
+		private readonly IStringLocalizer<Store.Models.LoginModel> localizer;
 
 		public SignupModel(UserManager<ApplicationUser> userMgr,
 			RoleManager<IdentityRole> roleMgr,
 			ISendEmail emailMgr,
-			IRazorViewToStringRenderer razorViewToString)
+			IRazorViewToStringRenderer razorViewToString,
+			IStringLocalizer<Store.Models.LoginModel> loc
+		)
 		{
 			userManager = userMgr;
 			roleManager = roleMgr;
 			emailManager = emailMgr;
 			razorView = razorViewToString;
+			localizer = loc;
 		}
 
 		[Required(ErrorMessageResourceName = "Required",
 			ErrorMessageResourceType = typeof(ValidationMessages))]
+		[LocalizedDisplayName("UserNameDisplay",
+			NameResourceType = typeof(Store.Resources.Models.FormNames))]
 		[BindProperty]
 		public string UserName { get; set; } = "";
 
 		[Required(ErrorMessageResourceName = "Required",
 			ErrorMessageResourceType = typeof(ValidationMessages))]
+		[LocalizedDisplayName("FullNameDisplay",
+			NameResourceType = typeof(FormNames))]
 		[BindProperty]
 		public string FullName { get; set; } = "";
 
 		[Required(ErrorMessageResourceName = "Required",
 			ErrorMessageResourceType = typeof(ValidationMessages))]
+		[EmailAddress(ErrorMessageResourceName = "Email",
+			ErrorMessageResourceType = typeof(ValidationMessages))]
+		[LocalizedDisplayName("EmailDisplay",
+			NameResourceType = typeof(FormNames))]
 		[BindProperty]
 		public string Email { get; set; } = "";
 
+		[RegularExpression(@"^(?=.*[A-Z])(?=.*[a-z])(?=.*\d).{3,}$",
+			ErrorMessageResourceName = "PasswordReq",
+			ErrorMessageResourceType = typeof(ValidationMessages))]
 		[Required(ErrorMessageResourceName = "Required",
 			ErrorMessageResourceType = typeof(ValidationMessages))]
+		[MinLength(10, ErrorMessageResourceName = "MinLength",
+			ErrorMessageResourceType = typeof(ValidationMessages))]
+		[LocalizedDisplayName("PasswordDisplay",
+			NameResourceType = typeof(FormNames))]
 		[BindProperty]
 		public string Password { get; set; } = "";
 
@@ -92,6 +110,8 @@
 			ErrorMessageResourceType = typeof(ValidationMessages))]
 		[Compare("Password", ErrorMessageResourceName = "MustMatch",
 			ErrorMessageResourceType = typeof(ValidationMessages))]
+		[LocalizedDisplayName("ConfirmPasswordDisplay",
+			NameResourceType = typeof(FormNames))]
 		[BindProperty]
 		public string ConfirmPassword { get; set; } = "";
 
@@ -126,10 +146,9 @@
 					await emailManager.SendEmailAsync(this.Email, "ILoveParts Registration", htmlContext);
 					return Redirect(ReturnUrl ?? "/");
 				}
-				ModelState.AddModelError("",
-					"Invalid username or password");
+				ModelState.AddModelError("", localizer["RegistrationError"]);
 			}
-			return RedirectToPage();
+			return Page();
 		}
 	}
 }

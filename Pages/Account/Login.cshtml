@@ -1,5 +1,6 @@
 ﻿@page
 @model LoginModel
+@using Store.Resources.Models
 
 <div class="padding-large container d-flex justify-content-center align-items-center vh-100">
   <div class="col-md-8"> <!-- Increased width from col-md-6 to col-md-8 -->
@@ -8,18 +9,20 @@
 		<h4 style="font-size: 32px;">@Localizer["Login"]</h4> <!-- Increased font size for the title -->
 	  </div>
 	  <div class="card-body">
-		<div class="text-danger" asp-validation-summary="All"></div>
+		<div class="text-danger">
+			@Html.ValidationSummary()
+		</div>
 
         <form method="post">
             @Html.AntiForgeryToken()
             <input type="hidden" name="returnUrl" value="@Model.ReturnUrl"/>
             <div class="form-group">
-                <label style="font-size: 20px;">@Localizer["UserName"]</label> <!-- Increased font size -->
+                <label style="font-size: 20px;" asp-for="UserName"></label> <!-- Increased font size -->
                 <input class="form-control form-control-lg" asp-for="UserName" /> <!-- Larger input fields -->
                 <span asp-validation-for="UserName" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label style="font-size: 20px;">@Localizer["Password"]</label> <!-- Increased font size -->
+                <label style="font-size: 20px;" asp-for="Password"></label> <!-- Increased font size -->
                 <input asp-for="Password" type="password" class="form-control form-control-lg" /> <!-- Larger input fields -->
                 <span asp-validation-for="Password" class="text-danger"></span>
             </div>
@@ -34,26 +37,35 @@
 </div>
 
 
-@functions{
+@functions {
 	public class LoginModel : PageModel
 	{
-		private SignInManager<ApplicationUser> signInManager;
-		private ILogger<LoginModel> logger;
-
-		public LoginModel(SignInManager<ApplicationUser> signInMgr,
-			ILogger<LoginModel> log)
+		private readonly SignInManager<ApplicationUser> signInManager;
+		private readonly ILogger<LoginModel> logger;
+		private readonly IStringLocalizer<Store.Models.LoginModel> localizer;
+		 
+		public LoginModel(
+			SignInManager<ApplicationUser> signInMgr,
+			ILogger<LoginModel> log,
+			IStringLocalizer<Store.Models.LoginModel> loc
+		)
 		{
 			signInManager = signInMgr;
 			logger = log;
+			localizer = loc;
 		}
 
 		[Required(ErrorMessageResourceName = "Required",
 			ErrorMessageResourceType = typeof(ValidationMessages))]
+		[LocalizedDisplayName("UserNameDisplay",
+			NameResourceType = typeof(Store.Resources.Models.FormNames))]
 		[BindProperty]
 		public string UserName { get; set; } = "";
 
 		[Required(ErrorMessageResourceName = "Required",
 			ErrorMessageResourceType = typeof(ValidationMessages))]
+		[LocalizedDisplayName("PasswordDisplay",
+			NameResourceType = typeof(Store.Resources.Models.FormNames))]
 		[BindProperty]
 		public string Password { get; set; } = "";
 
@@ -72,10 +84,9 @@
 					logger.LogInformation("User {userName} logged in", UserName);
 					return Redirect(ReturnUrl ?? "/");
 				}
-				ModelState.AddModelError("",
-					"Invalid username or password");
+				ModelState.AddModelError("", localizer["Invalid"]);
 			}
-			return RedirectToPage();
+			return Page();
 		}
 	}
 }
