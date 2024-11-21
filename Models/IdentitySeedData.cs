@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Store.Models.ViewModels;
 
 namespace Store.Models
 {
@@ -35,13 +36,15 @@ namespace Store.Models
 				.GetRequiredService<UserManager<ApplicationUser>>();
 			RoleManager<IdentityRole> roleManager = serviceProvider
 				.GetService<RoleManager<IdentityRole>>()!;
+			IdentityContext context = serviceProvider
+				.GetRequiredService<IdentityContext>();
 
 			string username = configuration["Data:AdminUser:Name"]
 				?? "admin";
 			string email = configuration["Data:AdminUser:Email"]
 				?? "admin@example.com";
 			string password = configuration["Data:AdminUser:Password"]
-				?? "secret";
+				?? "Secret12345";
 			string role = configuration["Data:AdminUser:Role"]
 				?? "Admins";
 			
@@ -52,19 +55,27 @@ namespace Store.Models
 					await roleManager.CreateAsync(new IdentityRole(role));
 				}
 
-				ApplicationUser user = new ApplicationUser
+				var addr = new AddressViewModel
+				{
+					Country = "Armenia",
+					Region = "Yerevan",
+					City = "Yerevan",
+					Street = "Karp Khachvankyan",
+					PostalCode = "0010",
+				};
+
+				await context.Addresses.AddAsync(addr);
+				await context.SaveChangesAsync();
+
+                ApplicationUser user = new ApplicationUser
 				{
 					UserName = username,
 					Email = email,
 					YooKassaAccessToken = null,
 					FullName = "Matevos Amazarian",
-                    Country = "Armenia",
-                    Region = "Yerevan",
-                    City = "Yerevan",
-                    Street = "Karp Khachvankyan",
-                    PostalCode = "0010",
+					AddressId = addr.Id
 				};
-
+				
 				IdentityResult result = await userManager
 					.CreateAsync(user, password);
 				if (result.Succeeded)

@@ -1,4 +1,5 @@
 ﻿using Store.Resources.Models;
+using Store.Validation;
 using System.ComponentModel.DataAnnotations;
 
 namespace Store.Models.ViewModels
@@ -7,12 +8,26 @@ namespace Store.Models.ViewModels
     {
         [Required(ErrorMessageResourceName = "Required",
             ErrorMessageResourceType = typeof(ValidationMessages))]
-        public string? UserName { get; set; }
+        [LocalizedDisplayName("UserNameDisplay", 
+            NameResourceType = typeof(FormNames))]
+		[MaxLength(100, ErrorMessageResourceName = "MaxLength",
+			ErrorMessageResourceType = typeof(ValidationMessages))]
+		public string? UserName { get; set; }
+
         [Required(ErrorMessageResourceName = "Required",
             ErrorMessageResourceType = typeof(ValidationMessages))]
-        public string? FullName { get; set; }
+		[LocalizedDisplayName("FullNameDisplay",
+			NameResourceType = typeof(FormNames))]
+		[MaxLength(100, ErrorMessageResourceName = "MaxLength",
+    		ErrorMessageResourceType = typeof(ValidationMessages))]
+		public string? FullName { get; set; }
+        
         [Required(ErrorMessageResourceName = "Required",
             ErrorMessageResourceType = typeof(ValidationMessages))]
-        public string? Email { get; set; }
+		[LocalizedDisplayName("EmailDisplay",
+			NameResourceType = typeof(FormNames))]
+		[MaxLength(1000, ErrorMessageResourceName = "MaxLength",
+			ErrorMessageResourceType = typeof(ValidationMessages))]
+		public string? Email { get; set; }
     }
 }
