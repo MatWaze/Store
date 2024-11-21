@@ -40,41 +40,6 @@ namespace Store.Controllers
             return View(context.Categories.ToArray());
         }
 
-        public IActionResult Form(long? id)
-        {
-            ViewBag.Categories = context.Categories.ToArray();
-            if (id.HasValue && id.Value > 0)
-            {
-                Product? product = context.Products
-                    .Include(c => c.Category)
-                    .FirstOrDefault(p => p.ProductId == id.Value);
-                if (product != null)
-                {
-                    //TempData["id"] = product.ProductId.ToString();
-                    return View("Form", product);
-                }
-            }
-            return RedirectToAction(nameof(Products));
-        }
-
-        public IActionResult Create()
-        {
-            ViewBag.Categories = context.Categories.ToArray();
-
-            return View("Form", new Product() { Name = "" });
-        }
-
-        public IActionResult Delete(long id)
-        {
-            var prodToDel = context.Products
-                .FirstOrDefault(p => p.ProductId == id);
-            if (prodToDel != null)
-            {
-                context.DeleteProduct(prodToDel);
-            }
-            return RedirectToAction(nameof(Products));
-        }
-
         public IActionResult PrivacyPolicy()
         {
             return View();
@@ -91,6 +56,73 @@ namespace Store.Controllers
 
             return LocalRedirect(returnUrl);
         }
+
+
+        public IActionResult PageNotFound()
+        {
+            return View();
+        }
+
+        public async Task<IActionResult> Products(long categoryId = 6000, int productPage = 1)
+        {
+            ViewBag.CurrentUser = await userManager.GetUserAsync(User);
+            Product[] pr = context.Products
+                .Include(p => p.Category).ToArray();
+            
+            var prods = pr.OrderBy(p => p.ProductId)
+                .Where(p => (p.Deleted == false 
+                    && (categoryId == 6000 || p.Category.EbayCategoryId == categoryId)))
+                .Skip((productPage - 1) * PageSize)
+                .Take(PageSize)
+                .ToArray();
+
+            return View(new ProductTarget<Product>
+            {
+                Products = prods,
+                PagingInfo = new PagingInfo
+                {
+                    CurrentPage = productPage,
+                    ItemsPerPage = PageSize,
+                    ItemsCount = pr.Where(p => (p.Deleted == false 
+                        && (categoryId == 6000 || p.Category.EbayCategoryId == categoryId))).Count(),
+                    CurrentCategory = categoryId
+                },
+            });
+        }
+        //public IActionResult Delete(long id)
+        //{
+        //    var prodToDel = context.Products
+        //        .FirstOrDefault(p => p.ProductId == id);
+        //    if (prodToDel != null)
+        //    {
+        //        context.DeleteProduct(prodToDel);
+        //    }
+        //    return RedirectToAction(nameof(Products));
+        //}
+
+        //public IActionResult Create()
+        //{
+        //    ViewBag.Categories = context.Categories.ToArray();
+
+        //    return View("Form", new Product() { Name = "" });
+        //}
+
+        //public IActionResult Form(long? id)
+        //{
+        //    ViewBag.Categories = context.Categories.ToArray();
+        //    if (id.HasValue && id.Value > 0)
+        //    {
+        //        Product? product = context.Products
+        //            .Include(c => c.Category)
+        //            .FirstOrDefault(p => p.ProductId == id.Value);
+        //        if (product != null)
+        //        {
+        //            //TempData["id"] = product.ProductId.ToString();
+        //            return View("Form", product);
+        //        }
+        //    }
+        //    return RedirectToAction(nameof(Products));
+        //}
 
         //[HttpPost]
         //public async Task<IActionResult> NewProduct(long id, Product product)
@@ -147,37 +179,5 @@ namespace Store.Controllers
         //        return View("Form", prodToChange);
         //    }
         //}
-
-        public IActionResult PageNotFound()
-        {
-            return View();
-        }
-
-        public async Task<IActionResult> Products(long categoryId = 6000, int productPage = 1)
-        {
-            ViewBag.CurrentUser = await userManager.GetUserAsync(User);
-            Product[] pr = context.Products
-                .Include(p => p.Category).ToArray();
-            
-            var prods = pr.OrderBy(p => p.ProductId)
-                .Where(p => (p.Deleted == false 
-                    && (categoryId == 6000 || p.Category.EbayCategoryId == categoryId)))
-                .Skip((productPage - 1) * PageSize)
-                .Take(PageSize)
-                .ToArray();
-
-            return View(new ProductTarget<Product>
-            {
-                Products = prods,
-                PagingInfo = new PagingInfo
-                {
-                    CurrentPage = productPage,
-                    ItemsPerPage = PageSize,
-                    ItemsCount = pr.Where(p => (p.Deleted == false 
-                        && (categoryId == 6000 || p.Category.EbayCategoryId == categoryId))).Count(),
-                    CurrentCategory = categoryId
-                },
-            });
-        }
     }
 }
