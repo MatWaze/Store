@@ -61,6 +61,33 @@ namespace Store.Resources.Models {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid email.
+        /// </summary>
+        public static string Email {
+            get {
+                return ResourceManager.GetString("Email", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Maximum length must not exceed {1}.
+        /// </summary>
+        public static string MaxLength {
+            get {
+                return ResourceManager.GetString("MaxLength", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Minimum length is {1}.
+        /// </summary>
+        public static string MinLength {
+            get {
+                return ResourceManager.GetString("MinLength", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Passwords must match.
         /// </summary>
         public static string MustMatch {
@@ -70,7 +97,16 @@ namespace Store.Resources.Models {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The price must be between 1 and 9999999.
+        ///   Looks up a localized string similar to The password must contain at least 1 uppercase letter, 1 lowercase letter, and 1 digit.
+        /// </summary>
+        public static string PasswordReq {
+            get {
+                return ResourceManager.GetString("PasswordReq", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The price must be between {0} and {1}.
         /// </summary>
         public static string Range {
             get {

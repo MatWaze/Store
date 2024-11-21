@@ -61,11 +61,83 @@ namespace Store.Resources.Models {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Line 1.
+        /// </summary>
+        public static string AddressLine1Display {
+            get {
+                return ResourceManager.GetString("AddressLine1Display", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Line 2.
+        /// </summary>
+        public static string AddressLine2Display {
+            get {
+                return ResourceManager.GetString("AddressLine2Display", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Line 3.
+        /// </summary>
+        public static string AddressLine3Display {
+            get {
+                return ResourceManager.GetString("AddressLine3Display", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Category.
         /// </summary>
         public static string CategoryNumberDisplay {
             get {
                 return ResourceManager.GetString("CategoryNumberDisplay", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to City.
+        /// </summary>
+        public static string CityDisplay {
+            get {
+                return ResourceManager.GetString("CityDisplay", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Confirm Password.
+        /// </summary>
+        public static string ConfirmPasswordDisplay {
+            get {
+                return ResourceManager.GetString("ConfirmPasswordDisplay", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Country.
+        /// </summary>
+        public static string CountryDisplay {
+            get {
+                return ResourceManager.GetString("CountryDisplay", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Email.
+        /// </summary>
+        public static string EmailDisplay {
+            get {
+                return ResourceManager.GetString("EmailDisplay", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Full Name.
+        /// </summary>
+        public static string FullNameDisplay {
+            get {
+                return ResourceManager.GetString("FullNameDisplay", resourceCulture);
             }
         }
         
@@ -88,11 +160,56 @@ namespace Store.Resources.Models {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Full Name.
+        /// </summary>
+        public static string OrderNameDisplay {
+            get {
+                return ResourceManager.GetString("OrderNameDisplay", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Password.
+        /// </summary>
+        public static string PasswordDisplay {
+            get {
+                return ResourceManager.GetString("PasswordDisplay", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Query.
         /// </summary>
         public static string QueryNameDisplay {
             get {
                 return ResourceManager.GetString("QueryNameDisplay", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to State.
+        /// </summary>
+        public static string RegionDisplay {
+            get {
+                return ResourceManager.GetString("RegionDisplay", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Username.
+        /// </summary>
+        public static string UserNameDisplay {
+            get {
+                return ResourceManager.GetString("UserNameDisplay", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Postal code.
+        /// </summary>
+        public static string ZipDisplay {
+            get {
+                return ResourceManager.GetString("ZipDisplay", resourceCulture);
             }
         }
     }

@@ -135,9 +135,6 @@
   <data name="Country" xml:space="preserve">
     <value>Страна</value>
   </data>
-  <data name="Gift wrap these items" xml:space="preserve">
-    <value>Подарочная упаковка заказов</value>
-  </data>
   <data name="Line" xml:space="preserve">
     <value>Строка адреса</value>
   </data>

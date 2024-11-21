@@ -120,9 +120,6 @@
   <data name="Already have an account?" xml:space="preserve">
     <value>Уже есть аккаунт?</value>
   </data>
-  <data name="ConfirmPassword" xml:space="preserve">
-    <value>Подтвердите пароль</value>
-  </data>
   <data name="Email" xml:space="preserve">
     <value>Электронная почта</value>
   </data>
@@ -132,16 +129,10 @@
   <data name="Log in!" xml:space="preserve">
     <value>Войдите!</value>
   </data>
-  <data name="Password" xml:space="preserve">
-    <value>Пароль</value>
-  </data>
   <data name="Sign Up" xml:space="preserve">
     <value>Регистрация</value>
   </data>
   <data name="Signing Up" xml:space="preserve">
     <value>Зарегестрироваться</value>
-  </data>
-  <data name="UserName" xml:space="preserve">
-    <value>Имя пользователя</value>
   </data>
 </root>
