@@ -11,29 +11,36 @@ namespace Store.Controllers
     {
         private readonly UserManager<ApplicationUser> usrMgr;
         private readonly IOrderRepository orderRepo;
-
+        private readonly IdentityContext context;
 
         public ProfileController(
             UserManager<ApplicationUser> userManager,
-            IOrderRepository orderRepository)
+            IOrderRepository orderRepository,
+            IdentityContext ctx
+        )
         {
             usrMgr = userManager;
             orderRepo = orderRepository;
+            context = ctx;
         }
 
         public async Task<IActionResult> Index()
         {
             ApplicationUser? applicationUser = await usrMgr.GetUserAsync(User);
 
+            var addr = context
+                .Addresses
+                .FirstOrDefault(a => a.Id == applicationUser.AddressId);
+
             ProfileViewModel profile = new ProfileViewModel()
             {
                 Address = new AddressViewModel
                 {
-                    City = applicationUser?.City,
-                    Country = applicationUser?.Country,
-                    Region = applicationUser?.Region,
-                    Street = applicationUser?.Street,
-                    PostalCode = applicationUser?.PostalCode
+                    City = addr?.City ?? null,
+                    Country = addr?.Country ?? null,
+                    Region = addr?.Region ?? null,
+                    Street = addr?.Street ?? null,
+                    PostalCode = addr?.PostalCode ?? null
                 },
                 BasicInfo = new BasicInfoViewModel
                 {
@@ -63,7 +70,11 @@ namespace Store.Controllers
 
                 var result = await usrMgr.UpdateAsync(currentUser);
             }
-            
+
+            var addr = context
+              .Addresses
+              .FirstOrDefault(a => a.Id == currentUser.AddressId);
+
             return RedirectToAction("Index", new ProfileViewModel
             {
                 BasicInfo = new BasicInfoViewModel 
@@ -71,14 +82,14 @@ namespace Store.Controllers
                     FullName = currentUser.FullName,
                     UserName = currentUser.UserName,
                     Email = currentUser.Email,
-                }, 
+                },
                 Address = new AddressViewModel
                 {
-                    City = currentUser?.City,
-                    Country = currentUser?.Country,
-                    Region = currentUser?.Region,
-                    Street = currentUser?.Street,
-                    PostalCode = currentUser?.PostalCode
+                    City = addr?.City ?? null,
+                    Country = addr?.Country ?? null,
+                    Region = addr?.Region ?? null,
+                    Street = addr?.Street ?? null,
+                    PostalCode = addr?.PostalCode ?? null
                 },
                 Orders = orderRepo.Orders
                     .Where(o => o.UserId == currentUser.Id)
@@ -92,13 +103,19 @@ namespace Store.Controllers
         {
             ApplicationUser? user = await usrMgr.GetUserAsync(User);
             
+            var addr = context
+                .Addresses
+                .FirstOrDefault(a => a.Id == user.AddressId);
+
             if (ModelState.IsValid)
             {
-                user.Country = profile.Address.Country;
-                user.Region = profile.Address.Region;
-                user.City = profile.Address.City;
-                user.Street = profile.Address.Street;
-                user.PostalCode = profile.Address.PostalCode;
+                addr.City = profile.Address.City;
+                addr.Country = profile.Address.Country;
+                addr.PostalCode = profile.Address.PostalCode;
+                addr.Region = profile.Address.Region;
+                addr.Street = profile.Address.Street;
+
+                context.SaveChanges();
 
                 await usrMgr.UpdateAsync(user);
             }
@@ -110,14 +127,7 @@ namespace Store.Controllers
                     UserName = user.UserName,
                     Email = user.Email,
                 },
-                Address = new AddressViewModel
-                {
-                    City = user?.City,
-                    Country = user?.Country,
-                    Region = user?.Region,
-                    Street = user?.Street,
-                    PostalCode = user?.PostalCode
-                },
+                Address = addr,
                 Orders = orderRepo.Orders
                    .Where(o => o.UserId == user.Id)
                    .ToList()

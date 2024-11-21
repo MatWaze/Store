@@ -5,6 +5,7 @@ using Store.Infrastructure;
 using Store.Models;
 
 using Microsoft.AspNetCore.Authorization;
+using ServiceStack;
 
 namespace Store.Controllers;
 
@@ -24,7 +25,7 @@ public class OrderController : Controller
         IProductRepository productRepository,
         Cart cartService,
         UserManager<ApplicationUser> usrMgr,
-        HttpClient client,
+        HttpClient client
         )
     {   
         brainGateway = braintreeService;
@@ -37,10 +38,15 @@ public class OrderController : Controller
 
     public async Task<IActionResult> New()
     {
-        ViewBag.User = await userManager.GetUserAsync(User);
+        var user = await userManager.GetUserAsync(User);
         return View(new Order
         {
             Lines = cart.Lines.ToArray(),
+            City = user?.Address.City ?? null,
+            Country = user?.Address.Country ?? null,
+            Line1 = user?.Address.Street ?? null,
+            Zip = user?.Address.PostalCode ?? null,
+            State = user?.Address.Region ?? null
         });
     }
 
