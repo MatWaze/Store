@@ -12,17 +12,14 @@ namespace Store.Controllers
     {
         private readonly UserManager<ApplicationUser> usrMgr;
         private readonly IOrderRepository orderRepo;
-        private readonly IdentityContext context;
 
         public ProfileController(
             UserManager<ApplicationUser> userManager,
-            IOrderRepository orderRepository,
-            IdentityContext ctx
+            IOrderRepository orderRepository
         )
         {
             usrMgr = userManager;
             orderRepo = orderRepository;
-            context = ctx;
         }
 
         public async Task<IActionResult> Index()
@@ -33,14 +30,7 @@ namespace Store.Controllers
 
             ProfileViewModel profile = new ProfileViewModel()
             {
-                Address = new AddressViewModel
-                {
-                    City = appUser?.Address?.City ?? null,
-                    Country = appUser?.Address?.Country ?? null,
-                    Region = appUser?.Address?.Region ?? null,
-                    Street = appUser?.Address?.Street ?? null,
-                    PostalCode = appUser?.Address?.PostalCode ?? null
-                },
+                Address = appUser.Address,
                 BasicInfo = new BasicInfoViewModel
                 {
                     FullName = appUser?.FullName,
@@ -59,8 +49,10 @@ namespace Store.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SaveBasicInfo(ProfileViewModel prof)
         {
-            ApplicationUser? currentUser = await usrMgr.GetUserAsync(User);
-            
+            var currentUser = await usrMgr.Users
+                .Include(u => u.Address)
+                .FirstOrDefaultAsync(u => u.Id == usrMgr.GetUserId(User));
+
             if (ModelState.IsValid)
             {
                 currentUser.FullName = prof.BasicInfo.FullName;
@@ -70,10 +62,6 @@ namespace Store.Controllers
                 var result = await usrMgr.UpdateAsync(currentUser);
             }
 
-            var addr = context
-              .Addresses
-              .FirstOrDefault(a => a.Id == currentUser.AddressId);
-
             return RedirectToAction("Index", new ProfileViewModel
             {
                 BasicInfo = new BasicInfoViewModel 
@@ -82,14 +70,7 @@ namespace Store.Controllers
                     UserName = currentUser.UserName,
                     Email = currentUser.Email,
                 },
-                Address = new AddressViewModel
-                {
-                    City = addr?.City ?? null,
-                    Country = addr?.Country ?? null,
-                    Region = addr?.Region ?? null,
-                    Street = addr?.Street ?? null,
-                    PostalCode = addr?.PostalCode ?? null
-                },
+                Address = currentUser.Address,
                 Orders = orderRepo.Orders
                     .Where(o => o.UserId == currentUser.Id)
                     .ToList()
@@ -100,22 +81,13 @@ namespace Store.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SaveAddress(ProfileViewModel profile)
         {
-            ApplicationUser? user = await usrMgr.GetUserAsync(User);
-            
-            var addr = context
-                .Addresses
-                .FirstOrDefault(a => a.Id == user.AddressId);
+            var user = await usrMgr.Users
+                .Include(u => u.Address)
+                .FirstOrDefaultAsync(u => u.Id == usrMgr.GetUserId(User));
 
             if (ModelState.IsValid)
             {
-                addr.City = profile.Address.City;
-                addr.Country = profile.Address.Country;
-                addr.PostalCode = profile.Address.PostalCode;
-                addr.Region = profile.Address.Region;
-                addr.Street = profile.Address.Street;
-
-                context.SaveChanges();
-
+                user.Address = profile.Address;
                 await usrMgr.UpdateAsync(user);
             }
             return RedirectToAction("Index", new ProfileViewModel
@@ -126,7 +98,7 @@ namespace Store.Controllers
                     UserName = user.UserName,
                     Email = user.Email,
                 },
-                Address = addr,
+                Address = user.Address,
                 Orders = orderRepo.Orders
                    .Where(o => o.UserId == user.Id)
                    .ToList()

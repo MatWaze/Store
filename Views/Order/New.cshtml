@@ -3,53 +3,51 @@
 
 <h2>@Localizer["Check out now"]</h2>
 
-<partial name="_Validation" />
-
 <section class="product-store padding-large ps-3">
     <form id="checkout-form" asp-controller="Order" asp-action="Checkout" method="post">
         @Html.AntiForgeryToken()
         <h3>@Localizer["Ship to"]</h3>
         <div class="form-group">
-            <label>@Localizer["Name"]:</label>
+            <label asp-for="Name"></label>
             <input asp-for="Name" id="Name" class="form-control" />
             <span asp-validation-for="Name" class="text-danger">
             </span>
         </div>
         <h3 class="mt-4">@Localizer["Address"]</h3>
         <div class="form-group">
-            <label>@Localizer["Line"] 1:</label>
+            <label asp-for="Line1"></label>
             <input asp-for="Line1" id="Line1" class="form-control" value="@(Model.Line1 ?? String.Empty)" />
             <span asp-validation-for="Line1" class="text-danger">
             </span>
         </div>
         <div class="form-group">
-            <label>@Localizer["Line"] 2:</label>
-              <input asp-for="Line2" class="form-control" />
+            <label asp-for="Line2"></label>
+            <input asp-for="Line2" class="form-control" />
         </div>
         <div class="form-group">
-            <label>@Localizer["Line"] 3:</label>
-             <input asp-for="Line2" class="form-control" />
+            <label asp-for="Line3"></label>
+            <input asp-for="Line3" class="form-control" />
         </div>
         <div class="form-group">
-            <label>@Localizer["City"]:</label>
+            <label asp-for="City"></label>
             <input asp-for="City" id="City" class="form-control" value="@(Model.City ?? String.Empty)" />
             <span asp-validation-for="City" class="text-danger">
             </span>
         </div>
         <div class="form-group">
-            <label>@Localizer["State"]:</label>
+            <label asp-for="State"></label>
             <input asp-for="State" id="State" class="form-control" value="@(Model.State ?? String.Empty)"/>
             <span asp-validation-for="State" class="text-danger">
             </span>
         </div>
         <div class="form-group">
-            <label>@Localizer["Zip"]:</label>
+            <label asp-for="Zip"></label>
             <input asp-for="Zip" id="Zip" class="form-control" value="@(Model.Zip ?? String.Empty)" />
             <span asp-validation-for="Zip" class="text-danger">
             </span>
         </div>
         <div class="form-group">
-            <label>@Localizer["Country"]:</label>
+            <label asp-for="Country"></label>
             <input asp-for="Country" id="Country" class="form-control" value="@(Model.Country ?? String.Empty)" />
             <span asp-validation-for="Country" class="text-danger">
             </span>

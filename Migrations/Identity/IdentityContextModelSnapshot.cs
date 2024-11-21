@@ -240,28 +240,38 @@ namespace Store.Migrations.Identity
 
                     b.Property<string>("City")
                         .IsRequired()
+                        .ValueGeneratedOnAdd()
                         .HasMaxLength(100)
-                        .HasColumnType("character varying");
+                        .HasColumnType("character varying")
+                        .HasDefaultValue("");
 
                     b.Property<string>("Country")
                         .IsRequired()
+                        .ValueGeneratedOnAdd()
                         .HasMaxLength(100)
-                        .HasColumnType("character varying");
+                        .HasColumnType("character varying")
+                        .HasDefaultValue("");
 
                     b.Property<string>("PostalCode")
                         .IsRequired()
+                        .ValueGeneratedOnAdd()
                         .HasMaxLength(10)
-                        .HasColumnType("character varying");
+                        .HasColumnType("character varying")
+                        .HasDefaultValue("");
 
                     b.Property<string>("Region")
                         .IsRequired()
+                        .ValueGeneratedOnAdd()
                         .HasMaxLength(100)
-                        .HasColumnType("character varying");
+                        .HasColumnType("character varying")
+                        .HasDefaultValue("");
 
                     b.Property<string>("Street")
                         .IsRequired()
+                        .ValueGeneratedOnAdd()
                         .HasMaxLength(1000)
-                        .HasColumnType("character varying");
+                        .HasColumnType("character varying")
+                        .HasDefaultValue("");
 
                     b.HasKey("Id");
 

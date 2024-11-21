@@ -6,6 +6,7 @@ using Store.Models;
 
 using Microsoft.AspNetCore.Authorization;
 using ServiceStack;
+using Microsoft.EntityFrameworkCore;
 
 namespace Store.Controllers;
 
@@ -38,15 +39,18 @@ public class OrderController : Controller
 
     public async Task<IActionResult> New()
     {
-        var user = await userManager.GetUserAsync(User);
+        var user = await userManager.Users
+            .Include(u => u.Address)
+            .FirstOrDefaultAsync(u => u.Id == userManager.GetUserId(User));
+        
         return View(new Order
         {
             Lines = cart.Lines.ToArray(),
-            City = user?.Address.City ?? null,
-            Country = user?.Address.Country ?? null,
-            Line1 = user?.Address.Street ?? null,
-            Zip = user?.Address.PostalCode ?? null,
-            State = user?.Address.Region ?? null
+            City = user!.Address!.City ?? null,
+            Country = user!.Address!.Country ?? null,
+            Line1 = user!.Address!.Street ?? null,
+            Zip = user!.Address!.PostalCode ?? null,
+            State = user!.Address!.Region ?? null
         });
     }
 

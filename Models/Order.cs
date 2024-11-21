@@ -24,7 +24,7 @@ public class Order
 		ErrorMessageResourceType = typeof(ValidationMessages))]
 	[Required(ErrorMessageResourceName = "Required",
 		ErrorMessageResourceType = typeof(ValidationMessages))]
-	[LocalizedDisplayName("OrderNameDisplay", NameResourceType = typeof(FormNames))]
+	[LocalizedDisplayName("FullNameDisplay", NameResourceType = typeof(FormNames))]
 	public string? Name { get; set; }
 
 	[MaxLength(1000, ErrorMessageResourceName = "MaxLength",
