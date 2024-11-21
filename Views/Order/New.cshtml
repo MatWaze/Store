@@ -1,10 +1,7 @@
 @model Order
+@inject Cart cart
 
 <h2>@Localizer["Check out now"]</h2>
-
-@{
-    Layout = "_Layout";
-}
 
 <partial name="_Validation" />
 
@@ -14,14 +11,14 @@
         <h3>@Localizer["Ship to"]</h3>
         <div class="form-group">
             <label>@Localizer["Name"]:</label>
-            <input asp-for="Name" id="Name" class="form-control" value="@(ViewBag.User.FullName ?? String.Empty)" />
+            <input asp-for="Name" id="Name" class="form-control" />
             <span asp-validation-for="Name" class="text-danger">
             </span>
         </div>
         <h3 class="mt-4">@Localizer["Address"]</h3>
         <div class="form-group">
             <label>@Localizer["Line"] 1:</label>
-            <input asp-for="Line1" id="Line1" class="form-control" value="@(ViewBag.User.Street ?? String.Empty)" />
+            <input asp-for="Line1" id="Line1" class="form-control" value="@(Model.Line1 ?? String.Empty)" />
             <span asp-validation-for="Line1" class="text-danger">
             </span>
         </div>
@@ -35,49 +32,42 @@
         </div>
         <div class="form-group">
             <label>@Localizer["City"]:</label>
-            <input asp-for="City" id="City" class="form-control" value="@(ViewBag.User.City ?? String.Empty)" />
+            <input asp-for="City" id="City" class="form-control" value="@(Model.City ?? String.Empty)" />
             <span asp-validation-for="City" class="text-danger">
             </span>
         </div>
         <div class="form-group">
             <label>@Localizer["State"]:</label>
-            <input asp-for="State" id="State" class="form-control" value="@(ViewBag.User.Region ?? String.Empty)"/>
+            <input asp-for="State" id="State" class="form-control" value="@(Model.State ?? String.Empty)"/>
             <span asp-validation-for="State" class="text-danger">
             </span>
         </div>
         <div class="form-group">
             <label>@Localizer["Zip"]:</label>
-            <input asp-for="Zip" id="Zip" class="form-control" value="@(ViewBag.User.PostalCode ?? String.Empty)" />
+            <input asp-for="Zip" id="Zip" class="form-control" value="@(Model.Zip ?? String.Empty)" />
             <span asp-validation-for="Zip" class="text-danger">
             </span>
         </div>
         <div class="form-group">
             <label>@Localizer["Country"]:</label>
-            <input asp-for="Country" id="Country" class="form-control" value="@(ViewBag.User.Country ?? String.Empty)" />
+            <input asp-for="Country" id="Country" class="form-control" value="@(Model.Country ?? String.Empty)" />
             <span asp-validation-for="Country" class="text-danger">
             </span>
         </div>
-		<h3 class="mt-4">@Localizer["Options"]</h3>
-        <div class="checkbox">
-            <label>
-				<input asp-for="GiftWrap" /> @Localizer["Gift wrap these items"]
-            </label>
-        </div>
-
-		 <h3 class="mt-4">@Localizer["Payment Method"]</h3>
+		
+        <h3 class="mt-4">@Localizer["Payment Method"]</h3>
         <div>
             <label>
-                <input type="radio" name="PaymentMethod" value="Braintree" checked>
-                <img src="/images/paypal.jpg" alt="paypal">  Paypal     
+                <input type="radio" name="PaymentMethod" value="Braintree" checked />
+                <img src="/images/paypal.jpg" alt="paypal" />  Paypal     
             </label>
             <label>
-                <input type="radio" name="PaymentMethod" value="YooKassa"> 
-                <img src="/images/yokassa.png" style="width: 40px" alt="paypal">  YooKassa
+                <input type="radio" name="PaymentMethod" value="YooKassa" /> 
+                <img src="/images/yokassa.png" style="width: 40px" alt="paypal" />  YooKassa
             </label>
         </div>
-
         <div class="text-center padding-bottom padding-small">
-			<span>@Localizer["Confirm Order"] - @Model.Lines.Sum(e => e.Product.Price * e.Quantity).ToString("C")</span>
+			<span>@Localizer["Confirm Order"] - $@Math.Round(cart.ComputeTotalValue(), 2)</span>
             <input class="btn btn-primary" id="complete-order" type="submit"
 				value="@Localizer["Complete Order"]"/>
         </div>

@@ -96,31 +96,31 @@
                     <form asp-controller="Profile" asp-action="SaveAddress" method="post">
 						@Html.AntiForgeryToken()
                         <div class="form-group">
-							<label>@Localizer["Country"]</label>
+							<label asp-for="Address.Country"></label>
                             <input class="form-control" id="@Model.Address.Country?" 
                                 asp-for="@Model.Address.Country" />
 							<span asp-validation-for="Address.Country" class="text-danger"></span>
                         </div>
                         <div class="form-group">
-							<label>@Localizer["Region"]</label>
+							<label asp-for="Address.Region"></label>
                             <input class="form-control" id="@Model.Address.Region?"
                                 asp-for="@Model.Address.Region" />
 							<span asp-validation-for="Address.Region" class="text-danger"></span>
                         </div>
                         <div class="form-group">
-                            <label>@Localizer["City"]</label>
+                            <label asp-for="Address.City"></label>
                             <input class="form-control" id="@Model.Address.City?"
                                 asp-for="@Model.Address.City" />
 							<span asp-validation-for="Address.City" class="text-danger"></span>
                         </div>
                        <div class="form-group">
-                            <label>@Localizer["Street Line"]</label>
+                            <label asp-for="Address.Street"></label>
                             <input class="form-control" id="@Model.Address.Street?"
                                 asp-for="@Model.Address.Street" />
 							<span asp-validation-for="Address.Street" class="text-danger"></span>
                         </div>
                         <div class="form-group">
-							<label>@Localizer["Postal Code"]</label>
+							<label asp-for="Address.PostalCode"></label>
                             <input class="form-control" id="@Model.Address.PostalCode?"
                                 asp-for="@Model.Address.PostalCode" />
 							<span asp-validation-for="Address.Street" class="text-danger"></span>
