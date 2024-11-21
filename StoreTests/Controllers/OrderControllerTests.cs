@@ -65,7 +65,7 @@ namespace StoreTests
 
                 // Act
                 controller = new OrderController(mockBrain.Object,
-                    order, repo, cart, mockUserManager.Object, null);
+                    order, repo, cart, mockUserManager.Object, null, null);
             }
             return controller;
         }
