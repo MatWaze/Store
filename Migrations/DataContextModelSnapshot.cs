@@ -61,7 +61,8 @@ namespace Store.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.HasKey("CategoryId");
 
@@ -78,54 +79,61 @@ namespace Store.Migrations
 
                     b.Property<string>("City")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying");
 
                     b.Property<string>("Country")
                         .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<bool>("GiftWrap")
-                        .HasColumnType("boolean");
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying");
 
                     b.Property<string>("Line1")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying");
 
                     b.Property<string>("Line2")
-                        .HasColumnType("text");
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying");
 
                     b.Property<string>("Line3")
-                        .HasColumnType("text");
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Nonce")
-                        .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying");
 
                     b.Property<string>("PaymentId")
-                        .HasColumnType("text");
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying");
 
                     b.Property<string>("PaymentMethod")
-                        .HasColumnType("text");
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying");
 
                     b.Property<string>("PaymentStatus")
-                        .HasColumnType("text");
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying");
 
                     b.Property<bool>("Shipped")
                         .HasColumnType("boolean");
 
                     b.Property<string>("State")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying");
 
                     b.Property<string>("UserId")
                         .HasColumnType("text");
 
                     b.Property<string>("Zip")
-                        .HasColumnType("text");
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying");
 
                     b.HasKey("OrderID");
 
@@ -148,8 +156,7 @@ namespace Store.Migrations
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)");
+                        .HasColumnType("text");
 
                     b.Property<string>("EbayProductId")
                         .IsRequired()
@@ -162,7 +169,6 @@ namespace Store.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("ItemCountry")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("Name")
@@ -173,13 +179,13 @@ namespace Store.Migrations
                         .HasColumnType("text");
 
                     b.Property<decimal>("Price")
-                        .HasColumnType("decimal(8, 2)");
+                        .HasColumnType("numeric");
 
                     b.Property<int>("Quantity")
                         .HasColumnType("integer");
 
                     b.Property<decimal>("ShippingPrice")
-                        .HasColumnType("decimal(8, 2)");
+                        .HasColumnType("numeric");
 
                     b.Property<string>("UserId")
                         .HasColumnType("text");
