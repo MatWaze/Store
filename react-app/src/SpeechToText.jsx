@@ -34,9 +34,17 @@ export default function SpeechToText() {
                 console.error(`Error recognizing speech: ${err}`);
         });
     }
-    
+
+    const buttonStyle = {
+        '--button-hover-background': 'var(--example-color-alt)',
+        '--button-color': 'var(--white)',
+        '--button-background': 'var(--example-color-alt)',
+        '--button-margin-bottom': '0'
+    };
+
     return (
-      <i className="fas fa-microphone fa-lg mr-2" onClick={() => sttFromMic()}>
-      </i>  
+        <button class="flat" onClick={() => sttFromMic()} style={buttonStyle}>
+            <i class="fas fa-microphone fa-fw fa-xl"></i>
+        </button>
     );
 }
