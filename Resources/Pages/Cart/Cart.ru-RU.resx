@@ -138,6 +138,9 @@
   <data name="Remove" xml:space="preserve">
     <value>Удалить предмет</value>
   </data>
+  <data name="Shipping Price" xml:space="preserve">
+    <value>Цена доставки</value>
+  </data>
   <data name="Subtotal" xml:space="preserve">
     <value>Промежуточный итог</value>
   </data>

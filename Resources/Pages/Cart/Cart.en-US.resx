@@ -138,6 +138,9 @@
   <data name="Remove" xml:space="preserve">
     <value>Remove product</value>
   </data>
+  <data name="Shipping Price" xml:space="preserve">
+    <value>Shipping Price</value>
+  </data>
   <data name="Subtotal" xml:space="preserve">
     <value>Subtotal</value>
   </data>

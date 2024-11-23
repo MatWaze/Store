@@ -11,6 +11,7 @@
 					<th>@Localizer["Quantity"]</th>
 					<th>@Localizer["Item"]</th>
 					<th class="text-right">@Localizer["Price"]</th>
+					<th class="text-right">@Localizer["Shipping Price"]</th>
 					<th class="text-right">@Localizer["Subtotal"]</th>
 					<th></th>
 				</tr>
@@ -23,18 +24,21 @@
 						<td class="text-center">@line.Quantity</td>
 						<td class="text-left">@line.Product.Name</td>
 						<td class="text-right">
-					$@line.Product.Price.ToString()
+							$@line.Product.Price.ToString()
 						</td>
 						<td class="text-right">
-					$@((line.Quantity * line.Product.Price).ToString())
+							$@line.Product.ShippingPrice.ToString()
+						</td>
+						<td class="text-right">
+							$@((line.Quantity * (line.Product.Price + line.Product.ShippingPrice)).ToString())
 						</td>
 						<td>
 							<form asp-page-handler="Remove">
-						@Html.AntiForgeryToken()
+								@Html.AntiForgeryToken()
 								<input type="hidden" name="ProductId" value="@line.Product.ProductId"/>
 								<input type="hidden" name="returnUrl" value="@Model.ReturnUrl"/>
 								<button type="submit" class="btn btn-sm btn-danger">
-							@Localizer["Remove"]
+									@Localizer["Remove"]
 								</button>
 							</form>
 						</td>
