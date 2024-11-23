@@ -41,7 +41,7 @@ namespace Store.Controllers
             logger = log;
         }
 
-        public decimal ExchangeRateRubUsd = 100.00M;
+        public decimal ExchangeRateRubUsd = 100M;
 
         public async Task<IActionResult> YooKassaPayment(int orderId, string accessToken)
         {
