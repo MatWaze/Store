@@ -54,9 +54,8 @@ namespace Store.Controllers
             
             return View("Views/Order/YooKassaCheckout.cshtml", orderNonce);
         }
-		// /Ebay/GetItem/v1|387422961411|0 
-		// /Ebay/GetItem/v1|326317134142|0
-		public async Task<NewReceipt> CreateYooReceipt()
+		
+        public async Task<NewReceipt> CreateYooReceipt()
         {
             List<ReceiptItem> receiptItems = new();
 
