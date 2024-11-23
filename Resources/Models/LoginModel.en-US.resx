@@ -120,6 +120,9 @@
   <data name="Invalid" xml:space="preserve">
     <value>Invalid username or password</value>
   </data>
+  <data name="No results found. Try another query" xml:space="preserve">
+    <value>No results found. Try another query</value>
+  </data>
   <data name="RegistrationError" xml:space="preserve">
     <value>Error registrating account</value>
   </data>

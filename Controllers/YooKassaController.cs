@@ -40,6 +40,8 @@ namespace Store.Controllers
             logger = log;
         }
 
+        public decimal ExchangeRateRubUsd = 100.0M;
+
         public async Task<IActionResult> YooKassaPayment(int orderId, string accessToken)
         {
             await CreateYooWebHook("waiting_for_capture", "Notification", accessToken);
@@ -154,7 +156,7 @@ namespace Store.Controllers
         private async Task<string> YooToken(int orderId, string accessToken)
         {
             Order? order = repo.Orders.FirstOrDefault(o => o.OrderID == orderId);
-            decimal amount = Math.Round(cart.ComputeTotalValue(), 2);
+            decimal amount = Math.Round(cart.ComputeTotalValue() * ExchangeRateRubUsd, 2);
             
             var yooReceipt = await CreateYooReceipt();
             var newPayment = new NewPayment

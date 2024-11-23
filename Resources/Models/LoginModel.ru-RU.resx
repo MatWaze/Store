@@ -120,6 +120,9 @@
   <data name="Invalid" xml:space="preserve">
     <value>Неправильные имя пользователя или пароль</value>
   </data>
+  <data name="No results found. Try another query" xml:space="preserve">
+    <value>Поиск не выдал результатов. Попробуйте другой запрос</value>
+  </data>
   <data name="RegistrationError" xml:space="preserve">
     <value>Проблема с созданием аккаунта</value>
   </data>
