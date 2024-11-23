@@ -62,7 +62,7 @@ namespace Store.Controllers
             //IBraintreeGateway gateway = brainService.CreateGateway();
             var request = new TransactionRequest
             {
-                Amount = cart.Lines.Sum(e => e.Product.Price * e.Quantity),
+                Amount = cart.ComputeTotalValue(),
                 PaymentMethodNonce = nonce,
                 Options = new TransactionOptionsRequest
                 {
