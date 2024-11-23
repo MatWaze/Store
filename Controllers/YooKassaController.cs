@@ -160,12 +160,13 @@ namespace Store.Controllers
         private async Task<string> YooToken(int orderId, string accessToken)
         {
             Order? order = repo.Orders.FirstOrDefault(o => o.OrderID == orderId);
-            decimal amount = Math.Round(cart.ComputeTotalValue() * ExchangeRateRubUsd, 2);
-            logger.LogInformation("Amount is {amount}", amount);
+
+			decimal finalAmount = (cart.ComputeTotalValue() * ExchangeRateRubUsd) + 0.00M;
+			logger.LogInformation("Amount is {amount}", finalAmount);
             var yooReceipt = await CreateYooReceipt();
             var newPayment = new NewPayment
             {
-                Amount = new Amount { Value = amount, Currency = "RUB" },
+                Amount = new Amount { Value = finalAmount, Currency = "RUB" },
                 Confirmation = new Confirmation { Type = ConfirmationType.Embedded },
                 Receipt = yooReceipt,
                 Metadata = new Dictionary<string, string>
