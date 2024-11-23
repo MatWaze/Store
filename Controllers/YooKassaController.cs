@@ -41,7 +41,7 @@ namespace Store.Controllers
             logger = log;
         }
 
-        public decimal ExchangeRateRubUsd = 100.0M;
+        public decimal ExchangeRateRubUsd = 100M;
 
         public async Task<IActionResult> YooKassaPayment(int orderId, string accessToken)
         {
@@ -162,7 +162,8 @@ namespace Store.Controllers
             Order? order = repo.Orders.FirstOrDefault(o => o.OrderID == orderId);
 
 			decimal finalAmount = (cart.ComputeTotalValue() * ExchangeRateRubUsd) + 0.00M;
-			logger.LogInformation("Amount is {amount}", finalAmount);
+			
+            logger.LogInformation("Amount is {amount}", finalAmount);
             var yooReceipt = await CreateYooReceipt();
             var newPayment = new NewPayment
             {
