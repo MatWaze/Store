@@ -41,7 +41,7 @@ namespace Store.Controllers
             logger = log;
         }
 
-        public decimal ExchangeRateRubUsd = 100M;
+        public decimal ExchangeRateRubUsd = 100.00M;
 
         public async Task<IActionResult> YooKassaPayment(int orderId, string accessToken)
         {
@@ -72,7 +72,10 @@ namespace Store.Controllers
                     PaymentMode = PaymentMode.FullPayment,
                     PaymentSubject = PaymentSubject.Commodity,
                 };
-                receiptItems.Add(receiptItem);
+				string json = System.Text.Json.JsonSerializer.Serialize(receiptItem);
+                logger.LogInformation("Receipt: {json}", json);
+
+				receiptItems.Add(receiptItem);
             }
             var user = await userManager.GetUserAsync(User);
             NewReceipt newReceipt = new NewReceipt
@@ -163,7 +166,6 @@ namespace Store.Controllers
 
 			decimal finalAmount = (cart.ComputeTotalValue() * ExchangeRateRubUsd) + 0.00M;
 			
-            logger.LogInformation("Amount is {amount}", finalAmount);
             var yooReceipt = await CreateYooReceipt();
             var newPayment = new NewPayment
             {
@@ -177,7 +179,10 @@ namespace Store.Controllers
                     { "EmailAddress", yooReceipt.Customer.Email }
                 },
             };
-            Client yooClient = new Client(accessToken: accessToken);
+			string json = System.Text.Json.JsonSerializer.Serialize(newPayment);
+			logger.LogInformation("new payment: {json}", json);
+
+			Client yooClient = new Client(accessToken: accessToken);
             Payment payment = yooClient.CreatePayment(newPayment);
             //var user = await userManager.GetUserAsync(User);
             order.PaymentId = payment.Id;

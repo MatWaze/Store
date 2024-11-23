@@ -40,13 +40,14 @@ public class OrderController : Controller
         logger = log;
     }
 
+    public decimal rate = 100M;
     public async Task<IActionResult> New()
     {
         var user = await userManager.Users
             .Include(u => u.Address)
             .FirstOrDefaultAsync(u => u.Id == userManager.GetUserId(User));
-        
-        return View(new Order
+
+		return View(new Order
         {
             Lines = cart.Lines.ToArray(),
             City = user!.Address!.City ?? null,
