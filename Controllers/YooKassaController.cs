@@ -8,7 +8,6 @@ using Yandex.Checkout.V3;
 using Microsoft.AspNetCore.Identity;
 using Store.Infrastructure;
 using System.Security.Cryptography;
-using System.Globalization;
 
 namespace Store.Controllers
 {
@@ -54,28 +53,26 @@ namespace Store.Controllers
             
             return View("Views/Order/YooKassaCheckout.cshtml", orderNonce);
         }
-		
+
         public async Task<NewReceipt> CreateYooReceipt()
         {
             List<ReceiptItem> receiptItems = new();
-
-			decimal finalAmount = (cart.ComputeTotalValue() * ExchangeRateRubUsd) + 0.00M;
-
-			foreach (var item in cart.Lines)
+            foreach (var item in cart.Lines)
             {
                 ReceiptItem receiptItem = new ReceiptItem
                 {
-                    Amount = new Amount { Value = finalAmount, Currency = "RUB" },
+                    Amount = new Amount 
+                    { 
+                        Value = ((item.Product.Price + item.Product.ShippingPrice) * ExchangeRateRubUsd) + 0.00M, 
+                        Currency = "RUB" 
+                    },
                     Description = item.Product.Description,
                     Quantity = item.Quantity,
                     VatCode = VatCode.Vat0,
                     PaymentMode = PaymentMode.FullPayment,
                     PaymentSubject = PaymentSubject.Commodity,
                 };
-				string json = System.Text.Json.JsonSerializer.Serialize(receiptItem);
-                logger.LogInformation("Receipt: {json}", json);
-
-				receiptItems.Add(receiptItem);
+                receiptItems.Add(receiptItem);
             }
             var user = await userManager.GetUserAsync(User);
             NewReceipt newReceipt = new NewReceipt
@@ -163,13 +160,16 @@ namespace Store.Controllers
         private async Task<string> YooToken(int orderId, string accessToken)
         {
             Order? order = repo.Orders.FirstOrDefault(o => o.OrderID == orderId);
-
-			decimal finalAmount = (cart.ComputeTotalValue() * ExchangeRateRubUsd) + 0.00M;
-			
+            decimal amount = (cart.ComputeTotalValue() * ExchangeRateRubUsd) + 0.00M;
+            
             var yooReceipt = await CreateYooReceipt();
             var newPayment = new NewPayment
             {
-                Amount = new Amount { Value = finalAmount, Currency = "RUB" },
+                Amount = new Amount 
+                { 
+                    Value = amount, 
+                    Currency = "RUB" 
+                },
                 Confirmation = new Confirmation { Type = ConfirmationType.Embedded },
                 Receipt = yooReceipt,
                 Metadata = new Dictionary<string, string>
@@ -179,10 +179,7 @@ namespace Store.Controllers
                     { "EmailAddress", yooReceipt.Customer.Email }
                 },
             };
-			string json = System.Text.Json.JsonSerializer.Serialize(newPayment);
-			logger.LogInformation("new payment: {json}", json);
-
-			Client yooClient = new Client(accessToken: accessToken);
+            Client yooClient = new Client(accessToken: accessToken);
             Payment payment = yooClient.CreatePayment(newPayment);
             //var user = await userManager.GetUserAsync(User);
             order.PaymentId = payment.Id;
