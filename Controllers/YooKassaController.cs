@@ -8,6 +8,7 @@ using Yandex.Checkout.V3;
 using Microsoft.AspNetCore.Identity;
 using Store.Infrastructure;
 using System.Security.Cryptography;
+using System.Globalization;
 
 namespace Store.Controllers
 {
@@ -53,15 +54,22 @@ namespace Store.Controllers
             
             return View("Views/Order/YooKassaCheckout.cshtml", orderNonce);
         }
-
-        public async Task<NewReceipt> CreateYooReceipt()
+		// /Ebay/GetItem/v1|387422961411|0 
+		// /Ebay/GetItem/v1|326317134142|0
+		public async Task<NewReceipt> CreateYooReceipt()
         {
             List<ReceiptItem> receiptItems = new();
-            foreach (var item in cart.Lines)
+
+			decimal rawAmount = cart.ComputeTotalValue() * ExchangeRateRubUsd;
+			string formattedAmount = rawAmount.ToString("0.00", CultureInfo.InvariantCulture);
+
+			decimal finalAmount = decimal.Parse(formattedAmount, CultureInfo.InvariantCulture);
+
+			foreach (var item in cart.Lines)
             {
                 ReceiptItem receiptItem = new ReceiptItem
                 {
-                    Amount = new Amount { Value = Math.Round(cart.ComputeTotalValue()), Currency = "RUB" },
+                    Amount = new Amount { Value = finalAmount, Currency = "RUB" },
                     Description = item.Product.Description,
                     Quantity = item.Quantity,
                     VatCode = VatCode.Vat0,
@@ -157,7 +165,7 @@ namespace Store.Controllers
         {
             Order? order = repo.Orders.FirstOrDefault(o => o.OrderID == orderId);
             decimal amount = Math.Round(cart.ComputeTotalValue() * ExchangeRateRubUsd, 2);
-            
+            logger.LogInformation("Amount is {amount}", amount);
             var yooReceipt = await CreateYooReceipt();
             var newPayment = new NewPayment
             {
