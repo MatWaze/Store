@@ -59,10 +59,7 @@ namespace Store.Controllers
         {
             List<ReceiptItem> receiptItems = new();
 
-			decimal rawAmount = cart.ComputeTotalValue() * ExchangeRateRubUsd;
-			string formattedAmount = rawAmount.ToString("0.00", CultureInfo.InvariantCulture);
-
-			decimal finalAmount = decimal.Parse(formattedAmount, CultureInfo.InvariantCulture);
+			decimal finalAmount = (cart.ComputeTotalValue() * ExchangeRateRubUsd) + 0.00M;
 
 			foreach (var item in cart.Lines)
             {
