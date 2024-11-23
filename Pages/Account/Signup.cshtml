@@ -49,20 +49,20 @@
 </div>
 
 @functions {
-	public class SignupModel : PageModel
-	{
-		private UserManager<ApplicationUser> userManager;
-		private RoleManager<IdentityRole> roleManager;
-		private ISendEmail emailManager;
-		private IRazorViewToStringRenderer razorView;
-		private readonly ILogger<SignupModel> logger;
-		private readonly IStringLocalizer<Store.Models.LoginModel> localizer;
+    public class SignupModel : PageModel
+    {
+        private UserManager<ApplicationUser> userManager;
+        private RoleManager<IdentityRole> roleManager;
+        private ISendEmail emailManager;
+        private IRazorViewToStringRenderer razorView;
+        private readonly ILogger<SignupModel> logger;
+        private readonly IStringLocalizer<Store.Pages.Account.LoginModel> localizer;
 
 		public SignupModel(UserManager<ApplicationUser> userMgr,
 			RoleManager<IdentityRole> roleMgr,
 			ISendEmail emailMgr,
 			IRazorViewToStringRenderer razorViewToString,
-			IStringLocalizer<Store.Models.LoginModel> loc,
+			IStringLocalizer<Store.Pages.Account.LoginModel> loc,
 			ILogger<SignupModel> log
 		)
 		{

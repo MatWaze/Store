@@ -6,15 +6,10 @@ using Store.Models.ViewModels;
 using Store.Infrastructure;
 using System.Globalization;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.Extensions.Caching.Memory;
-using Azure.Core;
-using Azure.AI.Translation.Text;
 using System.Text;
-using System.Threading;
 using Newtonsoft.Json.Linq;
-using NuGet.Protocol;
+using Microsoft.Extensions.Localization;
 
 namespace Store.Controllers
 {
@@ -28,6 +23,7 @@ namespace Store.Controllers
 		private readonly UserManager<ApplicationUser> userManager;
         private readonly IMyCacheStore cacheService;
         private readonly IAzureTranslation azureTranslate;
+        private readonly IStringLocalizer<Store.Pages.Account.LoginModel> localizer;
 
         public EbayController(
             OAuth2Api oauthApi, 
@@ -35,7 +31,9 @@ namespace Store.Controllers
             IProductRepository dataContext,
 			UserManager<ApplicationUser> usrManager,
             IMyCacheStore memoryCache,
-            IAzureTranslation azureTranslation)
+            IAzureTranslation azureTranslation,
+            IStringLocalizer<Store.Pages.Account.LoginModel> loc
+        )
         {
             oauth = oauthApi;
             ebayService = ebaySrv;
@@ -43,6 +41,7 @@ namespace Store.Controllers
             userManager = usrManager;
             cacheService = memoryCache;
             azureTranslate = azureTranslation;
+            localizer = loc;
         }
 
         public List<string> Scopes = new List<string>()
@@ -114,11 +113,13 @@ namespace Store.Controllers
                     cat = context.Categories
                         .FirstOrDefault(c => c.EbayCategoryId == 6000);
                 }
+
+                string title = item["title"]!.ToString();
                 Product newProduct = new Product
                 {
-                    Name = item["title"].ToString(),
+                    Name = title,
                     NameRu = (await azureTranslate
-                        .TranslateTextAsync(item["title"].ToString()))?
+                        .TranslateTextAsync(title))?
                         .Translations
                         .FirstOrDefault()?
                         .Text,
@@ -169,13 +170,22 @@ namespace Store.Controllers
         {
             foreach (var item in items)
             {
-                string? transText = await ebayService
+                string title = item["title"]!.ToString();
+
+				string? transText = await ebayService
                     .TranslateFromToAsync(
-                    await GetTokenFromCacheOrDefault(), 
-                    item["title"]!.ToString(), 
+                    await GetTokenFromCacheOrDefault(),
+                    title,
                     "ru"
                 );
-                    
+                if (String.IsNullOrEmpty(transText))
+                {
+                    transText = (await azureTranslate
+                        .TranslateTextAsync(title))?
+                        .Translations
+                        .FirstOrDefault()?
+                        .Text;
+				}
                 item["title"] = transText;
             }
         }
@@ -262,8 +272,10 @@ namespace Store.Controllers
                     }
                 });
             }
+            ModelState.AddModelError("",
+                localizer["No results found. Try another query"]);
             ViewBag.Categories = context.Categories.ToArray();
-            return RedirectToAction("Search")/*View("Search", new QueryProduct())*/;
+            return View("Search", new QueryProduct())/*View("Search", new QueryProduct())*/;
         }
 
         [HttpPost]
@@ -279,14 +291,26 @@ namespace Store.Controllers
 
             if (ModelState.IsValid)
             {
+                string detectedLang = await azureTranslate
+                    .DetectedLanguage(queryProduct.QueryName!);
+                string name = String.Empty;
+                
+                switch (detectedLang)
+                {
+                    case "ru":
+                        name = (await azureTranslate.TranslateTextAsync(
+                            queryProduct.QueryName!,
+                            "ru",
+                            "en"
+                        ))?.Translations?.FirstOrDefault()?.Text!;
+                        break;
+                    default:
+						name = queryProduct.QueryName!;
+						break;
+                }
                 return RedirectToAction("Results", new
                 {
-                    queryName = queryProduct.QueryName,
-                    //queryName = (await azureTranslate.TranslateTextAsync(
-                    //    queryProduct.QueryName!,
-                    //    "ru",
-                    //    "en"
-                    //))?.Translations?.FirstOrDefault()?.Text,
+                    queryName = name,
                     categoryNumber = queryProduct.CategoryNumber,
                     priceLow = queryProduct.PriceLow,
                     priceHigh = queryProduct.PriceHigh

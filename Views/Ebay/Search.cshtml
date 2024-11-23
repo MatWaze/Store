@@ -5,10 +5,12 @@
     ViewBag.Title = "Search Products";
 }
 
-<partial name="_Validation" />
 
 <section class="product-store position-relative padding-large ps-2 container">
     <h3>@Localizer["Search for specific item"]</h3>
+    <div class="text-danger">
+        @Html.ValidationSummary()
+    </div>
     <form asp-action="SearchForm" asp-controller="Ebay" method="post">
         @Html.AntiForgeryToken()
         <div class="form-group mt-2">

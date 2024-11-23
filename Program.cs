@@ -25,6 +25,8 @@ using Store.Validation;
 using FluentValidation;
 using Microsoft.Extensions.Localization;
 using Microsoft.AspNetCore.Mvc;
+using Azure.AI.TextAnalytics;
+using Microsoft.Extensions.DependencyInjection;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -90,6 +92,14 @@ builder.Services.AddSingleton(opts =>
 {
     return new TextTranslationClient(
         new AzureKeyCredential(Environment.GetEnvironmentVariable("AzureTranslation")!)
+    );
+});
+
+builder.Services.AddSingleton(opts =>
+{
+    return new TextAnalyticsClient(
+		new Uri(builder.Configuration["AzureTranslation:LanguageEndpoint"]!),
+		new AzureKeyCredential(Environment.GetEnvironmentVariable("AzureLanguage")!)
     );
 });
 
