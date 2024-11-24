@@ -19,9 +19,10 @@
         private readonly IOrderRepository orderRepo;
         private readonly IProductRepository prodRepo;
         private readonly Cart cart;
-        private IRazorViewToStringRenderer razorView;
-        private ISendEmail sendEmail;
-        private UserManager<ApplicationUser> userManager;
+        private readonly IRazorViewToStringRenderer razorView;
+        private readonly ISendEmail sendEmail;
+        private readonly UserManager<ApplicationUser> userManager;
+        private readonly ILogger<Completed> logger;
 
         public Completed(
             IOrderRepository ordRepo,
@@ -29,7 +30,8 @@
             Cart cartObj,
             IRazorViewToStringRenderer razor,
             ISendEmail send,
-            UserManager<ApplicationUser> usrMgr
+            UserManager<ApplicationUser> usrMgr,
+            ILogger<Completed> log
         )
         {
             orderRepo = ordRepo;
@@ -38,6 +40,7 @@
             razorView = razor;
             sendEmail = send;
             userManager = usrMgr;
+            logger = log;
         }
 
         public async Task OnGet()
@@ -46,10 +49,15 @@
                 .Orders
                 .FirstOrDefault(o => OrderNonce != null && o.PaymentId == OrderNonce);
 
+            var user = await userManager.GetUserAsync(User);
+
             if (ord != null && ord.PaymentStatus != "Paid")
             {
-                ord.PaymentStatus = "Paid";
 
+                logger.LogInformation("Order {orderId} with nonce {Nonce} for {userName} confirmed",
+                    ord.OrderID, OrderNonce, user.UserName);
+
+                ord.PaymentStatus = "Paid";
                 List<Product> productIdsInOrder = ord.Lines.Select(cl => cl.Product).ToList();
                 foreach (Product prod in productIdsInOrder)
                 {
@@ -71,8 +79,17 @@
                 string htmlContent = await razorView
                    .RenderViewToStringAsync<Order>("EmailOrderNotification", ord);
 
-                var user = await userManager.GetUserAsync(User);
                 await sendEmail.SendEmailAsync(user!.Email!, "ILoveParts order created", htmlContent);
+            }
+            else if (ord.PaymentStatus == "Paid")
+            {
+                logger.LogInformation("Order {orderId} with nonce {Nonce} for {userName} has already been confirmed",
+                   ord.OrderID, OrderNonce, user.UserName);
+            }
+            else if (ord == null)
+            {
+                logger.LogInformation("Order {orderId} with nonce {Nonce} for {userName} doesn't exist",
+                    ord.OrderID, OrderNonce, user.UserName);
             }
         }
     }
