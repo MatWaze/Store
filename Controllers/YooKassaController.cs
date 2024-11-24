@@ -44,9 +44,9 @@ namespace Store.Controllers
 
         public async Task<IActionResult> YooKassaPayment(int orderId, string accessToken)
         {
-            await CreateYooWebHook("waiting_for_capture", "Notification", accessToken);
+            await CreateYooWebHook("waiting_for_capture", $"Notification?{Guid.NewGuid()}", accessToken);
             //await CreateYooWebHook("succeeded", accessToken);
-            await CreateYooWebHook("canceled", "Canceled", accessToken);
+            await CreateYooWebHook("canceled", $"Canceled?{Guid.NewGuid()}", accessToken);
             
             ViewBag.ConfirmationToken = await YooToken(orderId, accessToken);
             string? orderNonce = repo.Orders.FirstOrDefault(o => o.OrderID == orderId)?.PaymentId;
@@ -212,7 +212,7 @@ namespace Store.Controllers
         [HttpPost]
         [AllowAnonymous]
         [IgnoreAntiforgeryToken]
-        public async Task<IActionResult> Canceled()
+        public async Task<IActionResult> Canceled([FromQuery] string unique)
         {
             using (var reader = new StreamReader(Request.Body, Encoding.UTF8))
             {
@@ -247,7 +247,7 @@ namespace Store.Controllers
         [HttpPost]
         [AllowAnonymous]
         [IgnoreAntiforgeryToken]
-        public async Task<IActionResult> Notification()
+        public async Task<IActionResult> Notification([FromQuery] string unique)
         {
             using (var reader = new StreamReader(Request.Body, Encoding.UTF8))
             {
