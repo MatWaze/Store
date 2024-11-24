@@ -45,6 +45,7 @@
 
         public async Task OnGet()
         {
+            Console.WriteLine(OrderNonce);
             Order? ord = orderRepo
                 .Orders
                 .FirstOrDefault(o => OrderNonce != null && o.PaymentId == OrderNonce);
@@ -81,14 +82,14 @@
 
                 await sendEmail.SendEmailAsync(user!.Email!, "ILoveParts order created", htmlContent);
             }
-            else if (ord.PaymentStatus == "Paid")
+            else if (ord != null && ord.PaymentStatus == "Paid")
             {
                 logger.LogInformation("Order {orderId} with nonce {Nonce} for {userName} has already been confirmed",
                    ord.OrderID, OrderNonce, user.UserName);
             }
-            else if (ord == null)
+            else
             {
-                logger.LogInformation("Order {orderId} with nonce {Nonce} for {userName} doesn't exist",
+                logger.LogInformation("Order with nonce {Nonce} for {userName} doesn't exist",
                     ord.OrderID, OrderNonce, user.UserName);
             }
         }

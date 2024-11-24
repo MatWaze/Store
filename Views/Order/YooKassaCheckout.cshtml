@@ -14,7 +14,7 @@
     //Инициализация виджета. Все параметры обязательные.
   const checkout = new window.YooMoneyCheckoutWidget({
       confirmation_token: '@ViewBag.ConfirmationToken', //Токен, который перед проведением оплаты нужно получить от ЮKassa
-      return_url: 'https://iparts.me/Completed?orderId=@nonce', //Ссылка на страницу завершения оплаты, это может быть любая ваша страница
+      return_url: 'https://iparts.me/Completed?OrderNonce=@nonce', //Ссылка на страницу завершения оплаты, это может быть любая ваша страница
       //При необходимости можно изменить цвета виджета, подробные настройки см. в документации
        //customization: {
         //Настройка цветовой схемы, минимум один параметр, значения цветов в HEX
