@@ -152,9 +152,9 @@ namespace Store.Controllers
         }
 
         [HttpGet]
-        public IActionResult Canceled(string errorMsg)
+        public IActionResult CanceledView(string errorMsg)
         {
-            return View(errorMsg);
+            return View("Canceled", errorMsg);
         }
 
         private async Task<string> YooToken(int orderId, string accessToken)
@@ -193,9 +193,9 @@ namespace Store.Controllers
         public async Task<IActionResult> HandleWaitingPayment(PaymentWaitingForCaptureNotification captureNote)
         {
             Payment payment = captureNote.Object;
-            ApplicationUser user = await userManager.FindByIdAsync(payment.Metadata["UserId"]);
+            ApplicationUser? user = await userManager.FindByIdAsync(payment.Metadata["UserId"]);
 
-            Client yooClient = new Client(accessToken: user.YooKassaAccessToken!);
+            Client yooClient = new Client(accessToken: user!.YooKassaAccessToken!);
             
             AsyncClient asyncClient = yooClient.MakeAsync();
 

@@ -89,7 +89,7 @@ namespace Store.Controllers
                     .All()
                     .FirstOrDefault()?
                     .Message;
-                return RedirectToAction("Canceled", "YooKassa", new
+                return RedirectToAction("CanceledView", "YooKassa", new
                 {
                     errorMsg = errorMessage
                 });
