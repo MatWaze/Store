@@ -3,7 +3,6 @@
 
 @{
 	List<string> images = Model.ImageUrls.Split(' ').ToList();
-	Layout = "_Layout";
 	CartLine? ct = cart
 		.Lines
 		.Find(cl => cl.Product.ProductId == Model.ProductId);
@@ -22,7 +21,7 @@
                 <img src="@Model.ImageLink" style="width: 100%; height: 35vw; object-fit: cover;" class="card-img-top border border-grey" />
                 <div class="card-body">
                     <h5 class="card-title" style="font-size:30px;">
-                        @if (CultureInfo.CurrentCulture.Name != "RU")
+                        @if (CultureInfo.CurrentCulture.Name != "ru-RU")
                         {
                             @Model.Name
                         }
@@ -35,27 +34,27 @@
                         @Model.Description
                     </p>
                     <p class="card-text" style="font-size: 25px;">
-                        Price: @Model.Price.ToString("c", CultureInfo.GetCultureInfo("en-US"))
+                        @Localizer["Price"]: @Model.Price.ToString("c", CultureInfo.GetCultureInfo("en-US"))
                     </p>
                     @if (Model.ShippingPrice != -100)
                     {
                         <p class="card-text" style="font-size: 25px;">
-                            Shipping: @Model.ShippingPrice.ToString("c", CultureInfo.GetCultureInfo("en-US"))
+                            @Localizer["Shipping"]: @Model.ShippingPrice.ToString("c", CultureInfo.GetCultureInfo("en-US"))
                         </p>
                     }
                
                     <h3 class="card-text" style="font-size: 25px;">
-                        Available: @(Model.Quantity > 0 ? Model.Quantity :  "None")
+                        @Localizer["Available"]: @(Model.Quantity > 0 ? Model.Quantity :  "None")
                     </h3>
                     <a href="@ViewBag.ReturnUrl" class="btn btn-primary">
-                        Go Back
+                        @Localizer["Go Back"]
                     </a>
                     <form id="addToCartForm" method="post">
                         @Html.AntiForgeryToken()
                         <input type="hidden" name="ebayProductId" value="@Model.EbayProductId" />
                         <input type="hidden" name="returnUrl" value="@ViewContext.HttpContext.Request.PathAndQuery()?id=@Model.EbayProductId" />
                         <button @(cart.Lines.Count >= Model.Quantity ? "disabled" : "")  type="submit" id="addToCartButton" class="btn btn-success pull-right mt-2"> 
-                            Add To Cart 
+                            @Localizer["Add To Cart"]
                         </button>
                     </form>
                 </div>
@@ -63,34 +62,34 @@
         </div>
 
         <!-- Carousel Section -->
-        <div class="col-md-4 mt-3">
-            <h3>More images</h3>
-            @if (Model.ImageUrls.Length != 0)
-            {
-                <div id="carouselExampleSlidesOnly" class="carousel slide border border-grey" data-bs-ride="carousel">
-                    <div class="carousel-inner">
-                        @foreach (var image in images)
-                        {
-                            var isActive = (images.FirstOrDefault() != null && image == images.FirstOrDefault()) ? "active" : ""; // Add active class to the first item
-                            @if (image != String.Empty)
+        @if (Model.ImageUrls.Length != 0)
+        {
+            <div class="col-md-4 mt-3">
+                <h3>@Localizer["More images"]</h3>
+                    <div id="carouselExampleSlidesOnly" class="carousel slide border border-grey" data-bs-ride="carousel">
+                        <div class="carousel-inner">
+                            @foreach (var image in images)
                             {
-                                <div class="carousel-item @isActive">
-                                    <img class="d-block w-100" src="@image.Replace("225.jpg", "500.jpg")">
-                                </div>
+                                var isActive = (images.FirstOrDefault() != null && image == images.FirstOrDefault()) ? "active" : ""; // Add active class to the first item
+                                @if (image != String.Empty)
+                                {
+                                    <div class="carousel-item @isActive">
+                                        <img class="d-block w-100" src="@image.Replace("225.jpg", "500.jpg")">
+                                    </div>
+                                }
                             }
-                        }
+                        </div>
+                        <a class="carousel-control-prev" href="#carouselExampleSlidesOnly" role="button" data-bs-slide="prev">
+                            <span class="carousel-control-prev-icon bg-dark rounded-circle p-3" aria-hidden="true"></span>
+                            <span class="visually-hidden">Previous</span>
+                        </a>
+                        <a class="carousel-control-next" href="#carouselExampleSlidesOnly" role="button" data-bs-slide="next">
+                            <span class="carousel-control-next-icon bg-dark rounded-circle p-3" aria-hidden="true"></span>
+                            <span class="visually-hidden">Next</span>
+                        </a>
                     </div>
-                    <a class="carousel-control-prev" href="#carouselExampleSlidesOnly" role="button" data-bs-slide="prev">
-                        <span class="carousel-control-prev-icon bg-dark rounded-circle p-3" aria-hidden="true"></span>
-                        <span class="visually-hidden">Previous</span>
-                    </a>
-                    <a class="carousel-control-next" href="#carouselExampleSlidesOnly" role="button" data-bs-slide="next">
-                        <span class="carousel-control-next-icon bg-dark rounded-circle p-3" aria-hidden="true"></span>
-                        <span class="visually-hidden">Next</span>
-                    </a>
-                </div>
-            }
-        </div>
+            </div>
+        }
     </div>
 </section>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js"></script>

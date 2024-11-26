@@ -1,6 +1,6 @@
 ﻿<!DOCTYPE html>
 @inject Cart cart
-@inject IViteManifest Manifest
+@* @inject IViteManifest Manifest *@
 
 @{
     var currentPath = Context.Request.Path;
@@ -22,7 +22,7 @@
 
 <body>
     <partial name="_Validation" />
-    <script type="module" src="/dir/assets/main-vd3tR7Kz.js"></script>
+    <script type="module" src="/dir/assets/main-C4YmwbTE.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.js"></script>
 
@@ -80,10 +80,21 @@
                             </a>
                             </li>
                             <li>
-                                <div id="cart-button" 
-                                     data-cart-items="@Html.Raw(Json.Serialize(cart.Lines.Sum(x => x.Quantity)))" 
-                                     data-cart-total="@Html.Raw(Json.Serialize(cart.ComputeTotalValue().ToString("c")))">
-                                </div>
+                                @if (CultureInfo.CurrentCulture.Name == "ru-RU")
+                                {
+                                    <div id="cart-button-ru" 
+                                        data-cart-items="@Html.Raw(Json.Serialize(cart.Lines.Sum(x => x.Quantity)))" 
+                                        data-cart-total="@Html.Raw(Json.Serialize(cart.ComputeTotalValue().ToString("c", CultureInfo.GetCultureInfo("en-US"))))">
+                                    </div>
+
+                                }
+                                else
+                                {
+                                    <div id="cart-button" 
+                                        data-cart-items="@Html.Raw(Json.Serialize(cart.Lines.Sum(x => x.Quantity)))" 
+                                        data-cart-total="@Html.Raw(Json.Serialize(cart.ComputeTotalValue().ToString("c", CultureInfo.GetCultureInfo("en-US"))))">
+                                    </div>
+                                }
 
                                 @* <vc:cart-summary/> *@
                             </li>
