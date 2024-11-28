@@ -10,26 +10,23 @@ using Microsoft.AspNetCore.Localization;
 
 namespace Store.Controllers
 {
-	[Authorize]
+    [Authorize]
     [AutoValidateAntiforgeryToken]
     public class HomeController : Controller
     {
         private IProductRepository context;
-		private BlobStorageService _blobStorageService;
         private UserManager<ApplicationUser> userManager;
 
         public int PageSize = 6;
 
         public HomeController(IProductRepository dataContext,
-            BlobStorageService blobStorageService,
-			UserManager<ApplicationUser> userMgr)
-		{
-			context = dataContext;
-			_blobStorageService = blobStorageService;
-			userManager = userMgr;
+            UserManager<ApplicationUser> userMgr)
+        {
+            context = dataContext;
+            userManager = userMgr;
         }
 
-        public async Task<IActionResult> Index()
+        public IActionResult Index()
         {
             List<string> imgList = new List<string>
             {
@@ -40,11 +37,12 @@ namespace Store.Controllers
             return View(context.Categories.ToArray());
         }
 
-        public IActionResult PrivacyPolicy()
-        {
-            return View();
-        }
+        public IActionResult PrivacyPolicy() => View();
 
+        public IActionResult Contacts() => View();
+
+        public IActionResult PageNotFound() => View();
+ 
         [HttpPost]
         public IActionResult SetLanguage(string culture, string returnUrl)
         {
@@ -57,11 +55,6 @@ namespace Store.Controllers
             return LocalRedirect(returnUrl);
         }
 
-
-        public IActionResult PageNotFound()
-        {
-            return View();
-        }
 
         public async Task<IActionResult> Products(long categoryId = 6000, int productPage = 1)
         {

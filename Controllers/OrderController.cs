@@ -66,11 +66,6 @@ public class OrderController : Controller
     [HttpPost]
     public async Task<IActionResult> Checkout(Order order)
     {
-        if (cart.Lines.Count() == 0)
-        {
-            ModelState.AddModelError("",
-                "Sorry, your cart is empty!");
-        }
         if (ModelState.IsValid)
         {
             order.Lines = cart.Lines;
@@ -97,8 +92,7 @@ public class OrderController : Controller
             }
             else
             {
-                Console.WriteLine("Empty cart");
-                return RedirectToAction("Products", "Home");
+                return RedirectToAction("New");
             }
         }
         else

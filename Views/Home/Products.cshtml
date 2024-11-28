@@ -31,7 +31,7 @@
                                 @p.Price.ToString("c", new CultureInfo("en-US"))
                             </p>
                             <a href="@Url.Action("GetItem", "Ebay", new { id = @p.EbayProductId })" class="btn btn-primary mt-2">
-								@(currentCulture != "en-US" ? "View Product" : "Узнать детали")
+								@(currentCulture != "ru-RU" ? "View Product" : "Узнать детали")
 							</a>
 							@if (ViewBag.CurrentUser.UserName == "admin")
 							{

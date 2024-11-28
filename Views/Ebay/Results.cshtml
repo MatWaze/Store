@@ -26,9 +26,11 @@
 									asp-route-id="@item["itemId"]">
                                     @Html.AntiForgeryToken()
 									<input type="hidden" name=returnUrl value="@ViewContext.HttpContext.Request.PathAndQuery()"/>
+                                        
                                     <button type="submit" class="btn btn-success pull-right mt-2">
-                                        More Info
-                                     </button>
+                                    @(CultureInfo.CurrentCulture.Name != "ru-RU" ? "View Product" : "Узнать детали")
+                                    </button>
+                                        
                                 </form> 
                             </div>
                         </div>
