@@ -42,9 +42,9 @@
 </head> -->
 <body>
 <header>
-    <div style="text-align: center;">
+    <p align="center">
         <img width="250px" src="https://dontknowhowtonameit1.blob.core.windows.net/web/wwwroot/images/logo_iparts.png" alt="Logo">
-    </div>
+    </p>
     <h1>ILoveParts - README</h1>
     <p>
         Welcome to <strong>ILoveParts</strong>, an e-commerce web application where users can find spare parts for various needs. The app is hosted on <a href="https://www.heroku.com/" target="_blank">Heroku</a> 
