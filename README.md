@@ -1,49 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
-<!-- <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>ILoveParts README</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-            margin: 0;
-            padding: 20px;
-        }
-        /* h1, h2, h3 {
-            color: #;
-        } */
-        table {
-            border-collapse: collapse;
-            width: 100%;
-            margin: 20px 0;
-        }
-        th, td {
-            border: 1px solid #ccc;
-            padding: 10px;
-            text-align: center;
-        }
-        th {
-            background-color: #f8f8f8;
-            color: #000
-        }
-        .note {
-            background-color: #fff;
-            border-left: 5px solid #2196f3;
-            margin: 20px 0;
-            padding: 10px;
-        }
-        .note > p { 
-            color: #000
-        }
-    </style>
-</head> -->
 <body>
 <header>
     <p align="center">
-        <img width="250px" src="https://dontknowhowtonameit1.blob.core.windows.net/web/wwwroot/images/logo_iparts.png" alt="Logo">
+        <img width="250px" src="wwwroot/images/logo_iparts.png" alt="Logo">
     </p>
     <h1>ILoveParts - README</h1>
     <p>
