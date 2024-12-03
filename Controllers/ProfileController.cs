@@ -7,7 +7,7 @@ using Store.Models.ViewModels;
 
 namespace Store.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "ConfirmedUsers")]
     public class ProfileController : Controller
     {
         private readonly UserManager<ApplicationUser> usrMgr;

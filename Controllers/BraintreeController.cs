@@ -1,4 +1,5 @@
 ﻿using Braintree;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Razor;
@@ -8,6 +9,7 @@ using System.Security.Cryptography;
 
 namespace Store.Controllers
 {
+    [Authorize(Roles = "ConfirmedUsers")]
     public class BraintreeController : Controller
     {
         private readonly IBraintreeGateway brainGateway;

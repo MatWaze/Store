@@ -13,7 +13,7 @@ using Microsoft.Extensions.Localization;
 
 namespace Store.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "ConfirmedUsers")]
     [AutoValidateAntiforgeryToken]
     public class EbayController : Controller
     {

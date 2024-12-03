@@ -4,13 +4,11 @@ using Store.Models;
 using Store.Models.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
-using Store.Infrastructure;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Localization;
 
 namespace Store.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "ConfirmedUsers")]
     [AutoValidateAntiforgeryToken]
     public class HomeController : Controller
     {
@@ -82,16 +80,17 @@ namespace Store.Controllers
                 },
             });
         }
-        //public IActionResult Delete(long id)
-        //{
-        //    var prodToDel = context.Products
-        //        .FirstOrDefault(p => p.ProductId == id);
-        //    if (prodToDel != null)
-        //    {
-        //        context.DeleteProduct(prodToDel);
-        //    }
-        //    return RedirectToAction(nameof(Products));
-        //}
+        
+        public IActionResult Delete(long id)
+        {
+           var prodToDel = context.Products
+               .FirstOrDefault(p => p.ProductId == id);
+           if (prodToDel != null)
+           {
+               context.DeleteProduct(prodToDel);
+           }
+           return RedirectToAction(nameof(Products));
+        }
 
         //public IActionResult Create()
         //{

@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Store.Controllers;
 
-[Authorize]
+[Authorize(Roles = "ConfirmedUsers")]
 [AutoValidateAntiforgeryToken]
 public class OrderController : Controller
 {
@@ -74,6 +74,7 @@ public class OrderController : Controller
                 var user = await userManager.GetUserAsync(User);
                 order.UserId = user.Id;
                 order.Lines = cart.Lines;
+                order.OrderCreationDate = DateTime.UtcNow;
                 order.PaymentStatus = "Initiated";
 
                 repo.SaveOrder(order);

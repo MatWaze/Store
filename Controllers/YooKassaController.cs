@@ -11,6 +11,7 @@ using System.Security.Cryptography;
 
 namespace Store.Controllers
 {
+    [Authorize(Roles = "ConfirmedUsers")]
     public class YooKassaController : Controller
     {
         private readonly IOrderRepository repo;
@@ -91,7 +92,9 @@ namespace Store.Controllers
         public async Task<IActionResult> Auth2(int orderId)
         {
             ApplicationUser? user = await userManager.GetUserAsync(User);
-            if (user?.YooKassaAccessToken == null /* or expired */)
+            if (user?.YooKassaAccessToken == null || 
+                user.YooKassaCreationDate == null || 
+                user.YooKassaCreationDate <= DateTime.UtcNow.AddMonths(-1))
             {
                 logger.LogInformation("Redirecting {userName} to yookassa",
                     user.UserName);
@@ -135,6 +138,8 @@ namespace Store.Controllers
                     user.UserName);
 
                 user.YooKassaAccessToken = responseData["access_token"]?.ToString();
+                user.YooKassaCreationDate = DateTime.UtcNow;
+
                 await userManager.UpdateAsync(user);
 
                 Order? ord = repo.Orders.FirstOrDefault(o => o.UserId == user.Id);
@@ -181,7 +186,7 @@ namespace Store.Controllers
             };
             Client yooClient = new Client(accessToken: accessToken);
             Payment payment = yooClient.CreatePayment(newPayment);
-            //var user = await userManager.GetUserAsync(User);
+
             order.PaymentId = payment.Id;
             order.PaymentStatus = "Pending";
             
