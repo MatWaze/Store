@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+<!-- <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -39,7 +39,7 @@
             color: #000
         }
     </style>
-</head>
+</head> -->
 <body>
 <header>
     <div style="text-align: center;">
