@@ -39,20 +39,22 @@ namespace Store.Models
 			IdentityContext context = serviceProvider
 				.GetRequiredService<IdentityContext>();
 
-			string username = configuration["Data:AdminUser:Name"]
-				?? "admin";
-			string email = configuration["Data:AdminUser:Email"]
-				?? "admin@example.com";
-			string password = configuration["Data:AdminUser:Password"]
-				?? "Secret12345";
-			string role = configuration["Data:AdminUser:Role"]
-				?? "Admins";
-			
+			string username = "admin";
+			string email = "admin@example.com";
+			string password = "Secret12345";
+			string roleAdmins = "Admins";
+			string roleConfirmed = "ConfirmedUsers";
+
 			if (await userManager.FindByNameAsync(username) == null)
 			{
-				if (await roleManager.FindByNameAsync(role) == null)
+				if (await roleManager.FindByNameAsync(roleAdmins) == null)
 				{
-					await roleManager.CreateAsync(new IdentityRole(role));
+					await roleManager.CreateAsync(new IdentityRole(roleAdmins));
+				}
+
+				if (await roleManager.FindByNameAsync(roleConfirmed) == null)
+				{
+					await roleManager.CreateAsync(new IdentityRole(roleConfirmed));
 				}
 
 				var addr = new AddressViewModel
@@ -80,7 +82,8 @@ namespace Store.Models
 					.CreateAsync(user, password);
 				if (result.Succeeded)
 				{
-					await userManager.AddToRoleAsync(user, role);
+					await userManager.AddToRoleAsync(user, roleAdmins);
+					await userManager.AddToRoleAsync(user, roleConfirmed);
 				}
 			}
 		}

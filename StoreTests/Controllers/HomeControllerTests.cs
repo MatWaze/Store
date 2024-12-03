@@ -30,7 +30,7 @@ namespace StoreTests
             var mockUserManager = EbayControllerTests.GetUserManager();
 
 
-            var controller = new HomeController(mockProductRepo.Object, null, mockUserManager.Object);
+            var controller = new HomeController(mockProductRepo.Object, mockUserManager.Object);
             controller.PageSize = 3;
 
             // Act

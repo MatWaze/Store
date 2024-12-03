@@ -215,6 +215,9 @@ namespace Store.Migrations.Identity
                     b.Property<string>("YooKassaAccessToken")
                         .HasColumnType("text");
 
+                    b.Property<DateTime?>("YooKassaCreationDate")
+                        .HasColumnType("timestamp with time zone");
+
                     b.HasKey("Id");
 
                     b.HasIndex("AddressId")

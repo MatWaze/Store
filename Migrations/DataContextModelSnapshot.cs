@@ -105,6 +105,9 @@ namespace Store.Migrations
                         .HasMaxLength(1000)
                         .HasColumnType("character varying");
 
+                    b.Property<DateTime?>("OrderCreationDate")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("PaymentId")
                         .HasMaxLength(100)
                         .HasColumnType("character varying");
@@ -156,36 +159,42 @@ namespace Store.Migrations
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying");
 
                     b.Property<string>("EbayProductId")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("ImageLink")
-                        .HasColumnType("text");
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying");
 
                     b.Property<string>("ImageUrls")
-                        .HasColumnType("text");
+                        .HasMaxLength(3000)
+                        .HasColumnType("character varying");
 
                     b.Property<string>("ItemCountry")
-                        .HasColumnType("text");
+                        .HasMaxLength(2)
+                        .HasColumnType("character varying");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying");
 
                     b.Property<string>("NameRu")
-                        .HasColumnType("text");
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying");
 
                     b.Property<decimal>("Price")
-                        .HasColumnType("numeric");
+                        .HasColumnType("DECIMAL(8, 2)");
 
-                    b.Property<int>("Quantity")
-                        .HasColumnType("integer");
+                    b.Property<decimal>("Quantity")
+                        .HasColumnType("DECIMAL(8, 2)");
 
                     b.Property<decimal>("ShippingPrice")
-                        .HasColumnType("numeric");
+                        .HasColumnType("DECIMAL(8, 2)");
 
                     b.Property<string>("UserId")
                         .HasColumnType("text");

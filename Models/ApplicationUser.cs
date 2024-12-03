@@ -8,6 +8,7 @@ namespace Store.Models
     public class ApplicationUser : IdentityUser
     {
         public string? YooKassaAccessToken { get; set; }
+        public DateTime? YooKassaCreationDate { get; set; }
         public string? FullName { get; set; }
         public int AddressId { get; set; }
 		public AddressViewModel? Address { get; set; }

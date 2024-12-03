@@ -80,4 +80,6 @@ public class Order
     public string? PaymentId { get; set; }
 
     public string? PaymentStatus { get; set; }
+
+	public DateTime? OrderCreationDate { get; set; }
 }

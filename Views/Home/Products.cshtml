@@ -35,7 +35,9 @@
 							</a>
 							@if (ViewBag.CurrentUser.UserName == "admin")
 							{
-								<a href="@Url.Action("Delete", "Home", new { id = @p.ProductId })" class="btn btn-danger mt-2">Delete Product</a>
+								<a href="@Url.Action("Delete", "Home", new { id = @p.ProductId })" class="btn btn-danger mt-2">
+                                    @(currentCulture != "ru-RU" ? "Delete Product" : "Удалить предмет")
+                                </a>
 							}
                         </div>
                     </div>
