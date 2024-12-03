@@ -1,56 +1,15 @@
 @page
 @model OrdersModel
 
-<table class="table table-sm table-striped table-bordered padding-large">
-<thead>
-    <tr><th colspan="5" class="text-center">Unshipped Orders</th></tr>
-</thead>
-<tbody>
-    @if (Model.UnshippedOrders?.Count() > 0) 
-    {
-        @foreach (Order o in Model.UnshippedOrders) 
+<section class="product-store padding-large ps-3" style="font-size: 17px;">
+    <table class="table table-sm table-striped table-bordered">
+    <thead>
+        <tr><th colspan="5" class="text-center">Unshipped Orders</th></tr>
+    </thead>
+    <tbody>
+        @if (Model.UnshippedOrders?.Count() > 0) 
         {
-            <tr>
-                <td>@o.Name</td>
-                <td>@o.Zip</td>
-                <th>Product</th>
-                <th>Quantity</th>
-                <td>
-                    <form asp-page-handler="Ship">
-                        @Html.AntiForgeryToken()
-                        <input type="hidden" name="OrderID" value="@o.OrderID"/>
-                        <button type="submit" class="btn btn-sm btn-danger">
-                            Ship
-                        </button>
-                    </form>
-                </td>
-            </tr>
-            @foreach (CartLine line in o.Lines) 
-            {
-                <tr>
-                    <td colspan="2"></td>
-                    <td>@line.Product.Name</td>
-                    <td>@line.Quantity</td>
-                    <td></td>
-                </tr>
-            }
-        }
-    } 
-    else 
-    {
-        <tr><td colspan="5" class="text-center">No Orders</td></tr>
-    }
-</tbody>
-</table>
-
-<table class="table table-sm table-striped table-bordered">
-<thead>
-    <tr><th colspan="5" class="text-center">Shipped Orders</th></tr>
-</thead>
-<tbody>
-        @if (Model.ShippedOrders?.Count() > 0)
-        {
-            @foreach (Order o in Model.ShippedOrders)
+            @foreach (Order o in Model.UnshippedOrders) 
             {
                 <tr>
                     <td>@o.Name</td>
@@ -58,16 +17,16 @@
                     <th>Product</th>
                     <th>Quantity</th>
                     <td>
-                        <form asp-page-handler="Unship">
+                        <form asp-page-handler="Ship">
                             @Html.AntiForgeryToken()
                             <input type="hidden" name="OrderID" value="@o.OrderID"/>
                             <button type="submit" class="btn btn-sm btn-danger">
-                                Reset
+                                Ship
                             </button>
                         </form>
                     </td>
                 </tr>
-                @foreach (CartLine line in o.Lines)
+                @foreach (CartLine line in o.Lines) 
                 {
                     <tr>
                         <td colspan="2"></td>
@@ -77,15 +36,57 @@
                     </tr>
                 }
             }
-        }
-        else
+        } 
+        else 
         {
             <tr><td colspan="5" class="text-center">No Orders</td></tr>
         }
-</tbody>
-</table>
-    
-    
+    </tbody>
+    </table>
+
+    <table class="table table-sm table-striped table-bordered">
+    <thead>
+        <tr><th colspan="5" class="text-center">Shipped Orders</th></tr>
+    </thead>
+    <tbody>
+            @if (Model.ShippedOrders?.Count() > 0)
+            {
+                @foreach (Order o in Model.ShippedOrders)
+                {
+                    <tr>
+                        <td>@o.Name</td>
+                        <td>@o.Zip</td>
+                        <th>Product</th>
+                        <th>Quantity</th>
+                        <td>
+                            <form asp-page-handler="Unship">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="OrderID" value="@o.OrderID"/>
+                                <button type="submit" class="btn btn-sm btn-danger">
+                                    Reset
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    @foreach (CartLine line in o.Lines)
+                    {
+                        <tr>
+                            <td colspan="2"></td>
+                            <td>@line.Product.Name</td>
+                            <td>@line.Quantity</td>
+                            <td></td>
+                        </tr>
+                    }
+                }
+            }
+            else
+            {
+                <tr><td colspan="5" class="text-center">No Orders</td></tr>
+            }
+    </tbody>
+    </table>
+</section>
+
 @functions{
 	[Authorize(Roles = "Admins")]
 	public class OrdersModel : PageModel

@@ -1,11 +1,25 @@
 ﻿@page
 
-<h4 class="bg-danger text-white text-center p-2">
-	Access Denied
-</h4>
+@{
+	string culture = CultureInfo.CurrentCulture.Name;
+}
 
-<div class="m-2">
-	<h6>You are not authorized for this URL</h6>
-	<a class="btn btn-outline-danger" href="/">OK</a>
-	<a class="btn btn-outline-secondary" asp-page="Logout">Logout</a>
-</div>
+<section class="product-store padding-large ps-3 text-center">
+	<div>
+		<h4 class="bg-danger text-white text-center p-2">
+			@(culture != "ru-RU" ? "Access Denied" : "Нет доступа к странице")
+		</h4>
+	</div>
+
+	<div class="m-2">
+		<h6>
+			@(culture != "ru-RU" ? "You are not authorized for this URL." : "У вас нет доступа к данной странице.")
+		</h6>
+		<a class="btn btn-outline-danger" href="/">
+			@(culture != "ru-RU" ? "Home Page" : "Домашняя страница")
+		</a>
+		<a class="btn btn-outline-secondary" asp-page="Logout">
+			@(culture != "ru-RU" ? "Log Out" : "Выйти из аккаунта")
+		</a>
+	</div>
+</section>
