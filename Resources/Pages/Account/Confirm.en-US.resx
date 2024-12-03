@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -117,22 +117,13 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="P1" xml:space="preserve">
-    <value>Congratulations! You have successfully registered for ILoveParts.</value>
-  </data>
-  <data name="P2" xml:space="preserve">
-    <value>In order to use ILoveParts, you have to click the button bellow to confirm your email</value>
-  </data>
-  <data name="P3" xml:space="preserve">
-    <value>If you have any questions, please don't hesitate to contact us at info.iloveparts@gmail.com.</value>
-  </data>
-  <data name="P4" xml:space="preserve">
-    <value>Happy using ILoveParts!</value>
-  </data>
-  <data name="Welcome" xml:space="preserve">
-    <value>Welcome to ILoveParts!</value>
-  </data>
-  <data name="Confirmation" xml:space="preserve">
+  <data name="EmailConfirmation" xml:space="preserve">
     <value>Confirm Email</value>
+  </data>
+  <data name="ConfirmationMessage" xml:space="preserve">
+    <value>We have sent a confirmation email to the email address you provided. Please check your inbox and click the link to confirm your email address.</value>
+  </data>
+  <data name="SpamFolderMessage" xml:space="preserve">
+    <value>If you don't see the email, please check your spam folder.</value>
   </data>
 </root>

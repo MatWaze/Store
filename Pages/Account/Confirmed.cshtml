@@ -1,0 +1,49 @@
+﻿@page
+@model ConfirmedModel
+
+<h3 class="product-store padding-large ps-3 text-center">
+    @(CultureInfo.CurrentCulture.Name != "ru-RU" 
+        ? 
+        "Your email has been confirmed. You can leave this page." 
+        : 
+        "Ваша почта была подтверждена. Вы можете покинуть эту страницу."
+    )
+</h3>
+
+@functions{
+    public class ConfirmedModel : PageModel
+    {
+        private readonly UserManager<ApplicationUser> userManager;
+        private readonly SignInManager<ApplicationUser> signInManager;
+        private readonly ILogger<ConfirmModel> logger;
+
+        public ConfirmedModel(
+            UserManager<ApplicationUser> usrMgr,
+			SignInManager<ApplicationUser> signInMgr,
+            ILogger<ConfirmModel> log
+        )
+        {
+            userManager = usrMgr;
+            signInManager = signInMgr;
+            logger = log;
+        }
+
+        public async Task OnGetAsync()
+        {
+            var user = await userManager.GetUserAsync(User);
+            string role = "ConfirmedUsers";
+
+            if (user?.EmailConfirmed == false)
+            {
+                logger.LogInformation("Email of {userName} was confirmed",
+                    user.UserName);
+                user.EmailConfirmed = true;
+                await userManager.AddToRoleAsync(user, role);
+                await userManager.UpdateAsync(user);
+
+                // refresh user's sign-in cookie to include role addition
+                await signInManager.RefreshSignInAsync(user);
+            }
+        }
+    }
+}

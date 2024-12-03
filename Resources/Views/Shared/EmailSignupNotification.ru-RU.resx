@@ -121,15 +121,18 @@
     <value>Поздравляем! Вы успешно зарегистрировались в ILoveParts.</value>
   </data>
   <data name="P2" xml:space="preserve">
-    <value>Теперь вы можете начать исследовать все удивительные функции и преимущества ILoveParts.</value>
+    <value>Чтобы использовать ILoveParts, пожалуйста, подтвердите вашу почту, перейдя по ссылке ниже</value>
   </data>
   <data name="P3" xml:space="preserve">
-    <value>Если у вас есть вопросы, пожалуйста, не стесняйтесь связаться с нами по адресу info.iloveparts@gmail.com.</value>
+    <value>Если у вас есть вопросы, не стесняйтесь связаться с нами по адресу info.iloveparts@gmail.com.</value>
   </data>
   <data name="P4" xml:space="preserve">
     <value>Приятного использования ILoveParts!</value>
   </data>
   <data name="Welcome" xml:space="preserve">
     <value>Добро пожаловать в ILoveParts!</value>
+  </data>
+  <data name="Confirmation" xml:space="preserve">
+    <value>Подтвердить почту</value>
   </data>
 </root>

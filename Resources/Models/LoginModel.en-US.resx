@@ -124,6 +124,6 @@
     <value>No results found. Try another query</value>
   </data>
   <data name="RegistrationError" xml:space="preserve">
-    <value>Error registrating account</value>
+    <value>Error registering account</value>
   </data>
 </root>

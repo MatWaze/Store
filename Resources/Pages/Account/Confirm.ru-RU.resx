@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -117,22 +117,13 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="P1" xml:space="preserve">
-    <value>Congratulations! You have successfully registered for ILoveParts.</value>
+  <data name="EmailConfirmation" xml:space="preserve">
+    <value>Подтверждение Email</value>
   </data>
-  <data name="P2" xml:space="preserve">
-    <value>In order to use ILoveParts, you have to click the button bellow to confirm your email</value>
+  <data name="ConfirmationMessage" xml:space="preserve">
+    <value>Мы отправили письмо с подтверждением на указанный вами адрес электронной почты. Пожалуйста, проверьте ваш почтовый ящик и нажмите на ссылку для подтверждения.</value>
   </data>
-  <data name="P3" xml:space="preserve">
-    <value>If you have any questions, please don't hesitate to contact us at info.iloveparts@gmail.com.</value>
-  </data>
-  <data name="P4" xml:space="preserve">
-    <value>Happy using ILoveParts!</value>
-  </data>
-  <data name="Welcome" xml:space="preserve">
-    <value>Welcome to ILoveParts!</value>
-  </data>
-  <data name="Confirmation" xml:space="preserve">
-    <value>Confirm Email</value>
+  <data name="SpamFolderMessage" xml:space="preserve">
+    <value>Если вы не видите письмо, проверьте папку со спамом.</value>
   </data>
 </root>
