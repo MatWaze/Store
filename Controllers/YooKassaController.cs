@@ -8,6 +8,7 @@ using Yandex.Checkout.V3;
 using Microsoft.AspNetCore.Identity;
 using Store.Infrastructure;
 using System.Security.Cryptography;
+using ServiceStack;
 
 namespace Store.Controllers
 {
@@ -92,7 +93,7 @@ namespace Store.Controllers
         public async Task<IActionResult> Auth2(int orderId)
         {
             ApplicationUser? user = await userManager.GetUserAsync(User);
-            if (user?.YooKassaAccessToken == null || 
+            if (String.IsNullOrEmpty(user?.YooKassaAccessToken) || 
                 user.YooKassaCreationDate == null || 
                 user.YooKassaCreationDate <= DateTime.UtcNow.AddMonths(-1))
             {
@@ -136,8 +137,12 @@ namespace Store.Controllers
                 
                 logger.LogInformation("Getting access token for {userName} and redirecting to payment form",
                     user.UserName);
-
+                    
                 user.YooKassaAccessToken = responseData["access_token"]?.ToString();
+                
+                logger.LogInformation("Access token is {accessToken}", 
+                    user.YooKassaAccessToken);
+                
                 user.YooKassaCreationDate = DateTime.UtcNow;
 
                 await userManager.UpdateAsync(user);
