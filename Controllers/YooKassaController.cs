@@ -46,9 +46,9 @@ namespace Store.Controllers
 
         public async Task<IActionResult> YooKassaPayment(int orderId, string accessToken)
         {
-            await CreateYooWebHook("waiting_for_capture", $"Notification?{Guid.NewGuid()}", accessToken);
+            //await CreateYooWebHook("waiting_for_capture", $"Notification?{Guid.NewGuid()}", accessToken);
             //await CreateYooWebHook("succeeded", accessToken);
-            await CreateYooWebHook("canceled", $"Canceled?{Guid.NewGuid()}", accessToken);
+            //await CreateYooWebHook("canceled", $"Canceled?{Guid.NewGuid()}", accessToken);
             
             ViewBag.ConfirmationToken = await YooToken(orderId, accessToken);
             string? orderNonce = repo.Orders.FirstOrDefault(o => o.OrderID == orderId)?.PaymentId;
