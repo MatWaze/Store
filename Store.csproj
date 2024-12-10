@@ -16,6 +16,7 @@
     <PackageReference Include="Azure.Extensions.AspNetCore.DataProtection.Keys" Version="1.2.4" />
     <PackageReference Include="Azure.Storage.Blobs" Version="12.21.1" />
     <PackageReference Include="Braintree" Version="5.26.0" />
+    <PackageReference Include="CsvHelper" Version="33.0.1" />
     <PackageReference Include="Ebay.Net" Version="1.0.1" />
     <PackageReference Include="eBay.OAuth.Client" Version="2.0.2" />
     <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.0" />
@@ -42,6 +43,7 @@
     <PackageReference Include="Serilog.Enrichers.Process" Version="3.0.0" />
     <PackageReference Include="Serilog.Enrichers.Thread" Version="4.0.0" />
     <PackageReference Include="Serilog.Sinks.Seq" Version="8.0.0" />
+    <PackageReference Include="Serilog.Sinks.Telegram" Version="0.2.1" />
     <PackageReference Include="ServiceStack.Interfaces" Version="8.0.0" />
     <PackageReference Include="ServiceStack.Redis" Version="8.0.0" />
     <PackageReference Include="Syncfusion.EJ2.AspNet.Core" Version="27.1.51" />

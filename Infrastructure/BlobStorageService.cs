@@ -52,8 +52,6 @@ public class BlobStorageService
         BlobContainerClient containerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
         BlobClient blobClient = containerClient.GetBlobClient(fileName);
 
-        Console.WriteLine(fileName);
-
         if (!await blobClient.ExistsAsync())
         {
             throw new FileNotFoundException($"File '{fileName}' does not exist in blob storage.");
@@ -63,13 +61,10 @@ public class BlobStorageService
         return download.Content; // This is a stream
     }
 
-    public async Task DeleteFileAsync(string fileUrl)
+    public async Task DeleteFileAsync(string fileName)
     {
-        Uri uri = new Uri(fileUrl);
-        string blobName = Path.GetFileName(uri.LocalPath);
-
         BlobContainerClient containerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
-        BlobClient blobClient = containerClient.GetBlobClient(blobName);
+        BlobClient blobClient = containerClient.GetBlobClient(fileName);
 
         await blobClient.DeleteIfExistsAsync();
     }
