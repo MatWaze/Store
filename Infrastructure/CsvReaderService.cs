@@ -46,7 +46,7 @@ namespace Store.Infrastructure
             {
                 try
                 {
-                    IEnumerable<Skin> skins = await ReadSkinsFromCsv("skins.csv");
+                    IEnumerable<Skin> skins = await ReadSkinsFromCsv("skins_factory.csv");
                     var httpClient = httpClientFactory.CreateClient();
 
                     foreach (var skin in skins)
@@ -57,7 +57,6 @@ namespace Store.Infrastructure
 
                         float basePrice = float.Parse(goodsInfos["sell_min_price"].ToString(), cultureUS);
 
-                        string skinName = goodsInfos["market_hash_name"].ToString();
                         int counter = 1;
 
                         foreach (JToken item in items["data"]["items"])
@@ -65,16 +64,19 @@ namespace Store.Infrastructure
                             float itemPrice = float.Parse(item["price"].ToString(), cultureUS);
                             decimal paintWear = decimal.Parse(item["asset_info"]["paintwear"].ToString(), cultureUS);
                             
-                            if (CheckCondition(basePrice, itemPrice, paintWear))
+                            if (CheckCondition(paintWear))
                             {
+                                log.Information("Base price: {basePrice}",
+                                    basePrice);
+
                                 log.Information("You can buy {skinName}, {itemPrice}, {paintWear} with index {counter}",
-                                    skinName, itemPrice, paintWear, counter);
+                                    skin.Name, itemPrice, paintWear, counter);
                                 await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
                             }
                             counter++;
                         }
 
-                        await Task.Delay(TimeSpan.FromSeconds(9), stoppingToken);
+                        await Task.Delay(TimeSpan.FromSeconds(12), stoppingToken);
                     }
 
                 }
@@ -84,7 +86,7 @@ namespace Store.Infrastructure
                         ex.Message);
                 }
 
-                await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
+                await Task.Delay(TimeSpan.FromMinutes(2), stoppingToken);
             }
         }
 
@@ -99,11 +101,11 @@ namespace Store.Infrastructure
             return jsonObject;
         }
 
-        public bool CheckCondition(float basePrice, float targetPrice, decimal paintWear)
+        public bool CheckCondition(decimal paintWear)
         {
             bool ans = false;
 
-            if (paintWear <= 0.007M && (basePrice * 1.06) <= targetPrice)
+            if (paintWear <= 0.007M)
                 ans = true;
 
             return ans;
