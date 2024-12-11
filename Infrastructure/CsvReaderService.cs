@@ -61,22 +61,30 @@ namespace Store.Infrastructure
 
                         foreach (JToken item in items["data"]["items"])
                         {
-                            float itemPrice = float.Parse(item["price"].ToString(), cultureUS);
-                            decimal paintWear = decimal.Parse(item["asset_info"]["paintwear"].ToString(), cultureUS);
-                            
-                            if (CheckCondition(paintWear))
+                            try
                             {
-                                log.Information("Base price: {basePrice}",
-                                    basePrice);
-
-                                log.Information("You can buy {skinName}, {itemPrice}, {paintWear} with index {counter}",
-                                    skin.Name, itemPrice, paintWear, counter);
-                                await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
+                                float itemPrice = float.Parse(item["price"].ToString(), cultureUS);
+                                decimal paintWear = decimal.Parse(item["asset_info"]["paintwear"].ToString(), cultureUS);
+                                
+                                if (CheckCondition(paintWear))
+                                {
+                                    log.Information("Base price: {basePrice}",
+                                        basePrice);
+    
+                                    log.Information("You can buy {skinName}, {itemPrice}, {paintWear} with index {counter}",
+                                        skin.Name, itemPrice, paintWear, counter);
+                                    await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
+                                }
+                                counter++;
                             }
-                            counter++;
+                            catch (Exception ex)
+                            {
+                                log.Error("An error occurred while running SkinCheckerService: {error}",
+                                    ex.Message);
+                            }
                         }
 
-                        await Task.Delay(TimeSpan.FromSeconds(12), stoppingToken);
+                        await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
                     }
 
                 }
@@ -86,7 +94,7 @@ namespace Store.Infrastructure
                         ex.Message);
                 }
 
-                await Task.Delay(TimeSpan.FromMinutes(2), stoppingToken);
+                await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
             }
         }
 
