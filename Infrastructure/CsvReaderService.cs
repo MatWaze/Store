@@ -66,6 +66,7 @@ namespace Store.Infrastructure
 
                             if (CheckCondition(paintWear))
                             {
+                                log.Information("BUFF");
                                 log.Information("You can buy {skinName}, {itemPrice}, {paintWear} with index {counter}",
                                     skin.Name, itemPrice, paintWear, counter);
                             }
@@ -74,8 +75,9 @@ namespace Store.Infrastructure
                     }
                     catch (Exception ex)
                     {
-                        log.Error($"Error getting listings for {skin.Name}: ",
-                            ex.Message);
+                        log.Information("BUFF");        
+                        log.Error($"Error getting listings for {skinName}: {errorMessage}",
+                            skin.Name, ex.Message);
                     }
                     finally
                     {
@@ -91,7 +93,6 @@ namespace Store.Infrastructure
                 .GetAsync($"https://buff.163.com/api/market/goods/sell_order?game=csgo&goods_id={skin.Index}&page_num=1&sort_by=default");
 
             string jsonResponse = await response.Content.ReadAsStringAsync();
-            Console.WriteLine(jsonResponse);
             JObject jsonObject = JObject.Parse(jsonResponse);
             return jsonObject;
         }
