@@ -98,8 +98,9 @@ namespace Store.Infrastructure
                     }
                     catch (Exception ex)
                     {
-                        log.Error($"Error getting listings for {skin.Name}: ",
-                            ex.Message);
+                        log.Information("YOUPIN898");
+                        log.Error("Error getting listings for {skinName}: {errorMessage}",
+                            skin.Name, ex.Message);
                     }
                     finally
                     {
