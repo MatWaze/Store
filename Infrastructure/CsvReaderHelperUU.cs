@@ -99,7 +99,7 @@ namespace Store.Infrastructure
                     catch (Exception ex)
                     {
                         log.Information("YOUPIN898");
-                        log.Error("Error getting listings for {skinName}: {errorMessage}",
+                        log.Error("Error getting listings for {skinName}: {exMessage}",
                             skin.Name, ex.Message);
                     }
                     finally
