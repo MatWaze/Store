@@ -5,7 +5,7 @@ namespace Store.Infrastructure;
 public class BlobStorageService
 {
     private BlobServiceClient _blobServiceClient;
-    private string _containerName = "web";
+    private string _containerName = "iparts";
 
     public BlobStorageService(BlobServiceClient blob)
     {

@@ -108,6 +108,7 @@ builder.Services.AddScoped<IAzureTranslation,
 
 builder.Services.AddHostedService<CsvReaderService>();
 builder.Services.AddHostedService<CsvReaderHelperUU>();
+builder.Services.AddHostedService<CsvReaderHelperUU2>();
 
 // make SeedData scoped instead of singleton
 // since it depends on scoped services like IAzureTranslation
@@ -132,9 +133,6 @@ builder.Services.AddFluentValidationAutoValidation();
 
 builder.Services.Configure<MvcOptions>(options =>
 {
-	// Disable the default DataAnnotations messages
-
-	// Optionally, set a custom message for other validation scenarios
 	options.ModelBindingMessageProvider.SetValueMustNotBeNullAccessor(
 		_ => "");
 
@@ -180,7 +178,6 @@ builder.Services.AddDbContext<IdentityContext>(opts =>
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<IdentityContext>();
-
 builder.Services.Configure<IdentityOptions>(opts =>
 {
     opts.Password.RequiredLength = 10;
