@@ -107,8 +107,8 @@ builder.Services.AddScoped<IAzureTranslation,
     AzureTranslation>();
 
 builder.Services.AddHostedService<CsvReaderService>();
-builder.Services.AddHostedService<CsvReaderHelperUU>();
-builder.Services.AddHostedService<CsvReaderHelperUU2>();
+// builder.Services.AddHostedService<CsvReaderHelperUU>();
+// builder.Services.AddHostedService<CsvReaderHelperUU2>();
 
 // make SeedData scoped instead of singleton
 // since it depends on scoped services like IAzureTranslation
