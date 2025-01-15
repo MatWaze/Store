@@ -129,7 +129,6 @@ namespace Store.Infrastructure
             var response = await httpClientFactory.SendAsync(request);
 
             string jsonResponse = await response.Content.ReadAsStringAsync();
-
             JObject jsonObject = JObject.Parse(jsonResponse);
             return jsonObject;
         }

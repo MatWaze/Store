@@ -51,7 +51,7 @@ builder.Services.AddDbContext<DataContext>(opts =>
     opts.UseNpgsql(Environment.GetEnvironmentVariable("HerokuConnection"));
 });
 
-builder.Services.AddSingleton<IRedisClientAsync,
+builder.Services.AddScoped<IRedisClientAsync,
     RedisClient>(c =>
 {
     var client = new RedisClient(
@@ -62,7 +62,7 @@ builder.Services.AddSingleton<IRedisClientAsync,
     return client;
 });
 
-builder.Services.AddSingleton<IMyCacheStore,
+builder.Services.AddScoped<IMyCacheStore,
     CacheService>();
 
 builder.Services.AddSingleton<BlobStorageService>();
