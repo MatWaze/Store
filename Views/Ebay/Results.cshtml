@@ -13,8 +13,8 @@
 	            {
                     <div class="col-md-4"> 
                         <div class="card mt-3">
-							<img class="card-img-top" style="width: 100%; height: 15vw; object-fit: cover;"
-								src="@(item["image"].FirstOrDefault() != null ? item["image"]["imageUrl"].ToString().Replace("225.jpg", "500.jpg") : "" )"/>
+			    <img class="card-img-top" style="width: 100%; height: 15vw; object-fit: cover;"
+				src="@(item["image"] != null && item["image"].Any()  ? item["image"]["imageUrl"].ToString().Replace("225.jpg", "500.jpg") : "" )"/>
                             <div class="card-body">
                                 <h5 class="card-title">
                                     @item["title"]
