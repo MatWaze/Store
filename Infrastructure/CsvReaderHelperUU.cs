@@ -29,7 +29,7 @@ namespace Store.Infrastructure
             { "templateId", "" },
             { "ultraLongLeaseMoreZones", 0 },
             { "userId", "8932132" },
-            { "Sessionid", "Z1oRP8UtaJcDAAttpWWmXxGC" }
+            { "Sessionid", "Z55fw1C71TsDAOhjo2WHtwqz" }
         };
 
         private readonly HttpClient httpClientFactory;
