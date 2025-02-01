@@ -98,9 +98,9 @@ namespace Store.Infrastructure
                     }
                     catch (Exception ex)
                     {
-                        //log.Information("YOUPIN898");
-                        //log.Error("Error getting listings for {skinName}: {exMessage}",
-                        //    skin.Name, ex.Message);
+                        log.Information("YOUPIN898");
+                        log.Error("Error getting listings for {skinName}",
+                            skin.Name);
                     }
                     finally
                     {
@@ -130,7 +130,7 @@ namespace Store.Infrastructure
             var response = await httpClientFactory.SendAsync(request);
 
             string jsonResponse = await response.Content.ReadAsStringAsync();
-            Console.WriteLine(jsonResponse);
+            // Console.WriteLine(jsonResponse);
             JObject jsonObject = JObject.Parse(jsonResponse);
             return jsonObject;
         }
