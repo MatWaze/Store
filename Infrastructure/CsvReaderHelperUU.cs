@@ -122,6 +122,7 @@ namespace Store.Infrastructure
                 "https://api.youpin898.com/api/homepage/v2/detail/commodity/list/sell");
 
             request.Headers.Add("user-agent", "okhttp/3.14.9");
+            request.Headers.Add("uk", "5CtYegWCdUeQd1LejtNmCvxirg5UPQcnSvd6wJuQQCIPafafMzQGj1rmVCBsGRp1O");
             request.Headers.Add("tracestate", "bnro=android/13_android/8.12.1_okhttp/3.14.9");
             request.Headers.Add("platform", "android");
             request.Content = requestContent;
