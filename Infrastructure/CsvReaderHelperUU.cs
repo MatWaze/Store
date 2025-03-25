@@ -452,7 +452,7 @@ namespace Store.Infrastructure
                     // That's Bananas
                     case 109725:
                         if ((itemPrice <= 15 && seed < 300) || (itemPrice <= 19 && seed < 200) || seed <= 100)
-                            return true
+                            return true;
                         break;
 
                     // Hot Sauce
