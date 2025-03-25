@@ -359,7 +359,7 @@ namespace Store.Infrastructure
         private readonly BlobStorageService blob;
         private readonly Logger log;
 
-        public CsvReaderHelperUU2(
+        public CsvReaderHelperUU3(
             HttpClient httpClient,
             BlobStorageService blobStorage
             )
