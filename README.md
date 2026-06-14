@@ -94,7 +94,7 @@
 <h3>1. Registration Page</h3>
 <img src="./media/registration.png" alt="Registration Page" width="600">
 
-<h3>2. Welcome Email</h3>
+<h3>2. Email Confirmation</h3>
 <img src="media/welcome_email.png" alt="Welcome Email" width="600">
 
 <h3>3. Main Menu</h3>
