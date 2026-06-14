@@ -16,17 +16,17 @@
 <section>
     <h2>Key Features</h2>
     <ul>
-        <li><strong>User Registration:</strong> Users have to be registered in order to use the web app.</li>
+        <li>User Registration</li>
         <li><strong>Profile:</strong>
         Users can update their basic information like name, set the address information which will be used for order processing, and view orders.
         </li>
         <li><strong>Localization:</strong>
         English and Russian depending on the user's locale.
         </li>
-        <li><strong>Search Form:</strong> Users can search for parts using a search form. Results are fetched from eBay.</li>
-        <li><strong>Cart:</strong> Users can add items to their cart, view the cart, and proceed to checkout.</li>
+        <li>Users can search for parts using a search form. Results are fetched from eBay.</li>
+        <li>Users can add items to their cart, view the cart, and proceed to checkout.</li>
         <li><strong>Checkout:</strong> Two payment options are available: Braintree and YooKassa, both in test mode.</li>
-        <li><strong>Email Notifications:</strong> Users receive email notifications in either English or Russian when they register or when an order payment is successful.</li>
+        <li>Users receive email notifications in either English or Russian when they register or when an order payment is successful.</li>
     </ul>
 </section>
 
