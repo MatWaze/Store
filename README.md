@@ -17,15 +17,15 @@
     <h2>Key Features</h2>
     <ul>
         <li>User Registration</li>
-        <li><strong>Profile:</strong>
+        <li>Profile:
         Users can update their basic information like name, set the address information which will be used for order processing, and view orders.
         </li>
-        <li><strong>Localization:</strong>
+        <li>Localization:
         English and Russian depending on the user's locale.
         </li>
         <li>Users can search for parts using a search form. Results are fetched from eBay.</li>
         <li>Users can add items to their cart, view the cart, and proceed to checkout.</li>
-        <li><strong>Checkout:</strong> Two payment options are available: Braintree and YooKassa, both in test mode.</li>
+        <li>Checkout: Two payment options are available: Braintree and YooKassa, both in test mode.</li>
         <li>Users receive email notifications in either English or Russian when they register or when an order payment is successful.</li>
     </ul>
 </section>
