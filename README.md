@@ -90,6 +90,45 @@
 
 
 <section>
+<h2>Application walkthrough</h2>
+<h3>1. Registration Page</h3>
+<img src="./media/registration.png" alt="Registration Page" width="600">
+
+<h3>2. Welcome Email</h3>
+<img src="media/welcome_email.png" alt="Welcome Email" width="600">
+
+<h3>3. Main Menu</h3>
+<img src="media/main_menu.png" alt="Main Menu" width="600">
+
+<h3>4. Search Products</h3>
+<img src="media/search.png" alt="Search Products" width="600">
+
+<h3>5. Search Results</h3>
+<img src="media/search_results.png" alt="Search Results" width="600">
+
+<h3>6. Part Details</h3>
+<img src="media/part_details.png" alt="Part Details" width="600">
+
+<h3>7. Shopping Cart</h3>
+<img src="media/cart.png" alt="Shopping Cart" width="600">
+
+<h3>8. Checkout</h3>
+<img src="media/checkout.png" alt="Checkout" width="600">
+
+<h3>9. YooKassa Checkout</h3>
+<img src="media/yookassa_checkout.png" alt="YooKassa Checkout" width="600">
+
+<h3>10. Card Details</h3>
+<img src="media/card_details.png" alt="Card Details" width="600">
+
+<h3>11. Order Success</h3>
+<img src="media/order_success.png" alt="Order Success" width="600">
+
+<h3>12. Order Confirmation Email</h3>
+<img src="media/order_email.png" alt="Order Confirmation Email" width="600">
+</section>
+
+<section>
     <h2>Technologies Used</h2>
     <ul>
         <li><strong>ASP.NET Core:</strong> Backend and application logic.</li>
