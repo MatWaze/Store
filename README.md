@@ -6,9 +6,9 @@
     <p align="center">
         <img width="250px" src="wwwroot/images/logo_iparts.png" alt="Logo">
     </p>
-    <h1>ILoveParts - README</h1>
+    <h1>ILoveParts</h1>
     <p>
-        Welcome to <strong>ILoveParts</strong>, an e-commerce web application where users can find spare parts for various needs. The app is hosted on <a href="https://www.heroku.com/" target="_blank">Heroku</a> 
+        <strong>ILoveParts</strong> is an e-commerce web application where users can find spare parts for various needs. The app is hosted on <a href="https://www.heroku.com/" target="_blank">Heroku</a> 
         and is accessible at <a href="https://iparts.me" target="_blank">iparts.me</a> (not always active).
     </p>
 </header>
